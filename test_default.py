@@ -22,7 +22,7 @@ def test_ntp_file_content(host):
 
 
 def test_ntp_service(host):
-    if host.system_info.distribution == "debian":
+    if host.system_info.distribution in ["debian", "ubuntu"]:
         ntp_daemon = "ntp"
     elif host.system_info.distribution == "centos":
         ntp_daemon = "ntpd"
