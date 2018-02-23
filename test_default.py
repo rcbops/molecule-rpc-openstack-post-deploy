@@ -4,7 +4,8 @@ import re
 import testinfra.utils.ansible_runner
 
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
-    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('aio1')
+    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('cinder_volume')
+
 
 def test_cinder_service(host):
     cmd = "sudo bash -c \"source /root/openrc; cinder service-list\""
