@@ -4,7 +4,7 @@ import re
 import testinfra.utils.ansible_runner
 
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
-    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('compute_hosts')
+    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('compute-infra_hosts')
 
 pre_cmd = "sudo bash -c \"source /root/openrc; "
 conf_files = ['/etc/openstack_deploy/user_variables.yml,' \
