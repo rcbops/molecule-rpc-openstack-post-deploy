@@ -3,7 +3,7 @@ import re
 import pytest
 import testinfra.utils.ansible_runner
 
-###############################################################
+################################################################
 # ASC-187: Verify nova_force_config_drive setting is disabled  #
 ################################################################
 # RPC 10+ manual test 1
