@@ -9,11 +9,15 @@ testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
 
 @pytest.mark.jira('asc-222')
 @pytest.mark.skip(reason='this test can not run on storage host')
+# TODO: will update the test to run cinder command on controller node
+# TODO: since the test cannot run on storage hosts.
 def test_cinder_service(host):
+    """Test to verify that cinder service is running on the cinder nodes
+
+    Args:
+        host(Testinfra host fixture): A hostname in dynamic_inventory.json/molecule.yml
     """
-    TODO: will update the test to run cinder command on controller node
-    TODO: since the test cannot run on storage hosts.
-    """
+
     cmd = "sudo bash -c \"source /root/openrc; cinder service-list\""
     output = host.run(cmd)
     assert ("cinder-volume" in output.stdout)
@@ -22,10 +26,9 @@ def test_cinder_service(host):
 @pytest.mark.jira('asc-222')
 def test_cinder_lvm_volume(host):
     """Test 2a: Check the Cinder Nodes: volume group
+
     Args:
-        host(string): A hostname in dynamic_inventory.json/molecule.yml
-    Returns:
-        int: Exit_codes (test failed if exit_code is not zero)
+        host(Testinfra host fixture): A hostname in dynamic_inventory.json/molecule.yml
     """
 
     output = host.run('vgs cinder-volumes')
@@ -35,10 +38,9 @@ def test_cinder_lvm_volume(host):
 @pytest.mark.jira('asc-222')
 def test_cinder_volume_group(host):
     """Test 2a: Check the Cinder config file
+
     Args:
-        host(string): A hostname in dynamic_inventory.json/molecule.yml
-    Returns:
-        int: Exit_codes (test failed if exit_code is not zero)
+        host(Testinfra host fixture): A hostname in dynamic_inventory.json/molecule.yml
     """
 
     assert host.file('/etc/cinder/cinder.conf').contains("volume_group")
@@ -46,19 +48,17 @@ def test_cinder_volume_group(host):
 
 @pytest.mark.jira('asc-222')
 @pytest.mark.skip(reason='This test is only for bare metal')
+# TODO: 1. This test is only for bare metal
+# TODO: 2. This test must be executed on compute_hosts (not storage_hosts)
 def test_list_lxc_volume_group(host):
     """Test 2b:
-    TODO: 1. This test is only for bare metal
-    TODO: 2. This test must be executed on compute_hosts (not storage_hosts)
     Check Compute hosts LVM setup and verify we're not leaving an excess of free extents.
     Notes: makes sure if you are using LVM for your partitioning, that all
     available disk space, past the amount needed for the OS, has been allocated
     to /var/lib/nova
 
     Args:
-        host(string): A hostname in dynamic_inventory.json/molecule.yml
-    Returns:
-        int: Exit_codes (test failed if exit_code is not zero)
+        host(Testinfra host fixture): A hostname in dynamic_inventory.json/molecule.yml
     """
 
     assert host.run_expect([0], 'vgs lxc')
@@ -75,9 +75,7 @@ def test_list_lxc_logical_volume(host):
     to /var/lib/nova
 
     Args:
-        host(string): A hostname in dynamic_inventory.json/molecule.yml
-    Returns:v
-        int: Exit_codes (test failed if exit_code is not zero)
+        host(Testinfra host fixture): A hostname in dynamic_inventory.json/molecule.yml
     """
 
     assert host.run_expect([0], 'lvs lxc')
@@ -94,9 +92,7 @@ def test_list_free_extents(host):
     to /var/lib/nova
 
     Args:
-        host(string): A hostname in dynamic_inventory.json/molecule.yml
-    Returns:
-        int: Exit_codes (test failed if exit_code is not zero)
+        host(Testinfra host fixture): A hostname in dynamic_inventory.json/molecule.yml
     """
     cmd = "vgs -o -pv_count,lv_count,snap_count,vg_attr,vg_size,vg_free " \
           "-o +vg_free_count"
@@ -108,10 +104,10 @@ def test_list_free_extents(host):
 
 @pytest.mark.jira('asc-222')
 @pytest.mark.skip(reason='This test is only for bare metal')
+# TODO: 1. This test is only for bare metal
+# TODO: 2. This test must be executed on compute_hosts (not storage_hosts)
 def test_check_cinder_volumes_in_user_config_file(host):
     """Test 2c:
-    TODO: 1. This test is only for bare metal
-    TODO: 2. This test must be executed on compute_hosts (not storage_hosts)
     Check /etc/openstack_deploy/openstack_user_config.yml to make sure
     Cinder is using proper 'cinder-volumes' group, and not 'lxc'
     In other word: just makes sure that if a host has two scsi devices,
@@ -121,9 +117,7 @@ def test_check_cinder_volumes_in_user_config_file(host):
     nodes and cinder nodes in order to maximize disk space and IO
 
     Args:
-        host(string): A hostname in dynamic_inventory.json/molecule.yml
-    Returns:
-        int: Exit_codes (test failed if exit_code is not zero)
+        host(Testinfra host fixture): A hostname in dynamic_inventory.json/molecule.yml
     """
 
     assert host.file('/etc/openstack_deploy/openstack_user_config.yml')\
