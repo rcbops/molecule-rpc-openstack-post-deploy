@@ -8,22 +8,6 @@ testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
 
 
 @pytest.mark.jira('asc-222')
-@pytest.mark.skip(reason='this test can not run on storage host')
-# TODO: will update the test to run cinder command on controller node
-# TODO: since the test cannot run on storage hosts.
-def test_cinder_service(host):
-    """Test to verify that cinder service is running on the cinder nodes
-
-    Args:
-        host(testinfra.host.Host): A hostname in dynamic_inventory.json/molecule.yml
-    """
-
-    cmd = "sudo bash -c \"source /root/openrc; cinder service-list\""
-    output = host.run(cmd)
-    assert ("cinder-volume" in output.stdout)
-
-
-@pytest.mark.jira('asc-222')
 def test_cinder_lvm_volume(host):
     """Test 2a: Check the Cinder Nodes: volume group
 
