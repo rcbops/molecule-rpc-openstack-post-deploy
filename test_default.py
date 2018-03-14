@@ -8,14 +8,15 @@ import testinfra.utils.ansible_runner
 ################################################################
 # RPC 10+ manual test 1
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
-    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts(
-    ['nova_scheduler', 'nova_compute'])
+    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('nova_compute')
 
 
+@pytest.mark.jira('asc-187')
 def test_nova_force_config_drive_is_disabled_on_nova_compute(host):
     verify_nova_force_config_drive_is_disabled(host)
 
 
+@pytest.mark.jira('asc-187')
 def test_nova_force_config_drive_is_disabled_on_nova_scheduler(host):
     verify_nova_force_config_drive_is_disabled(host)
 
