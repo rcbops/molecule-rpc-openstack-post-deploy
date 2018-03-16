@@ -4,7 +4,7 @@ import pytest
 import testinfra.utils.ansible_runner
 
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
-    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('dashboard_hosts')
+    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('infra1')
 
 
 @pytest.mark.jira('asc-222')
