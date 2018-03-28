@@ -1,21 +1,21 @@
 import os
-import re
 import pytest
 import testinfra.utils.ansible_runner
 
-#######################################################################
-# ASC-236: Verify the requested user(s) and tenant(s) were created    #
-# and assigned the proper role.                                       #
-#                                                                     #
-# Notes: These tests should be in keystone submodule, however, there  #
-# are not many test cases for keystone at this time so we are putting #
-# them here in novo submodule. When the keystone test cases grow in   #
-# the future, we should create keystone submodule for them            #
-#######################################################################
-# RPC 10+ manual test 7
+
+"""ASC-236: Verify the requested user(s) and tenant(s) were created
+and assigned the proper role.
+
+Notes: These tests should be in keystone submodule, however, there
+are not many test cases for keystone at this time so we are putting
+them here in novo submodule. When the keystone test cases grow in
+the future, we should create keystone submodule for them
+
+RPC 10+ manual test 7
+"""
 
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
-    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('compute1')
+    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('nova_compute')[:1]
 
 pre_cmd = "bash -c \"source /root/openrc; "
 
@@ -27,7 +27,6 @@ def test_keystone_users(host):
     output = host.run(cmd)
     assert ("cinder" in output.stdout)
     assert ("glance" in output.stdout)
-    # assert ("maas" in output.stdout)
     assert ("heat" in output.stdout)
     assert ("keystone" in output.stdout)
     assert ("neutron" in output.stdout)
