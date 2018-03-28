@@ -3,13 +3,14 @@ import re
 import pytest
 import testinfra.utils.ansible_runner
 
-#######################################################################
-# ASC-239: Verify the correct networks were created                   #
-#######################################################################
-# RPC 10+ manual test 9
+
+"""ASC-239: Verify the correct networks were created
+
+RPC 10+ manual test 9
+"""
 
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
-    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('compute1')
+    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('nova_compute')[:1]
 
 pre_cmd = "bash -c \"source /root/openrc; "
 
