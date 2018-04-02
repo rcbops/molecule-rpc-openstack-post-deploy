@@ -9,7 +9,7 @@ testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
 
 PLAYBOOK_DIR = "/opt/openstack-ansible-ops/multi-node-aio-xenial-ansible/playbooks/"
 SERVICE_YML = PLAYBOOK_DIR + "openstack-service-setup.yml"
-NETWORK_TEMP = PLAYBOOK_DIR + "/openstack-network-setup_reo198.yml"
+NETWORK_TEMP = PLAYBOOK_DIR + "openstack-network-setup_reo198.yml"
 DYNAMIC_INV = "/opt/openstack-ansible/playbooks/inventory/dynamic_inventory.py"
 
 
@@ -26,7 +26,7 @@ def test_setup_network(host):
 
     # Test to create network and subnet
     cmd3 = "export ANSIBLE_HOST_KEY_CHECKING=False ; " + "cd " + PLAYBOOK_DIR + " ; ansible-playbook -i " \
-           + DYNAMIC_INV + " openstack-network-setup_reo198.yml"
+           + DYNAMIC_INV + " " + NETWORK_TEMP
     output = host.run(cmd3)
     print ("stdout:\n" + output.stdout)
 
