@@ -1,5 +1,4 @@
 import os
-import re
 import pytest
 import testinfra.utils.ansible_runner
 
@@ -16,6 +15,7 @@ pre_cmd = "bash -c \"source /root/openrc; "
 
 
 @pytest.mark.jira('asc-239')
+@pytest.mark.skip(reason='untestable until RO-4153 is fixed')
 def test_verify_network_list(host):
     """Verify the neutron network was created"""
     cmd = pre_cmd + "openstack network list\""
@@ -25,6 +25,7 @@ def test_verify_network_list(host):
 
 
 @pytest.mark.jira('asc-239')
+@pytest.mark.skip(reason='untestable until RO-4153 is fixed')
 def test_verify_subnet_list(host):
     """Verify the neutron subnet was created """
     cmd = pre_cmd + "openstack subnet list\""
