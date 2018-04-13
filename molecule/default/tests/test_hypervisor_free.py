@@ -1,15 +1,14 @@
 import os
 import testinfra.utils.ansible_runner
 import pytest
+import json
 
 """ASC-157: Perform Post Deploy System validations"""
 
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
-    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('dashboard_hosts')
+    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('infra1')
 
 
-@pytest.mark.testinfra_hosts(testinfra.utils.ansible_runner.AnsibleRunner(
-    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('nova_conductor'))
 def test_get_nova_allocation_ratios(host):
     """Retrieve resource allocation ratios from nova_conductor host.
 
@@ -20,12 +19,17 @@ def test_get_nova_allocation_ratios(host):
     global ram_ratio
     global disk_ratio
 
-    cpu_res = host.run(
-        "awk -F= '/^cpu_allocation_ratio/ {print $2}' /etc/nova/nova.conf")
-    ram_res = host.run(
-        "awk -F= '/^ram_allocation_ratio/ {print $2}' /etc/nova/nova.conf")
-    disk_res = host.run(
-        "awk -F= '/^disk_allocation_ratio/ {print $2}' /etc/nova/nova.conf")
+    os_pre = ("lxc-attach -n $(lxc-ls -1 | grep nova_conductor | head -n 1) "
+              "-- bash -c \" ")
+    cmd = ' '.join(["awk -F= '/^cpu_allocation_ratio/ {print $2}'",
+                    "/etc/nova/nova.conf"])
+    cpu_res = host.run("{} {}\"".format(os_pre, cmd))
+    cmd = ' '.join(["awk -F= '/^ram_allocation_ratio/ {print $2}'",
+                    "/etc/nova/nova.conf"])
+    ram_res = host.run("{} {}\"".format(os_pre, cmd))
+    cmd = ' '.join(["awk -F= '/^disk_allocation_ratio/ {print $2}'",
+                    "/etc/nova/nova.conf"])
+    disk_res = host.run("{} {}\"".format(os_pre, cmd))
     cpu_ratio = (1 if not cpu_res.stdout.strip().replace(".", "", 1).isdigit()
                  else (float)(cpu_res.stdout)
                  )
@@ -44,40 +48,18 @@ def test_get_nova_allocation_ratios(host):
 def test_hypervisor_free(host):
     """Validate the resource levels for hypervisor"""
 
-    openstack_pre = 'bash -c "source /root/openrc; '
-    cmd = openstack_pre + ' openstack hypervisor stats show "'
+    os_pre = ("lxc-attach -n $(lxc-ls -1 | grep utility | head -n 1) "
+              "-- bash -c '. /root/openrc ; openstack ")
+    cmd = "{} hypervisor stats show -f json'".format(os_pre)
     res = host.run(cmd)
-    fields = get_os_output_list(res.stdout)
-    fields = filter(lambda x: x[1].isdigit(), fields)
-    fields = dict(map(lambda x: (x[0], (int)(x[1])), fields))
+    stats = json.loads(res.stdout)
     assert res.rc == 0
-    assert "memory_mb" in fields
-    assert "memory_mb_used" in fields
-    assert "vcpus" in fields
-    assert "vcpus_used" in fields
-    assert "free_disk_gb" in fields
-    assert ((fields['memory_mb']) * ram_ratio -
-            (fields['memory_mb_used']))/1024 > 0
-    assert (fields['vcpus'] * cpu_ratio - fields['vcpus_used']) > 0
-    assert (fields['free_disk_gb'] * disk_ratio) > 0
-
-
-# Helper method
-def get_os_output_list(output):
-    """Convert Openstack CLI output to a list of key,value tuples.
-
-    Args:
-        output(string): The tablular text output from a query to the OpenStack
-        CLI interface.
-
-    Returns:
-        A list of key, value tuples.
-    """
-
-    res = []
-    for line in output.split('\n'):
-        fields = [x.strip() for x in line.split('|')]
-        fields = filter(None, fields)
-        if len(fields) == 2:
-            res.append((tuple)(fields))
-    return res
+    assert "memory_mb" in stats
+    assert "memory_mb_used" in stats
+    assert "vcpus" in stats
+    assert "vcpus_used" in stats
+    assert "free_disk_gb" in stats
+    assert ((stats['memory_mb']) * ram_ratio -
+            (stats['memory_mb_used']))/1024 > 0
+    assert (stats['vcpus'] * cpu_ratio - stats['vcpus_used']) > 0
+    assert (stats['free_disk_gb'] * disk_ratio) > 0
