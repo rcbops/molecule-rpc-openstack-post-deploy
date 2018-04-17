@@ -16,7 +16,6 @@ attach_utility_container = "lxc-attach -n `lxc-ls -1 | grep utility | head -n 1`
 
 
 @pytest.mark.jira('asc-240')
-@pytest.mark.xfail(reason='expected to fail until service setup is successfully completed')
 def test_verify_glance_image(host):
     """Verify the glance images created by:
     https://github.com/openstack/openstack-ansible-ops/blob/master/multi-node-aio/playbooks/vars/openstack-service-config.yml
@@ -34,7 +33,6 @@ def test_verify_glance_image(host):
 
 
 @pytest.mark.jira('asc-240')
-@pytest.mark.xfail(reason='expected to fail until service setup is successfully completed')
 def test_verify_vm_flavors(host):
     """Verify the VM flavor created by:
     https://github.com/openstack/openstack-ansible-ops/blob/master/multi-node-aio/playbooks/vars/openstack-service-config.yml
