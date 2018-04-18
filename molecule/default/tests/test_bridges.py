@@ -14,7 +14,7 @@ def test_for_dead_taps(host):
 
     cmd = 'ovs-vsctl list-br'
     bridge_res = host.run(cmd)
-    bridges = filter(None,bridge_res.stdout.split('\n'))
+    bridges = filter(None, bridge_res.stdout.split('\n'))
     for bridge in bridges:
         cmd = 'ovs-vsctl list-ports ' + bridge + ' | wc -l'
         res = host.run(cmd)

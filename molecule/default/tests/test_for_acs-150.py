@@ -1,5 +1,4 @@
 import os
-import re
 import pytest
 
 import testinfra.utils.ansible_runner
@@ -87,8 +86,4 @@ class TestForRPC10PlusPostDeploymentQCProcess(object):
 
     @pytest.mark.skip(reason='Need implementation')
     def test_verify_kibana_horizon_access_with_no_ssh(self, host):
-        """See RPC 10+ Post-Deployment QC process document"""
-
-    @pytest.mark.skip(reason='Need implementation')
-    def test_verify_floating_ip_nats(self, host):
         """See RPC 10+ Post-Deployment QC process document"""

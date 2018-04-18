@@ -22,7 +22,6 @@ def test_openvswitch(host):
     networks = net_res.stdout.split('\n')
     networks = json.loads(net_res.stdout)
     for network in networks:
-        cmd = "{} network agent list --network {} -f json'".format(os_pre,
-        network['ID'])
+        cmd = "{} network agent list --network {} -f json'".format(os_pre, network['ID'])
         res = host.run(cmd)
         assert "UP" in res.stdout
