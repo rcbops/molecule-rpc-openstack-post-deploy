@@ -9,6 +9,7 @@ testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
     os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('os-infra_hosts')[:1]
 
 
+@pytest.mark.test_id('d7fc25ae-432a-11e8-a20a-6a00035510c0')
 @pytest.mark.jira('asc-157')
 def test_openvswitch(host):
     """

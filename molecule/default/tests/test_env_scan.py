@@ -12,6 +12,7 @@ os_pre = ("lxc-attach -n $(lxc-ls -1 | grep utility | head -n 1) "
           "-- bash -c '. /root/openrc ; openstack ")
 
 
+@pytest.mark.test_id('d7fc26a8-432a-11e8-8340-6a00035510c0')
 @pytest.mark.jira('asc-157')
 def test_projects(host):
     """
@@ -26,6 +27,7 @@ def test_projects(host):
     assert "service" in project_names
 
 
+@pytest.mark.test_id('d7fc2770-432a-11e8-8af1-6a00035510c0')
 @pytest.mark.jira('asc-157')
 def test_users(host):
     """
@@ -48,6 +50,7 @@ def test_users(host):
     assert "swift" in user_names
 
 
+@pytest.mark.test_id('d7fc2835-432a-11e8-a8a1-6a00035510c0')
 @pytest.mark.jira('asc-157')
 def test_networks(host):
     """
@@ -62,6 +65,7 @@ def test_networks(host):
     assert len(network_names) > 0
 
 
+@pytest.mark.test_id('d7fc28f5-432a-11e8-9af3-6a00035510c0')
 @pytest.mark.jira('asc-157')
 def test_servers(host):
     """
@@ -73,6 +77,7 @@ def test_servers(host):
     assert res.rc == 0
 
 
+@pytest.mark.test_id('d7fc2b45-432a-11e8-92c0-6a00035510c0')
 @pytest.mark.jira('asc-157')
 def test_flavors(host):
     """
@@ -87,6 +92,7 @@ def test_flavors(host):
     assert len(flavor_names) > 0
 
 
+@pytest.mark.test_id('d7fc2f02-432a-11e8-8e59-6a00035510c0')
 @pytest.mark.jira('asc-157')
 def test_image(host):
     """
