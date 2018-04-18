@@ -11,6 +11,7 @@ testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
 pre_cmd = ("lxc-attach -n $(lxc-ls -1 | grep galera | head -n 1) "
            "-- bash -c '")
 
+
 @pytest.mark.jira('asc-157')
 @pytest.mark.skip(reason='Need to confirm MNAIO expects this')
 def test_mysql_replication(host):

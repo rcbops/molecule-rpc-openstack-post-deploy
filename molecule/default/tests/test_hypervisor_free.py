@@ -60,6 +60,6 @@ def test_hypervisor_free(host):
     assert "vcpus_used" in stats
     assert "free_disk_gb" in stats
     assert ((stats['memory_mb']) * ram_ratio -
-            (stats['memory_mb_used']))/1024 > 0
+            (stats['memory_mb_used'])) / 1024 > 0
     assert (stats['vcpus'] * cpu_ratio - stats['vcpus_used']) > 0
     assert (stats['free_disk_gb'] * disk_ratio) > 0
