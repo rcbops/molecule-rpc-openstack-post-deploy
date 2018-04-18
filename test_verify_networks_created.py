@@ -14,7 +14,7 @@ testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
 pre_cmd = "bash -c \"source /root/openrc; "
 
 
-@pytest.mark.jira('asc-239'
+@pytest.mark.jira('asc-239')
 def test_verify_network_list(host):
     """Verify the neutron network was created"""
     cmd = pre_cmd + "openstack network list\""
