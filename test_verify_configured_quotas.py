@@ -16,6 +16,7 @@ pre_cmd = "bash -c \"source /root/openrc; "
 tenant = 'service'
 
 
+@pytest.mark.test_id('d7fc6780-432a-11e8-9c23-6a00035510c0')
 @pytest.mark.jira('asc-238')
 def test_update_quotas_1st_time_using_id(host):
     """Configurate tenant quotas and verify it works properly at the first time"""
@@ -25,6 +26,7 @@ def test_update_quotas_1st_time_using_id(host):
     verify_updated_quotas(host, name=id, instances=9, cores=8, ram=32)
 
 
+@pytest.mark.test_id('43e5e78c-4335-11e8-9508-6a00035510c0')
 @pytest.mark.jira('asc-238')
 def test_update_quotas_2nd_time_using_id(host):
     """Configurate tenant quotas and verify it works properly the second time"""
@@ -35,6 +37,7 @@ def test_update_quotas_2nd_time_using_id(host):
     verify_updated_quotas(host, name=id, instances=18, cores=16, ram=64)
 
 
+@pytest.mark.test_id('43e5eade-4335-11e8-942b-6a00035510c0')
 @pytest.mark.jira('asc-238')
 def test_update_quotas_1st_time_using_name(host):
     """Configurate tenant quotas and verify it works properly at the first time"""
@@ -44,6 +47,7 @@ def test_update_quotas_1st_time_using_name(host):
     verify_updated_quotas(host, name=tenant, instances=12, cores=10, ram=128)
 
 
+@pytest.mark.test_id('43e5ec59-4335-11e8-af11-6a00035510c0')
 @pytest.mark.jira('asc-238')
 def test_update_quotas_2nd_time_using_name(host):
     """Configurate service tenant quotas and verify it works properly the second time"""

@@ -20,6 +20,7 @@ testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
 pre_cmd = "bash -c \"source /root/openrc; "
 
 
+@pytest.mark.test_id('43e5ef8c-4335-11e8-9995-6a00035510c0')
 @pytest.mark.jira('asc-236')
 def test_keystone_users(host):
     """Verify the requested users were created"""
@@ -33,6 +34,7 @@ def test_keystone_users(host):
     assert ("nova" in output.stdout)
 
 
+@pytest.mark.test_id('43e5f054-4335-11e8-817d-6a00035510c0')
 @pytest.mark.jira('asc-236')
 def test_keystone_tenants(host):
     """Verify the service tenant was created """
