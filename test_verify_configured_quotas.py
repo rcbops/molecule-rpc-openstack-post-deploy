@@ -15,6 +15,7 @@ testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
 pre_cmd = "bash -c \"source /root/openrc; "
 tenant = 'service'
 
+
 @pytest.mark.jira('asc-238')
 def test_update_quotas_1st_time_using_id(host):
     """Configurate tenant quotas and verify it works properly at the first time"""
@@ -55,7 +56,7 @@ def test_update_quotas_2nd_time_using_name(host):
 def update_quotas(run_on_host, name, instances, cores, ram):
     """Update quote using openstack cli 'openstack quota set'"""
     cmd = pre_cmd + "openstack quota set --instances " + str(instances) + \
-          " --cores " + str(cores) + " --ram " + str(ram) + " " + name + "\""
+        " --cores " + str(cores) + " --ram " + str(ram) + " " + name + "\""
     run_on_host.run_expect([0], cmd)
 
 
@@ -70,7 +71,7 @@ def verify_updated_quotas(run_on_host, name, instances, cores, ram):
 
 def get_tenant_id(tenant_name, run_on_host):
     """Get tenant id associated with tenant name"""
-    cmd = pre_cmd + "openstack project list | grep " + tenant_name +"\""
+    cmd = pre_cmd + "openstack project list | grep " + tenant_name + "\""
     output = run_on_host.run(cmd)
     result = re.search(r'(?<=\s)[a-zA-Z0-9]+(?=\s)', output.stdout)
     return result.group(0)
