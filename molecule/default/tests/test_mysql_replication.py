@@ -12,6 +12,7 @@ pre_cmd = ("lxc-attach -n $(lxc-ls -1 | grep galera | head -n 1) "
            "-- bash -c '")
 
 
+@pytest.mark.test_id('d7fc54a1-432a-11e8-be87-6a00035510c0')
 @pytest.mark.jira('asc-157')
 @pytest.mark.skip(reason='Need to confirm MNAIO expects this')
 def test_mysql_replication(host):
