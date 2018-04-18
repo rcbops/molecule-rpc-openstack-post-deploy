@@ -11,11 +11,13 @@ testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
     os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('compute-infra_hosts')[:1]
 
 
+@pytest.mark.test_id('43e5ed40-4335-11e8-a701-6a00035510c0')
 @pytest.mark.jira('asc-187')
 def test_nova_force_config_drive_is_disabled_on_nova_compute(host):
     verify_nova_force_config_drive_is_disabled(host)
 
 
+@pytest.mark.test_id('43e5ee11-4335-11e8-88a0-6a00035510c0')
 @pytest.mark.jira('asc-187')
 def test_nova_force_config_drive_is_disabled_on_nova_scheduler(host):
     verify_nova_force_config_drive_is_disabled(host)

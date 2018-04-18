@@ -15,6 +15,7 @@ testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
 attach_rabbitmq_container = "lxc-attach -n `lxc-ls -1 | grep rabbit | head -n 1` -- "
 
 
+@pytest.mark.test_id('43e5eed1-4335-11e8-bff9-6a00035510c0')
 @pytest.mark.jira('asc-255')
 def test_verify_rabbitmq_channel_per_connection(host):
     """Verify the glance images created by:
