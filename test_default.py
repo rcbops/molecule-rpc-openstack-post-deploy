@@ -15,6 +15,7 @@ testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
 attach_utility_container = "lxc-attach -n `lxc-ls -1 | grep utility | head -n 1` -- bash -c "
 
 
+@pytest.mark.test_id('d7fc612b-432a-11e8-9a7a-6a00035510c0')
 @pytest.mark.jira('asc-240')
 def test_verify_glance_image(host):
     """Verify the glance images created by:
@@ -32,6 +33,7 @@ def test_verify_glance_image(host):
     assert ("Cirros-0.3.5" in output.stdout)
 
 
+@pytest.mark.test_id('d7fc62c7-432a-11e8-8102-6a00035510c0')
 @pytest.mark.jira('asc-240')
 def test_verify_vm_flavors(host):
     """Verify the VM flavor created by:
