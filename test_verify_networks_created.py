@@ -14,6 +14,7 @@ testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
 pre_cmd = "bash -c \"source /root/openrc; "
 
 
+@pytest.mark.test_id('d7fc646b-432a-11e8-b858-6a00035510c0')
 @pytest.mark.jira('asc-239')
 def test_verify_network_list(host):
     """Verify the neutron network was created"""
@@ -23,6 +24,7 @@ def test_verify_network_list(host):
     assert ("PRIVATE_NET" in output.stdout)
 
 
+@pytest.mark.test_id('d7fc65fa-432a-11e8-a2ae-6a00035510c0')
 @pytest.mark.jira('asc-239')
 def test_verify_subnet_list(host):
     """Verify the neutron subnet was created """
