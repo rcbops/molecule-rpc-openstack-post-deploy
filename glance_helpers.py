@@ -1,12 +1,11 @@
+# -*- coding: utf-8 -*-
 import requests
 import json
 import re
 from cStringIO import StringIO
 
-# -*- coding: utf-8 -*-
 
 """ Glance helpers
-
 """
 
 
@@ -17,22 +16,22 @@ def get_scoped_token(openrc):
     They contain a service catalog, a set of roles, and details of the project upon which you have authorization.
 
     A project-scoped token is similar to the below string:
-    gAAAAABa50GczT9"mLQilrmwtA-ffY1WrRdJneZaVn9ZIzHwnCeMkrLThelqeIE7nba3wgyxkPETq4lpZCXtmeRMSDuuxFMnY7E5hud_UT9bmI |
-    KY39DRIVbv85sXmfddzbFma0UUQtA0Z7oDsRUKVz1zKp-zHV3RDIRe7WzfhIyPWMjZr2c7dvUk"
+    gBBBsfawerasaserse9"mLQilrmwtA-dfdfdfdfsasetrewfazsThelqeIE7nba3wgyxgrsawefsafawDuuxFMnY7E5hud_UT9bmI |
+    KY39DRIVbv85sXmfddzbFma0UUQtA0Z7oDsRUKVz1zKp-zHVxfdsfasebsdgasegzas"
 
     Args:
-          openrc: string variable containing `openrc` authorization and authentication file
+          openrc (str): string variable containing `openrc` authorization and authentication file
 
     Return:
-          string: `X-Subject-Token` (Project-Scoped Token) in the requested headers.
+          project-scoped token (str): `X-Subject-Token` in the requested headers.
     """
 
     # Retrieve data from /root/openrc file:
-    OS_PROJECT_DOMAIN_NAME = _get_key_value(openrc, "OS_PROJECT_DOMAIN_NAME")
-    OS_PROJECT_NAME = _get_key_value(openrc, "OS_PROJECT_NAME")
-    OS_USERNAME = _get_key_value(openrc, "OS_USERNAME")
-    OS_PASSWORD = _get_key_value(openrc, "OS_PASSWORD")
-    OS_AUTH_URL = _get_key_value(openrc, "OS_AUTH_URL")
+    OS_PROJECT_DOMAIN_NAME = get_key_value(openrc, "OS_PROJECT_DOMAIN_NAME")
+    OS_PROJECT_NAME = get_key_value(openrc, "OS_PROJECT_NAME")
+    OS_USERNAME = get_key_value(openrc, "OS_USERNAME")
+    OS_PASSWORD = get_key_value(openrc, "OS_PASSWORD")
+    OS_AUTH_URL = get_key_value(openrc, "OS_AUTH_URL")
 
     url = OS_AUTH_URL + "/auth/tokens"
     headers = {'content-type': 'application/json'}
@@ -69,16 +68,16 @@ def get_scoped_token(openrc):
     return res.headers['X-Subject-Token']
 
 
-def _get_key_value(openrc_file, key):
+def get_key_value(openrc_file, key):
     """ Getting key value based on the value regex
 
     Args:
-        openrc_file: string variable containing `openrc` authorization and authentication file
-        key: string for key. String variable `openrc_file` contents will be converted into python
+        openrc_file (str): string variable containing `openrc` authorization and authentication file
+        key (str): Key string. String variable `openrc_file` contents will be converted into python
             dict `os_vars`, the key here is one of the keys in the dict.
 
     Return:
-        Value of key in the dict.
+        Key value (str): Value of key in the dict.
 
     """
 
@@ -94,4 +93,9 @@ def _get_key_value(openrc_file, key):
             value = matching.groups()[1].replace("'", "")
             os_vars[matching.groups()[0]] = value
 
-    return os_vars[key]
+    try:
+        key_value = os_vars[key]
+    except KeyError as error:
+        raise RuntimeError("Could not find variable {} in the file {}\nKeyError:\n{}".format(key, openrc_file, error))
+
+    return key_value
