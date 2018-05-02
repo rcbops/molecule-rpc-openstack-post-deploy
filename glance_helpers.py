@@ -23,7 +23,7 @@ def get_scoped_token(openrc):
           openrc (str): string variable containing `openrc` authorization and authentication file
 
     Return:
-          project-scoped token (str): `X-Subject-Token` in the requested headers.
+          str: project-scoped token `X-Subject-Token` in the requested headers.
     """
 
     # Retrieve data from /root/openrc file:
@@ -77,11 +77,11 @@ def get_key_value(openrc_file, key):
             dict `os_vars`, the key here is one of the keys in the dict.
 
     Return:
-        Key value (str): Value of key in the dict.
+        str: Value of key in the dict.
 
     """
 
-    # Regex is something similar to 'export OS_PROJECT_DOMAIN_NAME=Default\n':
+    # Regex is something similar to 'export OS_PROJECT_DOMAIN_NAME=Default\n'
     regex = r'export\s+(OS_[A-Z_]+)=(.+)$'
     os_vars = {}
 
