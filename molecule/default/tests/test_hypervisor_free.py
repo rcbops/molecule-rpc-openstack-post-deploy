@@ -11,6 +11,7 @@ testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
 
 @pytest.mark.test_id('d7fc4ff0-432a-11e8-aca5-6a00035510c0')
 @pytest.mark.jira('asc-157')
+@pytest.mark.skip(reason='expected ratio values not defined')
 def test_get_nova_allocation_ratios(host):
     """Retrieve resource allocation ratios from nova_conductor host.
 

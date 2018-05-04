@@ -52,6 +52,7 @@ def test_users(host):
 
 @pytest.mark.test_id('d7fc2835-432a-11e8-a8a1-6a00035510c0')
 @pytest.mark.jira('asc-157')
+@pytest.mark.skip(reason='Networks not created in MNIAO deploy')
 def test_networks(host):
     """
     Ensure presence of basic networks
@@ -79,6 +80,7 @@ def test_servers(host):
 
 @pytest.mark.test_id('d7fc2b45-432a-11e8-92c0-6a00035510c0')
 @pytest.mark.jira('asc-157')
+@pytest.mark.skip(reason='Flavors not created in MNIAO deploy')
 def test_flavors(host):
     """
     Ensure presence of basic nova flavors
@@ -94,6 +96,7 @@ def test_flavors(host):
 
 @pytest.mark.test_id('d7fc2f02-432a-11e8-8e59-6a00035510c0')
 @pytest.mark.jira('asc-157')
+@pytest.mark.skip(reason='Images not created in MNIAO deploy')
 def test_image(host):
     """
     Ensure presence of basic glance images
