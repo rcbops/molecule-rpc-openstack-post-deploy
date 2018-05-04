@@ -2,3 +2,4 @@ molecule
 ansible
 flake8
 flake8-pytest-mark
+pytest-rpc
