@@ -9,7 +9,7 @@ testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
 
 @pytest.mark.test_id('3c469966-4fcb-11e8-a604-6a0003552100')
 @pytest.mark.jira('asc-258')
-def test_create_bootalbe_volume(host):
+def test_create_bootable_volume(host):
     """Test to verify that a bootable volume can be created based on a Glance image
 
     Args:
@@ -19,8 +19,9 @@ def test_create_bootalbe_volume(host):
     null = None
     false = False
     volume_name = 'test_volume'
+    image_name = 'Cirros-0.3.5'
 
-    image_id = utils.get_image_id("Cirros-0.3.5", host)
+    image_id = utils.get_image_id(image_name, host)
 
     data = {
         "volume": {

@@ -1,12 +1,19 @@
-import re
+import json
 
 
 def get_image_id(image_name, run_on_host):
     """Get image id associated with image name"""
-    cmd = ". /root/openrc ; openstack image list | grep " + image_name
+    cmd = ". /root/openrc ; openstack image show {} -f json".format(image_name)
     output = run_on_host.run(cmd)
-    result = re.search(r'(?<=\s)[a-zA-Z0-9\_\-]+(?=\s)', output.stdout)
-    return result.group(0)
+    try:
+        result = json.loads(output.stdout)
+    except ValueError:
+        return
+
+    if 'id' in result:
+        return result['id']
+    else:
+        return
 
 
 def create_bootable_volume(data, run_on_host):
@@ -19,9 +26,9 @@ def create_bootable_volume(data, run_on_host):
           + str(data['volume']['name'])
 
     output = run_on_host.run(cmd)
-    print ("\ncreate_bootable volume output:\n")
+    print ("\n----------- Create_bootable volume output: ----------\n")
     print output.stdout
-    print("\nend\n")
+    print("\n---- End of create bootable volume output -------\n")
 
 
 def verify_volume(volume_name, run_on_host):
@@ -33,6 +40,22 @@ def verify_volume(volume_name, run_on_host):
 
 def delete_volume(volume_name, run_on_host):
     """Delete volume"""
-    cmd = ". /root/openrc ; openstack volume delete --purge " + volume_name
+    volume_id = get_volume_id(volume_name, run_on_host)
+    cmd = ". /root/openrc ; openstack volume delete --purge " + volume_id
     output = run_on_host.run(cmd)
     assert volume_name not in output.stdout
+
+
+def get_volume_id(volume_name, run_on_host):
+    """Get volume id associated with volume name"""
+    cmd = ". /root/openrc ; openstack volume show {} -f json".format(volume_name)
+    output = run_on_host.run(cmd)
+    try:
+        result = json.loads(output.stdout)
+    except ValueError:
+        return
+
+    if 'id' in result:
+        return result['id']
+    else:
+        return
