@@ -59,3 +59,19 @@ def get_volume_id(volume_name, run_on_host):
         return result['id']
     else:
         return
+
+
+def parse_table(ascii_table):
+    header = []
+    data = []
+    for line in filter(None, ascii_table.split('\n')):
+        if '-+-' in line:
+            continue
+        if not header:
+            header = filter(lambda x: x != '|', line.split())
+            continue
+        data.append([''] * len(header))
+        splitted_line = filter(lambda x: x != '|', line.split())
+        for i in range(len(splitted_line)):
+            data[-1][i] = splitted_line[i]
+    return header, data
