@@ -7,6 +7,9 @@ import json
 
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
     os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('infra1')
+cpu_ratio = 1
+ram_ratio = 1
+disk_ratio = 1
 
 
 @pytest.mark.test_id('d7fc4ff0-432a-11e8-aca5-6a00035510c0')
@@ -51,6 +54,10 @@ def test_get_nova_allocation_ratios(host):
 @pytest.mark.jira('asc-157')
 def test_hypervisor_free(host):
     """Validate the resource levels for hypervisor"""
+
+    global cpu_ratio
+    global ram_ratio
+    global disk_ratio
 
     os_pre = ("lxc-attach -n $(lxc-ls -1 | grep utility | head -n 1) "
               "-- bash -c '. /root/openrc ; openstack ")
