@@ -12,7 +12,7 @@ testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
 def test_create_instance_from_image(host):
 
     # Create instance
-    image_name = 'CentOS 7'
+    image_name = 'Cirros-0.3.5'
     flavor = 'm1.tiny'
     network = 'PRIVATE_NET'
     instance_name = 'test_instance_01'
@@ -29,7 +29,7 @@ def test_create_instance_from_image(host):
 
     data_snapshot = {
         "instance_name": new_instance_name,
-        "from_source": 'snapshot',
+        "from_source": 'image',
         "source_name": snapshot_name,
         "flavor": flavor,
         "network_name": network,
@@ -39,21 +39,24 @@ def test_create_instance_from_image(host):
     utils.verify_if_exist('server', instance_name, host)
 
     # Shutdown the newly created instance
-    utils.shut_it_off('server', instance_name, host)
+    utils.stop_server_instance('server', instance_name, host)
 
     # Verify that the instance is shutdown
-    assert ("SHUTOFF" == utils.get_status_by_name('server', instance_name, host))
+    utils.get_expected_status('server', instance_name, "SHUTOFF", 20, host)
 
     # Create snapshot from newly created/shutdown instance
     utils.create_snapshot_from_instance(snapshot_name, instance_name, host)
 
     # Verify the snapshot is successfully created:
-    assert ("available" == utils.get_status_by_name('volume', snapshot_name, host))
+    utils.verify_if_exist('image', snapshot_name, host)
 
     # Boot new instance using the newly created snapshot:
     utils.create_instance(data_snapshot, host)
 
+    # Verify the new instance is successfully booted using the snapshot
+    utils.get_expected_status('server', new_instance_name, "ACTIVE", 20, host)
+
     # Tear down:
     utils.delete_instance(instance_name, host)
-    utils.shut_it_off('server', new_instance_name, host)
+    utils.stop_server_instance('server', new_instance_name, host)
     utils.delete_instance(new_instance_name, host)
