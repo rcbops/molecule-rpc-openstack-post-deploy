@@ -52,9 +52,9 @@ def verify_asset_in_list(service_type, service_name, run_on_host):
     assert service_name in output.stdout
 
 
-def stop_server_instance(service_type, service_name, run_on_host):
-    service_id = get_id_by_name(service_type, service_name, run_on_host)
-    cmd = ". /root/openrc ; openstack {} stop {}".format(service_type, service_id)
+def stop_server_instance(instance_name, run_on_host):
+    instance_id = get_id_by_name('server', instance_name, run_on_host)
+    cmd = ". /root/openrc ; openstack server stop {}".format(instance_id)
     run_on_host.run_expect([0], cmd)
 
 
