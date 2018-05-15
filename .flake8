@@ -1,3 +1,4 @@
 [flake8]
 ignore = E501
 pytest_mark1 = name=test_id,value_match=uuid
+pytest_mark2 = name=jira,regex_match=[a-zA-Z]+-\d+
