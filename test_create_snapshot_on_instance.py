@@ -36,27 +36,28 @@ def test_create_instance_from_image(host):
     }
 
     utils.create_instance(data_image, host)
-    utils.verify_if_exist('server', instance_name, host)
+    utils.verify_asset_in_list('server', instance_name, host)
 
     # Shutdown the newly created instance
     utils.stop_server_instance('server', instance_name, host)
 
     # Verify that the instance is shutdown
-    utils.get_expected_status('server', instance_name, "SHUTOFF", 20, host)
+    utils.get_expected_status('server', instance_name, "SHUTOFF", host, retries=20)
 
     # Create snapshot from newly created/shutdown instance
     utils.create_snapshot_from_instance(snapshot_name, instance_name, host)
 
     # Verify the snapshot is successfully created:
-    utils.verify_if_exist('image', snapshot_name, host)
+    utils.verify_asset_in_list('image', snapshot_name, host)
 
     # Boot new instance using the newly created snapshot:
     utils.create_instance(data_snapshot, host)
 
     # Verify the new instance is successfully booted using the snapshot
-    utils.get_expected_status('server', new_instance_name, "ACTIVE", 20, host)
+    utils.get_expected_status('server', new_instance_name, "ACTIVE", host, retries=20)
 
     # Tear down:
-    utils.delete_instance(instance_name, host)
+    utils.delete_it('server', instance_name, host)
     utils.stop_server_instance('server', new_instance_name, host)
-    utils.delete_instance(new_instance_name, host)
+    utils.delete_it('server', new_instance_name, host)
+    utils.delete_it('image', snapshot_name, host)
