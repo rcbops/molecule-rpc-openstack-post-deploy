@@ -41,7 +41,7 @@ def verify_volume(volume_name, run_on_host):
 def delete_volume(volume_name, run_on_host):
     """Delete volume"""
     volume_id = get_volume_id(volume_name, run_on_host)
-    cmd = ". /root/openrc ; openstack volume delete --purge " + volume_id
+    cmd = ". /root/openrc ; openstack volume delete --purge {}".format(volume_id)
     output = run_on_host.run(cmd)
     assert volume_name not in output.stdout
 
