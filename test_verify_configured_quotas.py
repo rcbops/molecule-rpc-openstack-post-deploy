@@ -10,9 +10,10 @@ RPC 10+ manual test 8
 """
 
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
-    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('nova_compute')[:1]
+    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('os-infra_hosts')[:1]
 
-pre_cmd = "bash -c \"source /root/openrc; "
+utility_container = ("lxc-attach -n $(lxc-ls -1 | grep utility | head -n 1) "
+                     "-- bash -c '. /root/openrc ; ")
 tenant = 'service'
 
 
@@ -59,14 +60,13 @@ def test_update_quotas_2nd_time_using_name(host):
 
 def update_quotas(run_on_host, name, instances, cores, ram):
     """Update quote using openstack cli 'openstack quota set'"""
-    cmd = pre_cmd + "openstack quota set --instances " + str(instances) + \
-        " --cores " + str(cores) + " --ram " + str(ram) + " " + name + "\""
+    cmd = "{} openstack quota set --instances {} --cores {} --ram {} {}'".format(utility_container, instances, cores, ram, name)
     run_on_host.run_expect([0], cmd)
 
 
 def verify_updated_quotas(run_on_host, name, instances, cores, ram):
     """Verify updated quotas using openstack cli 'openstack quota show <PROJECT_NAME|PROJECT_ID>'"""
-    cmd = pre_cmd + "openstack quota show " + name + "\""
+    cmd = "{} openstack quota show {}'".format(utility_container, name)
     output = run_on_host.run(cmd)
     assert get_quota('instances', output.stdout) == instances
     assert get_quota('cores', output.stdout) == cores
@@ -75,7 +75,7 @@ def verify_updated_quotas(run_on_host, name, instances, cores, ram):
 
 def get_tenant_id(tenant_name, run_on_host):
     """Get tenant id associated with tenant name"""
-    cmd = pre_cmd + "openstack project list | grep " + tenant_name + "\""
+    cmd = "{} openstack project list | grep {}'".format(utility_container, tenant_name)
     output = run_on_host.run(cmd)
     result = re.search(r'(?<=\s)[a-zA-Z0-9]+(?=\s)', output.stdout)
     return result.group(0)
