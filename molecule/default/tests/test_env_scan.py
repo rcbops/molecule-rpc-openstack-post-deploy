@@ -46,7 +46,6 @@ def test_users(host):
     assert "keystone" in user_names
     assert "neutron" in user_names
     assert "nova" in user_names
-    assert "placement" in user_names
     assert "swift" in user_names
 
 
