@@ -3,7 +3,10 @@ import pytest
 import testinfra.utils.ansible_runner
 
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
-    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('nova_compute')[:1]
+    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('os-infra_hosts')[:1]
+
+utility_container = ("lxc-attach -n $(lxc-ls -1 | grep utility | head -n 1) "
+                     "-- bash -c '. /root/openrc ; ")
 
 
 @pytest.mark.test_id('d7fc5630-432a-11e8-b9da-6a00035510c0')
@@ -14,8 +17,6 @@ def test_cinder_service(host):
     Args:
         host(testinfra.host.Host): A hostname in dynamic_inventory.json/molecule.yml
     """
-    # fail test immediately if no cinder client on the host
-    assert host.exists("cinder")
-    cmd = "sudo bash -c \"source /root/openrc; cinder service-list\""
+    cmd = "{} cinder service-list'".format(utility_container)
     output = host.run(cmd)
     assert ("cinder-volume" in output.stdout)

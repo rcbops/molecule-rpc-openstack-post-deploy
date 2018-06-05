@@ -4,7 +4,7 @@ import pytest
 import testinfra.utils.ansible_runner
 
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
-    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('nova_compute')[:1]
+    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('os-infra_hosts')[:1]
 
 
 @pytest.mark.test_id('3c469966-4fcb-11e8-a604-6a0003552100')
