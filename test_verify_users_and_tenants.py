@@ -15,16 +15,17 @@ RPC 10+ manual test 7
 """
 
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
-    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('nova_compute')[:1]
+    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('os-infra_hosts')[:1]
 
-pre_cmd = "bash -c \"source /root/openrc; "
+utility_container = ("lxc-attach -n $(lxc-ls -1 | grep utility | head -n 1) "
+                     "-- bash -c '. /root/openrc ; ")
 
 
 @pytest.mark.test_id('43e5ef8c-4335-11e8-9995-6a00035510c0')
 @pytest.mark.jira('asc-236')
 def test_keystone_users(host):
     """Verify the requested users were created"""
-    cmd = pre_cmd + "openstack user list --domain=default\""
+    cmd = "{} openstack user list --domain=default'".format(utility_container)
     output = host.run(cmd)
     assert ("cinder" in output.stdout)
     assert ("glance" in output.stdout)
@@ -38,6 +39,6 @@ def test_keystone_users(host):
 @pytest.mark.jira('asc-236')
 def test_keystone_tenants(host):
     """Verify the service tenant was created """
-    cmd = pre_cmd + "openstack project list\""
+    cmd = "{} openstack project list'".format(utility_container)
     output = host.run(cmd)
     assert ("service" in output.stdout)
