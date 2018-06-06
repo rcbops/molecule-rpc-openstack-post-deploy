@@ -1,5 +1,6 @@
 ---
 # tasks file for molecule-rpc-openstack-post-deploy
+- import_tasks: support_key.yml
 - name: Install "openvswitch-switch" package
   apt:
      name: openvswitch-switch

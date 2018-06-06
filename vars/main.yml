@@ -1,2 +1,3 @@
 ---
 # vars file for molecule-rpc-openstack-post-deploy
+ops_pip_venv_enabled: false
