@@ -26,7 +26,7 @@ def create_bootable_volume(data, run_on_host):
     imageRef = data['volume']['imageRef']
     volume_name = data['volume']['name']
 
-    cmd = "{} openstack volume create --size {} --image {} --multi-attach --bootable {}'".format(utility_container, volume_size, imageRef, volume_name)
+    cmd = "{} openstack volume create --size {} --image {} --availability-zone nova --bootable {}'".format(utility_container, volume_size, imageRef, volume_name)
 
     output = run_on_host.run(cmd)
     print ("\n----------- Create_bootable volume output: ----------\n")
