@@ -42,7 +42,7 @@ def create_instance(data, run_on_host):
     network_id = get_id_by_name('network', str(data['network_name']), run_on_host)
     instance_name = data['instance_name']
 
-    cmd = "{} openstack server create --{} {} --flavor {} --network {} {}'".format(utility_container, from_source, source_id, flavor, network_id, instance_name)
+    cmd = "{} openstack server create --{} {} --flavor {} --nic net-id={} {} --wait'".format(utility_container, from_source, source_id, flavor, network_id, instance_name)
 
     run_on_host.run_expect([0], cmd)
 
@@ -56,6 +56,7 @@ def verify_asset_in_list(service_type, service_name, run_on_host):
 
 def stop_server_instance(instance_name, run_on_host):
     instance_id = get_id_by_name('server', instance_name, run_on_host)
+
     cmd = "{} openstack server stop {}'".format(utility_container, instance_id)
     run_on_host.run_expect([0], cmd)
 
