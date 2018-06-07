@@ -25,13 +25,10 @@ def create_bootable_volume(data, run_on_host):
     volume_size = data['volume']['size']
     imageRef = data['volume']['imageRef']
     volume_name = data['volume']['name']
+    zone = data['volume']['zone']
 
-    cmd = "{} openstack volume create --size {} --image {} --availability-zone nova --bootable {}'".format(utility_container, volume_size, imageRef, volume_name)
-
-    output = run_on_host.run(cmd)
-    print ("\n----------- Create_bootable volume output: ----------\n")
-    print output.stdout
-    print("\n---- End of create bootable volume output -------\n")
+    cmd = "{} openstack volume create --size {} --image {} --availability-zone {} --bootable {}'".format(utility_container, volume_size, imageRef, zone, volume_name)
+    run_on_host.run_expect([0], cmd)
 
 
 def verify_volume(volume_name, run_on_host):

@@ -20,13 +20,14 @@ def test_create_bootable_volume(host):
     false = False
     volume_name = 'test_volume'
     image_name = 'Cirros-0.3.5'
+    zone = 'nova'
 
     image_id = utils.get_image_id(image_name, host)
 
     data = {
         "volume": {
-            "size": 3,
-            "availability_zone": null,
+            "size": 1,
+            "availability_zone": zone,
             "source_volid": null,
             "description": null,
             "multiattach": false,
