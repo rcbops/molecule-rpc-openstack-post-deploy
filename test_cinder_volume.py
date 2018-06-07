@@ -1,7 +1,7 @@
 import os
 import pytest
 import testinfra.utils.ansible_runner
-import json
+import utils
 
 """ASC-256: Verify Cinder volume creation.
 
@@ -24,12 +24,8 @@ def test_cinder_volume_created(host):
 
     # Create a test volume
     test_volume_name = "test_volume_compute1"
-    cmd1 = "{} openstack volume create --size 1 --availability-zone nova {}'".format(utility_container, test_volume_name)
-    host.run_expect([0], cmd1)
+    cmd = "{} openstack volume create --size 1 --availability-zone nova {}'".format(utility_container, test_volume_name)
+    host.run_expect([0], cmd)
 
     # Verify the volume is created
-    cmd2 = "{} openstack volume list -f json'".format(utility_container)
-    res = host.run(cmd2)
-    volumes = json.loads(res.stdout)
-    volume_names = [d['Name'] for d in volumes]
-    assert test_volume_name in volume_names
+    utils.verify_volume(test_volume_name, host)
