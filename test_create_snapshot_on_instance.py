@@ -38,6 +38,9 @@ def test_create_instance_from_image(host):
     utils.create_instance(data_image, host)
     utils.verify_asset_in_list('server', instance_name, host)
 
+    # Verify the new instance is ACTIVE.
+    utils.get_expected_status('server', instance_name, "ACTIVE", host)
+
     # Shutdown the newly created instance
     utils.stop_server_instance(instance_name, host)
 
