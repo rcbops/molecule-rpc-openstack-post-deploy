@@ -27,7 +27,7 @@ def test_create_bootable_volume(host):
     data = {
         "volume": {
             "size": 1,
-            "availability_zone": zone,
+            "zone": zone,
             "source_volid": null,
             "description": null,
             "multiattach": false,
