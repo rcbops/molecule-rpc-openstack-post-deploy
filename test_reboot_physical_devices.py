@@ -20,7 +20,5 @@ testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
 @pytest.mark.test_id('2e1fa570-6827-11e8-a634-9cdc71d6c128')
 @pytest.mark.jira('asc-233')
 @pytest.mark.skip(reason='will be implemented with ticket ASC-233')
-@pytest.mark.testinfra_hosts(testinfra.utils.ansible_runner.AnsibleRunner(
-    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('haproxy')[:1])
 def test_verify_galera_cluster(host):
-    """This test will be implemented with ticket ASC-233"""
+    """Verify the galera cluster survived after the reboot"""
