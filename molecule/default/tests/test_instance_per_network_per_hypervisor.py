@@ -54,6 +54,7 @@ def test_hypervisor_vms(host):
     cmd = "{} image list -f json {}".format(os_pre, os_post)
     res = host.run(cmd)
     images = json.loads(res.stdout)
+    assert len(images) > 0
     filtered_images = list(filter(lambda d: 'buntu' in d['Name'], images))
     assert len(filtered_images) > 0
     image = filtered_images[-1]
