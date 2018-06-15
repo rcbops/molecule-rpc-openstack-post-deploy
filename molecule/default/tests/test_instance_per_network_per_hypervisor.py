@@ -43,7 +43,6 @@ def create_flavor_on(target_host, flavor):
                                                     os_post))
 
 
-@pytest.mark.skip(reason='ASC-639 No Ubuntu images in image list on Newton')
 @pytest.mark.test_id('c3002bde-59f1-11e8-be3b-6c96cfdb252f')
 @pytest.mark.jira('ASC-241')
 def test_hypervisor_vms(host):
