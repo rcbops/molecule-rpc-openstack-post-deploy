@@ -1,4 +1,67 @@
 ---
+- name: Create venv base directory
+  file:
+    dest: "{{ ops_venv |dirname }}"
+    owner: "root"
+    group: "root"
+    mode: "0755"
+    state: "directory"
+  when: ops_pip_venv_enabled |bool
+  tags:
+   - always
+
+- name: Install requires pip packages
+  pip:
+    name: "{{ ops_requires_pip_packages | join(' ') }}"
+    state: latest
+    extra_args: >-
+      {{ (pip_install_upper_constraints is defined) | ternary('--constraint ' + pip_install_upper_constraints | default(''),'') }}
+      {{ pip_install_options | default('') }}
+  register: install_packages
+  until: install_packages|success
+  retries: 2
+  delay: 2
+  tags:
+    - always
+
+- name: Install pip dependencies
+  pip:
+    name: "{{ item }}"
+    extra_args: "{{ pip_install_options|default('') }}"
+    virtualenv: "{{ ops_venv }}"
+  with_items: "{{ ops_pip_dependencies }}"
+  when: ops_pip_dependencies is defined
+  register: pip_install
+  until: pip_install|success
+  retries: 2
+  tags:
+    - always
+
+- name: Install packages required for RPC support
+  apt:
+    pkg: "{{ item }}"
+    state: present
+    update_cache: yes
+    cache_valid_time: 600
+    force: yes
+  with_items: "{{ ops_apt_util_packages }}"
+  when:
+    - ansible_os_family == 'Debian'
+  register: support_package_installs
+  until: support_package_installs|success
+  retries: 2
+  delay: 10
+
+- name: Install host packages required for RPC support
+  apt:
+    pkg: "{{ item }}"
+    state: present
+    update_cache: yes
+    cache_valid_time: 600
+  with_items: "{{ ops_apt_host_packages }}"
+  when:
+    - ansible_virtualization_role == 'host'
+    - ansible_os_family == 'Debian'
 - name: Check for key file
   stat:
     path: /root/.ssh/rpc_support
@@ -60,5 +123,3 @@
   retries: 2
   delay: 10
   when: nova_support_key_delete|changed or nova_support_key.rc == 1
-  vars_files:
-    - "vars/main.yml"

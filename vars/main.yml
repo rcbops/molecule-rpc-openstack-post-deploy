@@ -1,3 +1,31 @@
 ---
 # vars file for molecule-rpc-openstack-post-deploy
-ops_pip_venv_enabled: false
+r: "{{ 9999 | random }}"
+ops_pip_venv_enabled: true
+ops_requires_pip_packages:
+  - virtualenv
+ops_pip_dependencies:
+  - python-openstackclient
+  - python-neutronclient
+ops_apt_util_packages:
+  - bash-completion
+  - bridge-utils
+  - curl
+  - dstat
+  - htop
+  - iotop
+  - iptables-persistent
+  - lsof
+  - openssh-server
+  - sudo
+  - tcpdump
+  - vim
+  - screen
+ops_apt_host_packages:
+  - linux-crashdump
+  - debootstrap
+  - lvm2
+  - ntp
+  - ntpdate
+  - vlan
+ops_venv: "/openstack/venvs/rcbops-{{ r }}"
