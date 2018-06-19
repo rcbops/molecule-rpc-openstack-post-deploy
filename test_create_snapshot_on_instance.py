@@ -51,7 +51,7 @@ def test_create_instance_from_image(host):
     utils.create_snapshot_from_instance(snapshot_name, instance_name, host)
 
     # Verify the snapshot is successfully created:
-    utils.verify_asset_in_list('image', snapshot_name, host)
+    utils.get_expected_status('image', snapshot_name, 'active', host)
 
     # Boot new instance using the newly created snapshot:
     utils.create_instance(data_snapshot, host)
