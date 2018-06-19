@@ -42,9 +42,10 @@ def create_instance(data, run_on_host):
     network_id = get_id_by_name('network', str(data['network_name']), run_on_host)
     instance_name = data['instance_name']
 
-    cmd = "{} openstack server create --{} {} --flavor {} --nic net-id={} {} --wait'".format(utility_container, from_source, source_id, flavor, network_id, instance_name)
+    cmd = "{} openstack server create --{} {} --flavor {} --nic net-id={} {}'".format(utility_container, from_source, source_id, flavor, network_id, instance_name)
 
     run_on_host.run_expect([0], cmd)
+    sleep(10)
 
 
 def verify_asset_in_list(service_type, service_name, run_on_host):
@@ -92,9 +93,10 @@ def get_expected_status(service_type, service_name, expected_status, run_on_host
 def create_snapshot_from_instance(snapshot_name, instance_name, run_on_host):
     """Create snapshot on an instance"""
     instance_id = get_id_by_name('server', instance_name, run_on_host)
-    cmd = "{} openstack server image create --name {} --wait {}'".format(utility_container, snapshot_name, instance_id)
+    cmd = "{} openstack server image create --name {} {}'".format(utility_container, snapshot_name, instance_id)
 
     run_on_host.run_expect([0], cmd)
+    sleep(10)
 
 
 def delete_it(service_type, service_name, run_on_host):
