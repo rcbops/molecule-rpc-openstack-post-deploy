@@ -1,0 +1,20 @@
+- name: Download system image file
+  get_url:
+    url: "{{ item.url }}"
+    dest: "/var/lib/lxc/{{ utility_container.stdout }}/rootfs/tmp/os_image_{{ item.name }}"
+    timeout: 600   # big files might take a while to download
+
+- name: Install system image
+  shell: |
+    lxc-attach -n {{ utility_container.stdout }} \
+    -- bash -c '. /root/openrc ; \
+    openstack image create \
+    --public \
+    --disk-format "{{ item.format }}" \
+    --file "/tmp/os_image_{{ item.name }}" \
+    "{{ item.name }}"'
+
+- name: Clean up temp file
+  file:
+    path: "/var/lib/lxc/{{ utility_container.stdout }}/rootfs/tmp/os_image_{{ item.name }}"
+    state: absent

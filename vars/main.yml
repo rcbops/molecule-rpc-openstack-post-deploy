@@ -1,12 +1,5 @@
 ---
 # vars file for molecule-rpc-openstack-post-deploy
-r: "{{ 9999 | random }}"
-ops_pip_venv_enabled: true
-ops_requires_pip_packages:
-  - virtualenv
-ops_pip_dependencies:
-  - python-openstackclient
-  - python-neutronclient
 ops_apt_util_packages:
   - bash-completion
   - bridge-utils
@@ -28,4 +21,7 @@ ops_apt_host_packages:
   - ntp
   - ntpdate
   - vlan
-ops_venv: "/openstack/venvs/rcbops-{{ r }}"
+images:
+  - name: Ubuntu 16.04
+    format: qcow2
+    url: http://uec-images.ubuntu.com/releases/16.04/release/ubuntu-16.04-server-cloudimg-amd64-disk1.img
