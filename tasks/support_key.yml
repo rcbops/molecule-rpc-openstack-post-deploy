@@ -1,41 +1,8 @@
 ---
-- name: Create venv base directory
-  file:
-    dest: "{{ ops_venv |dirname }}"
-    owner: "root"
-    group: "root"
-    mode: "0755"
-    state: "directory"
-  when: ops_pip_venv_enabled |bool
-  tags:
-   - always
-
-- name: Install requires pip packages
-  pip:
-    name: "{{ ops_requires_pip_packages | join(' ') }}"
-    state: latest
-    extra_args: >-
-      {{ (pip_install_upper_constraints is defined) | ternary('--constraint ' + pip_install_upper_constraints | default(''),'') }}
-      {{ pip_install_options | default('') }}
-  register: install_packages
-  until: install_packages|success
-  retries: 2
-  delay: 2
-  tags:
-    - always
-
-- name: Install pip dependencies
-  pip:
-    name: "{{ item }}"
-    extra_args: "{{ pip_install_options|default('') }}"
-    virtualenv: "{{ ops_venv }}"
-  with_items: "{{ ops_pip_dependencies }}"
-  when: ops_pip_dependencies is defined
-  register: pip_install
-  until: pip_install|success
-  retries: 2
-  tags:
-    - always
+- name: Register utility contaier
+  shell: |
+    lxc-ls -1 | grep utility | head -n 1
+  register: utility_container
 
 - name: Install packages required for RPC support
   apt:
@@ -97,18 +64,31 @@
   failed_when: false
   when: support_key_check.stat.exists |bool or support_key_create|changed
 
+- name: Distribute support SSH key for cluster operations
+  copy:
+    dest: "{{ item.dest }}"
+    content: "{{ item.content }}"
+    owner: "root"
+    group: "root"
+    mode: "0600"
+  with_items:
+    - dest: "/var/lib/lxc/{{ utility_container.stdout }}/rootfs/root/.ssh/rpc_support"
+      content: "{{ support_key.content | b64decode }}"
+    - dest: "/var/lib/lxc/{{ utility_container.stdout }}/rootfs/root/.ssh/rpc_support.pub"
+      content: "{{ support_pub_key.content | b64decode }}"
+  when:
+    - support_pub_key.content |default('') |length > 64
+
 - name: Check for support keypair in nova
   shell: |
-    . /root/openrc
-    {{ ops_pip_venv_enabled | bool | ternary(ops_venv, omit) }}/bin/nova keypair-list | grep rpc_support
+    lxc-attach -n {{ utility_container.stdout }} -- bash -c '. /root/openrc ; nova keypair-list | grep rpc_support'
   register: nova_support_key
   changed_when: false
   failed_when: false
 
 - name: Delete support keypair in nova
   shell: |
-    . /root/openrc
-    {{ ops_pip_venv_enabled | bool | ternary(ops_venv, omit) }}/bin/nova keypair-delete rpc_support
+    lxc-attach -n {{ utility_container.stdout }} -- bash -c '. /root/openrc ; nova keypair-delete rpc_support'
   register: nova_support_key_delete
   changed_when: nova_support_key_delete.rc == 0
   failed_when: false
@@ -118,8 +98,7 @@
 
 - name: Add support key to nova
   shell: |
-    . /root/openrc
-    {{ ops_pip_venv_enabled | bool | ternary(ops_venv, omit) }}/bin/nova keypair-add --pub-key /root/.ssh/rpc_support.pub rpc_support
+    lxc-attach -n {{ utility_container.stdout }} -- bash -c '. /root/openrc ; nova keypair-add --pub-key /root/.ssh/rpc_support.pub rpc_support'
   retries: 2
   delay: 10
   when: nova_support_key_delete|changed or nova_support_key.rc == 1
