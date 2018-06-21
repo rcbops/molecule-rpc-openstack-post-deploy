@@ -1,12 +1,15 @@
 import json
+import uuid
+import utils
+from time import sleep
 
 utility_container = ("lxc-attach -n $(lxc-ls -1 | grep utility | head -n 1) "
                      "-- bash -c '. /root/openrc ; ")
 
 
-def get_image_id(image_name, run_on_host):
-    """Get image id associated with image name"""
-    cmd = "{} openstack image show {} -f json'".format(utility_container, image_name)
+def get_id_by_name(service_type, service_name, run_on_host):
+    """Get the id associated with name"""
+    cmd = "{} openstack {} show \'{}\' -f json'".format(utility_container, service_type, service_name)
     output = run_on_host.run(cmd)
     try:
         result = json.loads(output.stdout)
@@ -31,34 +34,19 @@ def create_bootable_volume(data, run_on_host):
     run_on_host.run_expect([0], cmd)
 
 
-def verify_volume(volume_name, run_on_host):
+def openstack_name_list(name, run_on_host):
     """Verify if a volume is existing"""
-    cmd = "{} openstack volume list'".format(utility_container)
+    cmd = "{} openstack {} list'".format(utility_container, name)
     output = run_on_host.run(cmd)
-    assert volume_name in output.stdout
+    return output.stdout
 
 
 def delete_volume(volume_name, run_on_host):
     """Delete volume"""
-    volume_id = get_volume_id(volume_name, run_on_host)
+    volume_id = utils.get_id_by_name('volume', volume_name, run_on_host)
     cmd = "{} openstack volume delete --purge {}'".format(utility_container, volume_id)
     output = run_on_host.run(cmd)
     assert volume_name not in output.stdout
-
-
-def get_volume_id(volume_name, run_on_host):
-    """Get volume id associated with volume name"""
-    cmd = "{} openstack volume show {} -f json'".format(utility_container, volume_name)
-    output = run_on_host.run(cmd)
-    try:
-        result = json.loads(output.stdout)
-    except ValueError:
-        return
-
-    if 'id' in result:
-        return result['id']
-    else:
-        return
 
 
 def parse_table(ascii_table):
@@ -75,3 +63,37 @@ def parse_table(ascii_table):
         for i in range(len(splitted_line)):
             data[-1][i] = splitted_line[i]
     return header, data
+
+
+def generate_random_string(string_length=10):
+    """Returns a random string of length string_length."""
+    random_str = str(uuid.uuid4())
+    random_str = random_str.upper()
+    random_str = random_str.replace("-", "")
+    return random_str[0:string_length]  # Return the random_str string.
+
+
+def get_expected_value(service_type, service_name, key, expected_value, run_on_host, retries=10):
+    """Getting an expected status after retries"""
+    for i in range(0, retries):
+        cmd = "{} openstack {} show \'{}\' -f json'".format(utility_container, service_type, service_name)
+        output = run_on_host.run(cmd)
+        result = json.loads(output.stdout)
+
+        if key in result:
+            if result[key] == expected_value:
+                return True
+            else:
+                sleep(6)
+        else:
+            return False
+
+    return False
+
+
+def delete_instance(instance_name, run_on_host):
+    """Delete instance"""
+    instance_id = utils.get_id_by_name('server', instance_name, run_on_host)
+    cmd = "{} openstack server delete {}'".format(utility_container, instance_id)
+    output = run_on_host.run(cmd)
+    assert instance_name not in output.stdout
