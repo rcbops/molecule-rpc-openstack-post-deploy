@@ -8,6 +8,7 @@ testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
 
 
 @pytest.mark.test_id('26aa7902-53da-11e8-96e0-6a0003552100')
+@pytest.mark.skip(reason='Skip until ASC-659 is resolved')
 @pytest.mark.jira('asc-259')
 def test_create_instance_from_image(host):
 
