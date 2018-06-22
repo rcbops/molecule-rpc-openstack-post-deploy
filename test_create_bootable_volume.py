@@ -22,7 +22,7 @@ def test_create_bootable_volume(host):
     image_name = 'Cirros-0.3.5'
     zone = 'nova'
 
-    image_id = utils.get_image_id(image_name, host)
+    image_id = utils.get_id_by_name('image', image_name, host)
 
     data = {
         "volume": {
@@ -43,7 +43,7 @@ def test_create_bootable_volume(host):
 
     utils.create_bootable_volume(data, host)
 
-    utils.verify_volume(volume_name, host)
+    assert volume_name in utils.openstack_name_list('volume', host)
 
     # Tear down
     utils.delete_volume(volume_name, host)

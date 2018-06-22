@@ -23,9 +23,13 @@ def test_cinder_volume_created(host):
     """Verify cinder volume can be created"""
 
     # Create a test volume
-    test_volume_name = "test_volume_compute1"
-    cmd = "{} openstack volume create --size 1 --availability-zone nova {}'".format(utility_container, test_volume_name)
+    random_str = utils.generate_random_string(4)
+    volume_name = "test_volume_{}".format(random_str)
+    cmd = "{} openstack volume create --size 1 --availability-zone nova {}'".format(utility_container, volume_name)
     host.run_expect([0], cmd)
 
     # Verify the volume is created
-    utils.verify_volume(test_volume_name, host)
+    assert volume_name in utils.openstack_name_list('volume', host)
+
+    # Tear down
+    utils.delete_volume(volume_name, host)
