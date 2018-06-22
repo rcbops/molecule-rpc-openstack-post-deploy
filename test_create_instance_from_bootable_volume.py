@@ -48,9 +48,7 @@ def test_create_instance_from_bootable_volume(host):
     """
 
     volume_id = utils.get_id_by_name('volume', volume_name, host)
-    # Fail test if the image_id is None
-    if volume_id is None:
-        pytest.xfail("Image Id can not be None")
+    assert volume_id is not None
 
     network_id = utils.get_id_by_name('network', network_name, host)
     assert network_id is not None
