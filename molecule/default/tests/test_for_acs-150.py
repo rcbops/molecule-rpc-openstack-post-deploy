@@ -24,12 +24,6 @@ class TestForRPC10PlusPostDeploymentQCProcess(object):
     def test_verify_galera_cluster(self, host):
         """See RPC 10+ Post-Deployment QC process document"""
 
-    @pytest.mark.test_id('d7fc32ba-432a-11e8-81d4-6a00035510c0')
-    @pytest.mark.skip(reason='Need implementation')
-    @pytest.mark.jira('ASC-150')
-    def test_verify_rpc_version(self, host):
-        """See RPC 10+ Post-Deployment QC process document"""
-
     @pytest.mark.test_id('d7fc3423-432a-11e8-aaa8-6a00035510c0')
     @pytest.mark.skip(reason='Need implementation')
     @pytest.mark.jira('ASC-150')
