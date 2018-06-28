@@ -6,3 +6,4 @@
 - import_tasks: support_key.yml
 - include_tasks: image_setup.yml
 - include_tasks: flavor_setup.yml
+- include_tasks: server_setup.yml
