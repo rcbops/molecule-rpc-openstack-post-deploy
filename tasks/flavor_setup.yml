@@ -1,0 +1,9 @@
+- name: Create test flavor
+  shell: |
+    lxc-attach -n {{ utility_container.stdout }} \
+    -- bash -c '. /root/openrc ; \
+    openstack flavor create \
+    --ram 512 \
+    --disk 10 \
+    --vcpus 1 \
+    "{{ item.name }}"'
