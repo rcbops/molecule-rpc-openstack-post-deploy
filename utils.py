@@ -1,5 +1,7 @@
 import json
 from time import sleep
+import uuid
+import helpers
 
 utility_container = ("lxc-attach -n $(lxc-ls -1 | grep utility | head -n 1) "
                      "-- bash -c '. /root/openrc ; ")
@@ -52,7 +54,10 @@ def verify_asset_in_list(service_type, service_name, run_on_host):
     """Verify if a volume/server/image is existing"""
     cmd = "{} openstack {} list'".format(utility_container, service_type)
     output = run_on_host.run(cmd)
-    assert service_name in output.stdout
+    if service_name in output.stdout:
+        return True
+    else:
+        return False
 
 
 def stop_server_instance(instance_name, run_on_host):
@@ -60,34 +65,6 @@ def stop_server_instance(instance_name, run_on_host):
 
     cmd = "{} openstack server stop {}'".format(utility_container, instance_id)
     run_on_host.run_expect([0], cmd)
-
-
-def get_status_by_name(service_type, service_name, run_on_host):
-    """Getting status of a service"""
-    service_id = get_id_by_name(service_type, service_name, run_on_host)
-    cmd = "{} openstack {} show {} -f json'".format(utility_container, service_type, service_id)
-    output = run_on_host.run(cmd)
-    try:
-        result = json.loads(output.stdout)
-    except ValueError:
-        return
-
-    if 'status' in result:
-        return result['status']
-    else:
-        return
-
-
-def get_expected_status(service_type, service_name, expected_status, run_on_host, retries=10):
-    for i in range(0, retries):
-        while True:
-            try:
-                assert (expected_status == get_status_by_name(service_type, service_name, run_on_host))
-            except Exception:
-                print ("\n Trying again in 5 seconds.....\n")
-                sleep(5)
-                continue
-            break
 
 
 def create_snapshot_from_instance(snapshot_name, instance_name, run_on_host):
@@ -104,3 +81,65 @@ def delete_it(service_type, service_name, run_on_host):
     cmd = "{} openstack {} delete {}'".format(utility_container, service_type, id)
 
     run_on_host.run_expect([0], cmd)
+
+    assert not verify_asset_in_list(service_type, service_name, run_on_host)
+
+
+def generate_random_string(string_length=10):
+    """Returns a random string of length string_length."""
+    random_str = str(uuid.uuid4())
+    random_str = random_str.upper()
+    random_str = random_str.replace("-", "")
+    return random_str[0:string_length]  # Return the random_str string.
+
+
+def get_expected_value(service_type, service_name, key, expected_value, run_on_host, retries=10):
+    """Getting an expected status after retries"""
+    for i in range(0, retries):
+        cmd = "{} openstack {} show \'{}\' -f json'".format(utility_container, service_type, service_name)
+        output = run_on_host.run(cmd)
+        result = json.loads(output.stdout)
+
+        if key in result:
+            if result[key] == expected_value:
+                return True
+            else:
+                sleep(6)
+        else:
+            return False
+
+    return False
+
+
+def create_floating_ip(network_name, run_on_host):
+    """Create floating IP and return the floating ip name """
+
+    network_id = helpers.get_id_by_name('network', network_name, run_on_host)
+    assert network_id is not None
+
+    cmd = "{} openstack floating ip create {} -f json'".format(utility_container, network_id)
+    output = run_on_host.run(cmd)
+
+    assert (output.rc == 0)
+
+    try:
+        result = json.loads(output.stdout)
+    except ValueError:
+        return
+
+    if 'name' in result:
+        return result['name']
+    else:
+        return
+
+
+def ping_ip_from_host(ip, run_on_host):
+    """Verify the IP address can be pinged from host"""
+
+    cmd = "{} ping -c1 {}'".format(utility_container, ip)
+    output = run_on_host.run(cmd)
+
+    if output.rc == 0:
+        return True
+    else:
+        return False
