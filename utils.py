@@ -1,7 +1,6 @@
 import json
 from time import sleep
 import uuid
-import helpers
 
 utility_container = ("lxc-attach -n $(lxc-ls -1 | grep utility | head -n 1) "
                      "-- bash -c '. /root/openrc ; ")
@@ -77,10 +76,11 @@ def create_snapshot_from_instance(snapshot_name, instance_name, run_on_host):
 
 
 def delete_it(service_type, service_name, run_on_host):
+    sleep(15)
     id = get_id_by_name(service_type, service_name, run_on_host)
     cmd = "{} openstack {} delete {}'".format(utility_container, service_type, id)
-
     run_on_host.run_expect([0], cmd)
+    sleep(20)
 
     assert not verify_asset_in_list(service_type, service_name, run_on_host)
 
@@ -114,7 +114,7 @@ def get_expected_value(service_type, service_name, key, expected_value, run_on_h
 def create_floating_ip(network_name, run_on_host):
     """Create floating IP and return the floating ip name """
 
-    network_id = helpers.get_id_by_name('network', network_name, run_on_host)
+    network_id = get_id_by_name('network', network_name, run_on_host)
     assert network_id is not None
 
     cmd = "{} openstack floating ip create {} -f json'".format(utility_container, network_id)
