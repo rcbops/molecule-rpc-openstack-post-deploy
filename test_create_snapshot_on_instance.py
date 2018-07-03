@@ -22,7 +22,7 @@ flavor = 'm1.tiny'
 @pytest.mark.jira('asc-259')
 @pytest.mark.skip(reason='WIP')
 @pytest.mark.run(order=4)
-def test_create_snapshot_on_an_instance(host):
+def test_create_snapshot_of_an_instance(host):
     """Create an instance and then create snapshot on it"""
 
     data_image = {
@@ -56,7 +56,7 @@ def test_create_snapshot_on_an_instance(host):
 @pytest.mark.jira('asc-691')
 @pytest.mark.skip(reason='WIP')
 @pytest.mark.run(order=5)
-def test_create_instance_on_snapshot(host):
+def test_create_instance_from_snapshot(host):
 
     data_snapshot = {
         "instance_name": new_instance_name,
