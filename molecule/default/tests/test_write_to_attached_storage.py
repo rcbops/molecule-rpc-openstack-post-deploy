@@ -22,6 +22,45 @@ ssh = "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
 key_name = 'rpc_support'
 
 
+# fresh helpers
+# TODO: move these to pytest-rpc
+def create_floating_ip(network_name, run_on_host):
+    cmd = "{} floating ip create \
+           -f json \
+           {} {}".format(os_pre, network_name, os_post)
+    res = run_on_host.run(cmd)
+
+    try:
+        floating_ip = json.loads(res.stdout)['floating_ip_address']
+    except (ValueError, KeyError):
+        return ''
+
+    return floating_ip
+
+
+def attach_floating_ip(server, floating_ip, run_on_host):
+    cmd = "{} server add floating ip  \
+           {} \
+           {} {}".format(os_pre, server, floating_ip, os_post)
+
+    try:
+        run_on_host.run_expect([0], cmd)
+    except AssertionError:
+        return False
+
+    return True
+
+
+def attach_volume_to_server(volume, server, run_on_host):
+    cmd = "{} server add volume  \
+           {} \
+           {} {}".format(os_pre, server, volume, os_post)
+    run_on_host.run(cmd)
+    return helpers.get_expected_value('volume', volume, 'status', 'in-use',
+                                      run_on_host)
+# End fresh helpers
+
+
 @pytest.mark.test_id('3d77bc35-7a21-11e8-90d1-6a00035510c0')
 @pytest.mark.jira('ASC-257')
 def test_volume_attached(host):
