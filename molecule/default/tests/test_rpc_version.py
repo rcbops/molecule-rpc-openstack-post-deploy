@@ -7,7 +7,7 @@ import pytest_rpc.helpers as helpers
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
     os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('os-infra_hosts')[:1]
 
-expected_codename, expected_major = helpers.get_version_tuple()
+expected_codename, expected_major = helpers.get_osa_version_tuple()
 
 
 @pytest.mark.test_id('2c596d8f-7957-11e8-8017-6a00035510c0')
