@@ -5,4 +5,6 @@
      name: openvswitch-switch
 - import_tasks: support_key.yml
 - include_tasks: image_setup.yml
-  with_items: "{{ images }}"
+- include_tasks: flavor_setup.yml
+- include_tasks: server_setup.yml
+- include_tasks: volume_setup.yml

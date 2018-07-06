@@ -1,8 +1,18 @@
+- name: Check for image in glance
+  shell: |
+    lxc-attach -n {{ utility_container.stdout }}  \
+    -- bash -c '. /root/openrc ; \
+    openstack image list | grep "{{ image.name }}"'
+  register: glance_image
+  changed_when: false
+  failed_when: false
+
 - name: Download system image file
   get_url:
-    url: "{{ item.url }}"
-    dest: "/var/lib/lxc/{{ utility_container.stdout }}/rootfs/tmp/os_image_{{ item.name }}"
+    url: "{{ image.url }}"
+    dest: "/var/lib/lxc/{{ utility_container.stdout }}/rootfs/tmp/os_image_{{ image.name }}"
     timeout: 600   # big files might take a while to download
+  when: glance_image.rc == 1
 
 - name: Install system image
   shell: |
@@ -10,11 +20,7 @@
     -- bash -c '. /root/openrc ; \
     openstack image create \
     --public \
-    --disk-format "{{ item.format }}" \
-    --file "/tmp/os_image_{{ item.name }}" \
-    "{{ item.name }}"'
-
-- name: Clean up temp file
-  file:
-    path: "/var/lib/lxc/{{ utility_container.stdout }}/rootfs/tmp/os_image_{{ item.name }}"
-    state: absent
+    --disk-format "{{ image.format }}" \
+    --file "/tmp/os_image_{{ image.name }}" \
+    "{{ image.name }}"'
+  when: glance_image.rc == 1
