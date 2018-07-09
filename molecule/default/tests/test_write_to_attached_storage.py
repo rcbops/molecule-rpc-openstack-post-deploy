@@ -56,8 +56,34 @@ def attach_volume_to_server(volume, server, run_on_host):
            {} \
            {} {}".format(os_pre, server, volume, os_post)
     run_on_host.run(cmd)
-    return helpers.get_expected_value('volume', volume, 'status', 'in-use',
-                                      run_on_host)
+    return _get_expected_value('volume', volume, 'status', 'in-use',
+                               run_on_host)
+
+
+# This method is modified from that of the one in pytest-rpc. It catches
+# ValueErrors that may arize if expected JSON is not returned during
+# execution.
+def _get_expected_value(service_type, service_name, key, expected_value,
+                        run_on_host, retries=10):
+    for i in range(0, retries):
+        sleep(i * 6)
+        cmd = "{} openstack {} show \'{}\' -f json'".format(helpers.utility_container,
+                                                            service_type,
+                                                            service_name)
+        output = run_on_host.run(cmd)
+        try:
+            result = json.loads(output.stdout)
+        except ValueError:
+            continue
+        if key in result:
+            if result[key] == expected_value:
+                return True
+            else:
+                continue
+        else:
+            return False
+
+    return False
 # End fresh helpers
 
 
