@@ -1,5 +1,5 @@
 ---
-- name: Register utility contaier
+- name: Register utility container
   shell: |
     lxc-ls -1 | grep utility | head -n 1
   register: utility_container
@@ -8,9 +8,9 @@
   apt:
     pkg: "{{ item }}"
     state: present
-    update_cache: yes
+    update_cache: true
     cache_valid_time: 600
-    force: yes
+    force: true
   with_items: "{{ ops_apt_util_packages }}"
   when:
     - ansible_os_family == 'Debian'
@@ -23,7 +23,7 @@
   apt:
     pkg: "{{ item }}"
     state: present
-    update_cache: yes
+    update_cache: true
     cache_valid_time: 600
   with_items: "{{ ops_apt_host_packages }}"
   when:
