@@ -1,4 +1,13 @@
 ---
+- name: Check for test router
+  shell: |
+    lxc-attach -n {{ utility_container.stdout }}  \
+    -- bash -c '. /root/openrc ; \
+    openstack router list | grep TEST-ROUTER'
+  register: test_router_instance
+  changed_when: false
+  failed_when: false
+
 - name: Check for test subnet
   shell: |
     lxc-attach -n {{ utility_container.stdout }}  \
@@ -7,6 +16,23 @@
   register: test_subnet_instance
   changed_when: false
   failed_when: false
+
+- name: Remove subnet from router
+  shell: |
+    lxc-attach -n {{ utility_container.stdout }} \
+    -- bash -c '. /root/openrc ; \
+    openstack router remove subnet TEST-ROUTER "{{ test_subnet }}"'
+  when:
+    - test_router_instance.rc == 0
+    - test_subnet_instance.rc == 0
+
+- name: Delete test router
+  shell: |
+    lxc-attach -n {{ utility_container.stdout }} \
+    -- bash -c '. /root/openrc ; \
+    openstack router delete \
+    TEST-ROUTER'
+  when: test_router_instance.rc == 0
 
 - name: Delete test subnet
   shell: |
@@ -49,3 +75,24 @@
     --subnet-range 192.168.1.0/24 \
     --network "{{ test_network }}" \
     "{{ test_subnet }}"'
+
+- name: Create test router
+  shell: |
+    lxc-attach -n {{ utility_container.stdout }} \
+    -- bash -c '. /root/openrc ; \
+    openstack router create \
+    TEST-ROUTER'
+
+- name: Add subnet to router
+  shell: |
+    lxc-attach -n {{ utility_container.stdout }} \
+    -- bash -c '. /root/openrc ; \
+    openstack router add subnet TEST-ROUTER "{{ test_subnet }}"'
+
+- name: Set external gateway on router
+  # Note this will not work in production since the GATEWAY_NET network has
+  # not been created by this molecule.
+  shell: |
+    lxc-attach -n {{ utility_container.stdout }} \
+    -- bash -c '. /root/openrc ; \
+    openstack router set --external-gateway GATEWAY_NET TEST-ROUTER'
