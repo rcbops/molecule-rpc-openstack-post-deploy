@@ -4,6 +4,11 @@
     lxc-ls -1 | grep utility | head -n 1
   register: utility_container
 
+- name: Register neutron container
+  shell: |
+    lxc-ls -1 | egrep 'neutron(_|-)agents' | tail -1
+  register: neutron_container
+
 - name: Install packages required for RPC support
   apt:
     pkg: "{{ item }}"
@@ -75,6 +80,10 @@
     - dest: "/var/lib/lxc/{{ utility_container.stdout }}/rootfs/root/.ssh/rpc_support"
       content: "{{ support_key.content | b64decode }}"
     - dest: "/var/lib/lxc/{{ utility_container.stdout }}/rootfs/root/.ssh/rpc_support.pub"
+      content: "{{ support_pub_key.content | b64decode }}"
+    - dest: "/var/lib/lxc/{{ neutron_container.stdout }}/rootfs/root/.ssh/rpc_support"
+      content: "{{ support_key.content | b64decode }}"
+    - dest: "/var/lib/lxc/{{ neutron_container.stdout }}/rootfs/root/.ssh/rpc_support.pub"
       content: "{{ support_pub_key.content | b64decode }}"
   when:
     - support_pub_key.content |default('') |length > 64
