@@ -1,7 +1,8 @@
-import utils
+import pytest_rpc.helpers as helpers
 import os
 import pytest
 import testinfra.utils.ansible_runner
+from time import sleep
 
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
     os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('os-infra_hosts')[:1]
@@ -9,7 +10,7 @@ testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
 utility_container = ("lxc-attach -n $(lxc-ls -1 | grep utility | head -n 1) "
                      "-- bash -c '. /root/openrc ; ")
 
-random_str = utils.generate_random_string(5)
+random_str = helpers.generate_random_string(5)
 instance_name = "test_instance_01_{}".format(random_str)
 new_instance_name = "test_instance_02_{}".format(random_str)
 image_name = 'Cirros-0.3.5'
@@ -33,23 +34,21 @@ def test_create_snapshot_of_an_instance(host):
         "network_name": private_net,
     }
 
-    utils.create_instance(data_image, host)
-    assert (utils.verify_asset_in_list('server', instance_name, host))
+    helpers.create_instance(data_image, host)
 
     # Verify the new instance is ACTIVE.
-    assert (utils.get_expected_value('server', instance_name, 'status', 'ACTIVE', host))
+    assert (helpers.get_expected_value('server', instance_name, 'status', 'ACTIVE', host, 20))
 
-    # Shutdown the newly created instance
-    utils.stop_server_instance(instance_name, host)
-
-    # Verify that the instance is shutdown
-    assert (utils.get_expected_value('server', instance_name, 'status', 'SHUTOFF', host))
+    # TODO: will find out a better way to avoid implicit sleep. 'status' is 'ACTIVE' is not enough to ensure the
+    # TODO: instance is ready, there are many instance statuses that might cause the test failed.
+    # TODO: run `openstack server show <instance-ID> -f json` to see all the states
+    sleep(120)
 
     # Create snapshot from newly created/shutdown instance
-    utils.create_snapshot_from_instance(snapshot_name, instance_name, host)
+    helpers.create_snapshot_from_instance(snapshot_name, instance_name, host)
 
     # Verify the snapshot is successfully created:
-    assert (utils.get_expected_value('image', snapshot_name, 'status', 'active', host))
+    assert (helpers.get_expected_value('image', snapshot_name, 'status', 'active', host, 20))
 
 
 @pytest.mark.test_id('4ca28c34-7e24-11e8-a634-9cdc71d6c128')
@@ -67,10 +66,10 @@ def test_create_instance_from_snapshot(host):
     }
 
     # Boot new instance using the newly created snapshot:
-    utils.create_instance(data_snapshot, host)
+    helpers.create_instance(data_snapshot, host)
 
     # Verify the new instance is successfully booted using the snapshot
-    assert (utils.get_expected_value('server', new_instance_name, 'status', 'ACTIVE', host))
+    assert (helpers.get_expected_value('server', new_instance_name, 'status', 'ACTIVE', host, 20))
 
 
 @pytest.mark.test_id('48fff282-7e25-11e8-a634-9cdc71d6c128')
@@ -80,7 +79,6 @@ def test_create_instance_from_snapshot(host):
 def test_teardown(host):
     """tear down"""
 
-    utils.delete_it('server', instance_name, host)
-    utils.stop_server_instance(new_instance_name, host)
-    utils.delete_it('server', new_instance_name, host)
-    utils.delete_it('image', snapshot_name, host)
+    helpers.delete_it('server', instance_name, host)
+    helpers.delete_it('server', new_instance_name, host)
+    helpers.delete_it('image', snapshot_name, host)
