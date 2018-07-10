@@ -1,3 +1,4 @@
+---
 - name: Check for test volume
   shell: |
     lxc-attach -n {{ utility_container.stdout }}  \
@@ -24,7 +25,9 @@
     lxc-attach -n {{ utility_container.stdout }}  \
     -- bash -c '. /root/openrc ; \
     openstack volume delete "{{ test_volume }}"'
-  when: test_volume_status.stdout.strip().lower() == 'available'
+  when:
+    - test_volume_instance.rc == 0
+    - test_volume_status.stdout is defined and test_volume_status.stdout.strip().lower() == 'available'
 
 - name: Create test volume
   shell: |

@@ -1,3 +1,4 @@
+---
 - name: Check for image in glance
   shell: |
     lxc-attach -n {{ utility_container.stdout }}  \

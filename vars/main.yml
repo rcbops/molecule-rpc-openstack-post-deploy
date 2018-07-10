@@ -29,3 +29,5 @@ flavor:
   name: post-deploy
 test_server: post-deploy-server
 test_volume: post-deploy-volume
+test_network: TEST-VXLAN
+test_subnet: TEST-VXLAN-SUBNET

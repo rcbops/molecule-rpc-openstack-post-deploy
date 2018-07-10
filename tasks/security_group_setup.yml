@@ -1,0 +1,49 @@
+---
+- name: Check for rpc_support security group
+  shell: |
+    lxc-attach -n {{ utility_container.stdout }} \
+    -- bash -c '. /root/openrc ; \
+    openstack security group list | grep -w "rpc-support"'
+  register: rpc_support_sec_group
+  changed_when: false
+  failed_when: rpc_support_sec_group.rc not in [0, 1]
+
+- name: Create rpc_support security group
+  shell: |
+    lxc-attach -n {{ utility_container.stdout }} \
+    -- bash -c '. /root/openrc ; \
+    openstack security group create rpc-support'
+  register: sec_group_create
+  changed_when: sec_group_create.rc == 0
+  failed_when: sec_group_create.rc != 0
+  when: rpc_support_sec_group.rc != 0
+
+- name: Create rpc_support security group rules ports
+  shell: |
+    lxc-attach -n {{ utility_container.stdout }} \
+    -- bash -c '. /root/openrc ; \
+    openstack security group rule create \
+            --ingress \
+            --protocol tcp \
+            --dst-port {{ item }} \
+            --remote-ip 0.0.0.0/0 \
+            rpc-support'
+  register: sec_group_rules_ports
+  changed_when: sec_group_rules_ports.rc == 0
+  when: sec_group_create|changed
+  with_items:
+    - 22
+    - 3389
+
+- name: Create rpc_support security group rules icmp
+  shell: |
+    lxc-attach -n {{ utility_container.stdout }} \
+    -- bash -c '. /root/openrc ; \
+    openstack security group rule create \
+            --ingress \
+            --protocol icmp \
+            --remote-ip 0.0.0.0/0 \
+            rpc-support'
+  register: sec_group_rules_icmp
+  changed_when: sec_group_rules_icmp.rc == 0
+  when: sec_group_create|changed
