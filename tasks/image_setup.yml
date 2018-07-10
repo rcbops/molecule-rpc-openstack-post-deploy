@@ -25,3 +25,8 @@
     --file "/tmp/os_image_{{ image.name }}" \
     "{{ image.name }}"'
   when: glance_image.rc == 1
+
+- name: Clean up temp file
+  file:
+    path: "/var/lib/lxc/{{ utility_container.stdout }}/rootfs/tmp/os_image_{{ image.name }}"
+    state: absent
