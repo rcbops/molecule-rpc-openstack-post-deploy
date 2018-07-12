@@ -1,21 +1,4 @@
 ---
-- name: Check for servers
-  shell: |
-    lxc-attach -n {{ utility_container.stdout }}  \
-    -- bash -c '. /root/openrc ; \
-    openstack server list -c ID -f value'
-  register: server_instances
-  changed_when: false
-  failed_when: false
-
-- name: Delete all servers
-  shell: |
-    lxc-attach -n {{ utility_container.stdout }}  \
-    -- bash -c '. /root/openrc ; \
-    openstack server delete "{{ item }}"'
-  when: server_instances.rc == 0
-  with_items: "{{ server_instances.stdout_lines }}"
-
 - name: Create test server
   shell: |
     lxc-attach -n {{ utility_container.stdout }} \
