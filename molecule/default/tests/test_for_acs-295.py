@@ -12,12 +12,6 @@ class TestForRPC10PlusPostDeploymentQCProcessSwift(object):
      https://rpc-openstack.atlassian.net/browse/ASC-295
      """
 
-    @pytest.mark.test_id('d7fc480f-432a-11e8-937e-6a00035510c0')
-    @pytest.mark.skip(reason='Need implementation')
-    @pytest.mark.jira('ASC-295')
-    def test_object_ring_rebalanced(self, host):
-        """See RPC 10+ Post-Deployment QC process document"""
-
     @pytest.mark.test_id('d7fc49a8-432a-11e8-a2ea-6a00035510c0')
     @pytest.mark.skip(reason='Need implementation')
     @pytest.mark.jira('ASC-295')
