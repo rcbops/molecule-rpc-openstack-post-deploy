@@ -7,6 +7,7 @@
 - include_tasks: security_group_setup.yml
 - include_tasks: image_setup.yml
 - include_tasks: flavor_setup.yml
+- include_tasks: server_delete.yml
+- include_tasks: network_setup.yml
 - include_tasks: server_setup.yml
 - include_tasks: volume_setup.yml
-- include_tasks: network_setup.yml
