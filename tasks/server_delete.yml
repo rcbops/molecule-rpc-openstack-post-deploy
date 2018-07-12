@@ -15,5 +15,5 @@
     openstack server delete "{{ item }}"'
   when:
     - server_instances.rc == 0
-    - server_instances.stdout_lines not empty
+    - server_instances.stdout != ""
   with_items: "{{ server_instances.stdout_lines }}"
