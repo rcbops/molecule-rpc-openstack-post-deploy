@@ -39,7 +39,7 @@
     -- bash -c '. /root/openrc ; \
     openstack network create \
     -f json \
-    --shared \
+    --share \
     --external \
     --provider-network-type flat \
     --provider-physical-network flat \
