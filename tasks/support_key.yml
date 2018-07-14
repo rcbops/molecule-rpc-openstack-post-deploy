@@ -4,11 +4,6 @@
     lxc-ls -1 | grep utility | head -n 1
   register: utility_container
 
-- name: Register neutron container
-  shell: |
-    lxc-ls -1 | egrep 'neutron(_|-)agents' | tail -1
-  register: neutron_container
-
 - name: Install packages required for RPC support
   apt:
     pkg: "{{ item }}"
@@ -69,22 +64,29 @@
   failed_when: false
   when: support_key_check.stat.exists |bool or support_key_create|changed
 
-- name: Distribute support SSH key for cluster operations
+- name: Get container rootfs directory list
+  shell: "ls -1 -d /var/lib/lxc/*/rootfs"
+  register: container_rootfs_list
+
+- name: Distribute support SSH private key to containers
   copy:
-    dest: "{{ item.dest }}"
-    content: "{{ item.content }}"
+    dest: "{{ item }}/root/.ssh/rpc_support"
+    content: "{{ support_key.content | b64decode }}"
     owner: "root"
     group: "root"
     mode: "0600"
-  with_items:
-    - dest: "/var/lib/lxc/{{ utility_container.stdout }}/rootfs/root/.ssh/rpc_support"
-      content: "{{ support_key.content | b64decode }}"
-    - dest: "/var/lib/lxc/{{ utility_container.stdout }}/rootfs/root/.ssh/rpc_support.pub"
-      content: "{{ support_pub_key.content | b64decode }}"
-    - dest: "/var/lib/lxc/{{ neutron_container.stdout }}/rootfs/root/.ssh/rpc_support"
-      content: "{{ support_key.content | b64decode }}"
-    - dest: "/var/lib/lxc/{{ neutron_container.stdout }}/rootfs/root/.ssh/rpc_support.pub"
-      content: "{{ support_pub_key.content | b64decode }}"
+  with_items: "{{ container_rootfs_list.stdout_lines }}"
+  when:
+    - support_key.content |default('') |length > 64
+
+- name: Distribute support SSH public key to containers
+  copy:
+    dest: "{{ item }}/root/.ssh/rpc_support.pub"
+    content: "{{ support_pub_key.content | b64decode }}"
+    owner: "root"
+    group: "root"
+    mode: "0600"
+  with_items: "{{ container_rootfs_list.stdout_lines }}"
   when:
     - support_pub_key.content |default('') |length > 64
 
