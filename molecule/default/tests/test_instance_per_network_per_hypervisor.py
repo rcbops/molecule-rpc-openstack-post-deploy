@@ -41,8 +41,11 @@ def test_hypervisor_vms(host):
     ssh = "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
            -i ~/.ssh/rpc_support ubuntu@{}"
 
-    flavor_name = 'post-deploy'  # look up from ansible values
-    image_name = 'Ubuntu 16.04'  # look up from ansible values
+    vars = host.ansible('include_vars',
+                        'file=./vars/main.yml')['ansible_facts']
+
+    flavor_name = vars['flavor']['name']
+    image_name = vars['image']['name']
 
     server_list = []
     testable_networks = []
@@ -56,11 +59,21 @@ def test_hypervisor_vms(host):
     assert len(filtered_images) > 0
     image = filtered_images[-1]
 
-    # formulate lsc_pre
-    cmd = "lxc-ls -1 | egrep 'neutron(_|-)agents' | tail -1"
-    res = host.run(cmd)
-    container = res.stdout.strip()
-    lxc_pre = "lxc-attach -n {} ".format(container)
+    # neutron_agent connection lookup
+    na_list = testinfra.utils.ansible_runner.AnsibleRunner(
+        os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('neutron_agent')
+    hostname = host.check_output('hostname')
+    na_list = [x for x in na_list if hostname in x]
+    neutron_agent = next(iter(na_list), None)
+    assert neutron_agent
+    if 'container' in neutron_agent:
+        # lxc
+        na_pre = "lxc-attach -n {} -- bash -c ".format(neutron_agent)
+    else:
+        # ssh
+        na_pre = "ssh -o StrictHostKeyChecking=no \
+                   -o UserKnownHostsFile=/dev/null \
+                   {} ".format(neutron_agent)
 
     r = random.randint(1111, 9999)
 
@@ -113,9 +126,8 @@ def test_hypervisor_vms(host):
         network = json.loads(res.stdout)
 
         # confirm SSH port access
-        cmd = "{} -- bash \
-               -c 'ip netns exec \
-               qdhcp-{} nc -w1 {} 22'".format(lxc_pre, network['id'], ip)
+        cmd = "{} 'ip netns exec \
+               qdhcp-{} nc -w1 {} 22'".format(na_pre, network['id'], ip)
         for attempt in range(10):
             res = host.run(cmd)
             try:
@@ -134,6 +146,8 @@ def test_hypervisor_vms(host):
         sub = json.loads(res.stdout)
         if sub['gateway_ip']:
             # ping out
-            cmd = "{} -- bash -c 'ip netns exec qdhcp-{} \
-                   {} ping -c1 -w2 8.8.8.8'".format(lxc_pre, network['id'], ssh.format(ip))
+            cmd = "{} 'ip netns exec \
+                   qdhcp-{} {} ping -c1 -w2 8.8.8.8'".format(na_pre,
+                                                             network['id'],
+                                                             ssh.format(ip))
             host.run_expect([0], cmd)
