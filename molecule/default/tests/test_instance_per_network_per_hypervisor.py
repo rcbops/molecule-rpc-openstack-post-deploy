@@ -41,8 +41,11 @@ def test_hypervisor_vms(host):
     ssh = "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
            -i ~/.ssh/rpc_support ubuntu@{}"
 
-    flavor_name = 'post-deploy'  # look up from ansible values
-    image_name = 'Ubuntu 16.04'  # look up from ansible values
+    vars = host.ansible('include_vars',
+                        'file=./vars/main.yml')['ansible_facts']
+
+    flavor_name = vars['flavor']['name']
+    image_name = vars['image']['name']
 
     server_list = []
     testable_networks = []
