@@ -1,0 +1,46 @@
+---
+# Clone openstack-ansible-ops to infra host and execute
+# openstack-service-setup playbook.
+
+- name: Clean old openstack-ansible-ops dir if previously existing
+  file:
+    state: absent
+    path: /opt/openstack-ansible-ops
+
+- name: Clone openstack-ansible-ops repo
+  git:
+    repo=https://github.com/openstack/openstack-ansible-ops.git
+    dest=/opt/openstack-ansible-ops
+
+- name: Create virtualenv for the submodule
+  shell: virtualenv /opt/molecule-test-env-on-sut
+
+- name: Install python modules into /opt/molecule-test-env-on-sut virtualenv
+  pip:
+    name: "{{ item }}"
+    extra_args: --isolated
+    state: present
+    virtualenv: /opt/molecule-test-env-on-sut
+  with_items:
+    - ansible==2.5.5
+    - shade==1.28.0
+    - ipaddr==2.2.0
+    - netaddr==0.7.19
+
+- name: Find the proper inventory file
+  shell: find /opt/openstack-ansible -name dynamic_inventory.py -print
+  register: find_inventory_file
+  ignore_errors: true
+
+- name: Set proper inventory file
+  set_fact:
+    inventory_file: "{{ find_inventory_file.stdout }}"
+
+- name: Run openstack-service-setup
+  shell: |
+    . /opt/molecule-test-env-on-sut/bin/activate
+    ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i "{{ inventory_file }}" openstack-service-setup.yml
+    deactivate
+  args:
+    executable: /bin/bash
+    chdir: /opt/openstack-ansible-ops/multi-node-aio-xenial-ansible/playbooks/
