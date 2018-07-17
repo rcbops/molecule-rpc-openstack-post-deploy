@@ -23,11 +23,11 @@ ops_apt_host_packages:
   - vlan
 image:
   name: Ubuntu 16.04
-  format: qcow2
-  url: http://uec-images.ubuntu.com/releases/16.04/release/ubuntu-16.04-server-cloudimg-amd64-disk1.img
 flavor:
   name: post-deploy
 test_server: post-deploy-server
 test_volume: post-deploy-volume
+test_router: TEST-ROUTER
 test_network: TEST-VXLAN
 test_subnet: TEST-VXLAN-SUBNET
+gateway_network: GATEWAY_NET

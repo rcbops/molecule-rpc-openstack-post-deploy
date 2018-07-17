@@ -1,7 +1,7 @@
 ---
 - name: Create test server
   shell: |
-    lxc-attach -n {{ utility_container.stdout }} \
+    lxc-attach -n "{{ utility_container.stdout }}" \
     -- bash -c '. /root/openrc ; \
     openstack server create \
     -f json \
