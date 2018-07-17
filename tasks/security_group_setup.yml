@@ -1,7 +1,7 @@
 ---
 - name: Check for rpc_support security group
   shell: |
-    lxc-attach -n {{ utility_container.stdout }} \
+    lxc-attach -n "{{ utility_container.stdout }}" \
     -- bash -c '. /root/openrc ; \
     openstack security group list | grep -w "rpc-support"'
   register: rpc_support_sec_group
@@ -10,7 +10,7 @@
 
 - name: Create rpc_support security group
   shell: |
-    lxc-attach -n {{ utility_container.stdout }} \
+    lxc-attach -n "{{ utility_container.stdout }}" \
     -- bash -c '. /root/openrc ; \
     openstack security group create rpc-support'
   register: sec_group_create
@@ -20,12 +20,12 @@
 
 - name: Create rpc_support security group rules ports
   shell: |
-    lxc-attach -n {{ utility_container.stdout }} \
+    lxc-attach -n "{{ utility_container.stdout }}" \
     -- bash -c '. /root/openrc ; \
     openstack security group rule create \
             --ingress \
             --protocol tcp \
-            --dst-port {{ item }} \
+            --dst-port "{{ item }}" \
             --remote-ip 0.0.0.0/0 \
             rpc-support'
   register: sec_group_rules_ports
@@ -37,7 +37,7 @@
 
 - name: Create rpc_support security group rules icmp
   shell: |
-    lxc-attach -n {{ utility_container.stdout }} \
+    lxc-attach -n "{{ utility_container.stdout }}" \
     -- bash -c '. /root/openrc ; \
     openstack security group rule create \
             --ingress \

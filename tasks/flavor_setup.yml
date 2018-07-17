@@ -1,7 +1,7 @@
 ---
 - name: Check for flavor in nova
   shell: |
-    lxc-attach -n {{ utility_container.stdout }}  \
+    lxc-attach -n "{{ utility_container.stdout }}"  \
     -- bash -c '. /root/openrc ; \
     openstack flavor list | grep "{{ flavor.name }}"'
   register: nova_flavor
@@ -10,7 +10,7 @@
 
 - name: Create test flavor
   shell: |
-    lxc-attach -n {{ utility_container.stdout }} \
+    lxc-attach -n "{{ utility_container.stdout }}" \
     -- bash -c '. /root/openrc ; \
     openstack flavor create \
     --ram 512 \
