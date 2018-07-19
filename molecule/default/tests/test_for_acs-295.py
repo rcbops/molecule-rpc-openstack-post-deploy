@@ -12,12 +12,6 @@ class TestForRPC10PlusPostDeploymentQCProcessSwift(object):
      https://rpc-openstack.atlassian.net/browse/ASC-295
      """
 
-    @pytest.mark.test_id('d7fc49a8-432a-11e8-a2ea-6a00035510c0')
-    @pytest.mark.skip(reason='Need implementation')
-    @pytest.mark.jira('ASC-295')
-    def test_verify_md5_and_mounted_drives(self, host):
-        """See RPC 10+ Post-Deployment QC process document"""
-
     @pytest.mark.test_id('d7fc4b42-432a-11e8-9ef9-6a00035510c0')
     @pytest.mark.skip(reason='Need implementation')
     @pytest.mark.jira('ASC-295')
