@@ -29,15 +29,3 @@ class TestForRPC10PlusPostDeploymentQCProcessSwift(object):
     @pytest.mark.jira('ASC-295')
     def test_verify_swift_stat(self, host):
         """See RPC 10+ Post-Deployment QC process document"""
-
-    @pytest.mark.test_id('d7fc4cdc-432a-11e8-a5dc-6a00035510c0')
-    @pytest.mark.skip(reason='Need implementation')
-    @pytest.mark.jira('ASC-295')
-    def test_verify_dispension_populate(self, host):
-        """See RPC 10+ Post-Deployment QC process document"""
-
-    @pytest.mark.test_id('d7fc4e61-432a-11e8-bcf5-6a00035510c0')
-    @pytest.mark.skip(reason='Need implementation')
-    @pytest.mark.jira('ASC-295')
-    def test_verify_dispension_report(self, host):
-        """See RPC 10+ Post-Deployment QC process document"""
