@@ -102,12 +102,6 @@ class TestForRPC10PlusPostDeploymentQCProcess(object):
     def test_verify_ssl_config_f5(self, host):
         """See RPC 10+ Post-Deployment QC process document"""
 
-    @pytest.mark.test_id('d7fc4066-432a-11e8-ab01-6a00035510c0')
-    @pytest.mark.skip(reason='Need implementation')
-    @pytest.mark.jira('ASC-150')
-    def test_verify_ansible_playbook(self, host):
-        """See RPC 10+ Post-Deployment QC process document"""
-
     @pytest.mark.test_id('d7fc412e-432a-11e8-ae40-6a00035510c0')
     @pytest.mark.skip(reason='Need implementation')
     @pytest.mark.jira('ASC-150')
