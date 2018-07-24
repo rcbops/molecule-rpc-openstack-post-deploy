@@ -113,9 +113,3 @@ class TestForRPC10PlusPostDeploymentQCProcess(object):
     @pytest.mark.jira('ASC-150')
     def test_verify_console_horizon(self, host):
         """See RPC 10+ Post-Deployment QC process document"""
-
-    @pytest.mark.test_id('d7fc4407-432a-11e8-b65b-6a00035510c0')
-    @pytest.mark.skip(reason='Need implementation')
-    @pytest.mark.jira('ASC-150')
-    def test_verify_kibana_horizon_access_with_no_ssh(self, host):
-        """See RPC 10+ Post-Deployment QC process document"""
