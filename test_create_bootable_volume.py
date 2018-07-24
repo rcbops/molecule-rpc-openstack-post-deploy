@@ -1,4 +1,4 @@
-import utils
+import pytest_rpc.helpers as helpers
 import os
 import pytest
 import testinfra.utils.ansible_runner
@@ -22,7 +22,7 @@ def test_create_bootable_volume(host):
     image_name = 'Cirros-0.3.5'
     zone = 'nova'
 
-    image_id = utils.get_id_by_name('image', image_name, host)
+    image_id = helpers.get_id_by_name('image', image_name, host)
 
     data = {
         "volume": {
@@ -41,9 +41,9 @@ def test_create_bootable_volume(host):
         }
     }
 
-    utils.create_bootable_volume(data, host)
+    helpers.create_bootable_volume(data, host)
 
-    assert volume_name in utils.openstack_name_list('volume', host)
+    assert volume_name in helpers.openstack_name_list('volume', host)
 
     # Tear down
-    utils.delete_volume(volume_name, host)
+    helpers.delete_volume(volume_name, host)

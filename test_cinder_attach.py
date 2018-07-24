@@ -1,4 +1,4 @@
-import utils
+import pytest_rpc.helpers as helpers
 import os
 import pytest
 import testinfra.utils.ansible_runner
@@ -24,7 +24,7 @@ def test_cinder_verify_attach(host):
     # get list of volumes and server attatchments from utility container
     cmd = "{} cinder list --all-t '".format(os_pre)
     vol_table = host.run(cmd).stdout
-    vol_list = utils.parse_table(vol_table)[1]
+    vol_list = helpers.parse_table(vol_table)[1]
     for vol in vol_list:
         vol_id = vol[0]
         attach_id = vol[7]
