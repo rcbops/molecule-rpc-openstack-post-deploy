@@ -2,6 +2,7 @@ import os
 import testinfra.utils.ansible_runner
 import pytest
 import json
+import pytest_rpc.helpers as helpers
 
 """ASC-157: Perform Post Deploy System validations"""
 
@@ -16,6 +17,12 @@ def test_openvswitch(host):
     Ensure DHCP agents for all networks are up
     """
 
+    osa_name, osa_major = helpers.get_osa_version_tuple()
+    try:
+        osa_major = int(osa_major)
+    except ValueError:
+        osa_major = 99
+
     os_pre = ("lxc-attach -n $(lxc-ls -1 | grep utility | head -n 1) "
               "-- bash -c '. /root/openrc ; openstack ")
     net_cmd = "{} network list -f json'".format(os_pre)
@@ -23,6 +30,20 @@ def test_openvswitch(host):
     networks = net_res.stdout.split('\n')
     networks = json.loads(net_res.stdout)
     for network in networks:
-        cmd = "{} network agent list --network {} -f json'".format(os_pre, network['ID'])
-        res = host.run(cmd)
-        assert "UP" in res.stdout
+        if osa_major > 14:
+            net_agent_cmd = "{} network agent list --network {} -f json'".format(os_pre, network['ID'])
+        else:
+            net_agent_cmd = ("lxc-attach "
+                             "-n $(lxc-ls -1 | grep utility | head -n 1) "
+                             "-- bash -c '. /root/openrc ; "
+                             "neutron dhcp-agent-list-hosting-net {} "
+                             "-f json'".format(network['ID']))
+
+        res = host.run(net_agent_cmd)
+        results = json.loads(res.stdout)
+
+        for agent in results:
+            if osa_major > 14:
+                assert agent['State'] is 'UP'
+            else:
+                assert agent['admin_state_up'] is True
