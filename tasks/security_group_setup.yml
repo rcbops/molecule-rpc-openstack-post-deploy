@@ -26,7 +26,6 @@
             --ingress \
             --protocol tcp \
             --dst-port "{{ item }}" \
-            --remote-ip 0.0.0.0/0 \
             rpc-support'
   register: sec_group_rules_ports
   changed_when: sec_group_rules_ports.rc == 0
@@ -42,7 +41,6 @@
     openstack security group rule create \
             --ingress \
             --protocol icmp \
-            --remote-ip 0.0.0.0/0 \
             rpc-support'
   register: sec_group_rules_icmp
   changed_when: sec_group_rules_icmp.rc == 0
