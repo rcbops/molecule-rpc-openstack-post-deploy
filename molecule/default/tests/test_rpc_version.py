@@ -22,11 +22,7 @@ def test_openstack_release_version(host):
 
     # Expected example:
     # DISTRIB_RELEASE="r16.2.0"
-    if expected_major.isdigit():
-        pat = expected_major + r'.\d+.\d+'
-    else:
-        pat = r'\w+'
-    expected_regex = re.compile('DISTRIB_RELEASE="r?{}"'.format(pat))
+    expected_regex = r'DISTRIB_RELEASE="[r]' + expected_major + r'.\d+.\d+"'
     release = host.file('/etc/openstack-release').content
     assert re.search(expected_regex, release)
 
