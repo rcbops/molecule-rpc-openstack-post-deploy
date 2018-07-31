@@ -44,6 +44,6 @@ def test_openvswitch(host):
 
         for agent in results:
             if osa_major > 14:
-                assert agent['State'] is 'UP'
+                assert agent['State'] == 'UP'
             else:
                 assert agent['admin_state_up'] is True
