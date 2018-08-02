@@ -31,10 +31,12 @@ def test_openvswitch(host):
 
     expected_codename, expected_major = \
         get_osa_version(os.environ['RE_JOB_BRANCH'])
+    print "expected_major: {}".format(expected_major)
     try:
         osa_major = int(expected_major)
     except ValueError:
         osa_major = 99
+    print "osa_major: {}".format(osa_major)
 
     os_pre = ("lxc-attach -n $(lxc-ls -1 | grep utility | head -n 1) "
               "-- bash -c '. /root/openrc ; openstack ")
@@ -52,6 +54,7 @@ def test_openvswitch(host):
                              "neutron dhcp-agent-list-hosting-net {} "
                              "-f json'".format(network['ID']))
 
+        print net_agent_cmd
         res = host.run(net_agent_cmd)
         results = json.loads(res.stdout)
 

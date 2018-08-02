@@ -36,11 +36,13 @@ def test_openstack_release_version(host):
 
     # Expected example:
     # DISTRIB_RELEASE="r16.2.0"
+    print "expected_major: {}".format(expected_major)
     if expected_major.isdigit():
         pat = expected_major + r'.\d+.\d+'
     else:
         pat = r'\w+'
     expected_regex = re.compile('DISTRIB_RELEASE="r?{}"'.format(pat))
+    print "expected_regex: {}".format(expected_regex.pattern)
     release = host.file('/etc/openstack-release').content
     assert re.search(expected_regex, release)
 
@@ -57,7 +59,11 @@ def test_openstack_codename(host):
 
     # Expected example:
     # DISTRIB_CODENAME="Pike"
-    expected_regex = r'DISTRIB_CODENAME="' + expected_codename + r'"'
+    print "expected_codename: {}".format(expected_codename)
+    expected_regex = re.compile(r'DISTRIB_CODENAME="' +
+                                expected_codename +
+                                r'"')
+    print "expected_regex: {}".format(expected_regex.pattern)
     release = host.file('/etc/openstack-release').content
     assert re.search(expected_regex, release)
 
@@ -74,6 +80,12 @@ def test_rpc_version(host):
 
     # Expected example:
     # r13.1.0rc1-987-gbb6b806
-    expected_regex = r'[r]' + expected_major + r'.\d+.\d+'
+    print "expected_major: {}".format(expected_major)
+    if expected_major.isdigit():
+        pat = r'r?' + expected_major + r'.\d+.\d+'
+    else:
+        pat = r'r?' + r'.\d+' + r'.\d+.\d+'
+    expected_regex = re.compile(pat)
+    print "expected_regex: {}".format(expected_regex.pattern)
     res = host.run("cd /opt/rpc-openstack ; git describe --tags")
     assert re.search(expected_regex, res.stdout)
