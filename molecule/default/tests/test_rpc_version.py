@@ -2,12 +2,26 @@ import os
 import testinfra.utils.ansible_runner
 import pytest
 import re
-import pytest_rpc.helpers as helpers
 
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
     os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('os-infra_hosts')[:1]
 
-expected_codename, expected_major = helpers.get_osa_version_tuple()
+
+def get_osa_version(branch):
+    if branch in ['newton', 'newton-rc']:
+        return ('Newton', '14')
+    elif branch in ['pike', 'pike-rc']:
+        return ('Pike', '16')
+    elif branch in ['queens', 'queens-rc']:
+        return ('Queens', '17')
+    elif branch in ['rocky', 'rocky-rc']:
+        return ('Rocky', '18')
+    else:
+        return ('', '')
+
+
+# TODO: find a better way to look up the branch in scope
+expected_codename, expected_major = get_osa_version(os.environ['RE_JOB_BRANCH'])
 
 
 @pytest.mark.test_id('2c596d8f-7957-11e8-8017-6a00035510c0')
