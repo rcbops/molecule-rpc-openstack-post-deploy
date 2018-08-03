@@ -21,7 +21,8 @@ def get_osa_version(branch):
 
 
 # TODO: find a better way to look up the branch in scope
-expected_codename, expected_major = get_osa_version(os.environ['RE_JOB_BRANCH'])
+expected_codename, expected_major = \
+    get_osa_version(os.environ['RPC_PRODUCT_RELEASE'])
 
 
 @pytest.mark.test_id('2c596d8f-7957-11e8-8017-6a00035510c0')
