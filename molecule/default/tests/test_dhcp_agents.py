@@ -30,7 +30,7 @@ def test_openvswitch(host):
     """
 
     expected_codename, expected_major = \
-        get_osa_version(os.environ['RE_JOB_BRANCH'])
+        get_osa_version(os.environ['RPC_PRODUCT_RELEASE'])
     print "expected_major: {}".format(expected_major)
     try:
         osa_major = int(expected_major)
