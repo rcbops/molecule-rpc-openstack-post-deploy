@@ -26,13 +26,23 @@
   changed_when: false
   failed_when: false
 
-- name: Unset gateway on test router
+- name: Unset gateway on test router (not newton)
   shell: |
     lxc-attach -n "{{ utility_container.stdout }}"  \
     -- bash -c '. /root/openrc ; \
     openstack router unset --external-gateway "{{ test_router }}"'
   when:
     - test_router_instance.rc == 0
+    - rpc_product_release != "newton"
+
+- name: Unset gateway on test router (newton)
+  shell: |
+    lxc-attach -n "{{ utility_container.stdout }}"  \
+    -- bash -c '. /root/openrc ; \
+    neutron router-gateway-clear "{{ test_router }}"'
+  when:
+    - test_router_instance.rc == 0
+    - rpc_product_release == "newton"
 
 - name: Remove test subnet from router
   shell: |
@@ -109,8 +119,18 @@
     -- bash -c '. /root/openrc ; \
     openstack router add subnet "{{ test_router }}" "{{ test_subnet }}"'
 
-- name: Set external gateway on router
+- name: Set external gateway on router (not newton)
   shell: |
     lxc-attach -n "{{ utility_container.stdout }}" \
     -- bash -c '. /root/openrc ; \
     openstack router set --external-gateway "{{ gateway_network }}" "{{ test_router }}"'
+  when:
+    - rpc_product_release != "newton"
+
+- name: Set external gateway on router (newton)
+  shell: |
+    lxc-attach -n "{{ utility_container.stdout }}" \
+    -- bash -c '. /root/openrc ; \
+    neutron router-gateway-set "{{ test_router }}" "{{ gateway_network }}"'
+  when:
+    - rpc_product_release == "newton"
