@@ -61,9 +61,11 @@ def test_openstack_codename(host):
     # Expected example:
     # DISTRIB_CODENAME="Pike"
     print "expected_codename: {}".format(expected_codename)
-    expected_regex = re.compile(r'DISTRIB_CODENAME="' +
-                                expected_codename +
-                                r'"')
+    if expected_codename:
+        pat = expected_codename
+    else:
+        pat = r'\w+'
+    expected_regex = re.compile('DISTRIB_CODENAME="{}"'.format(pat))
     print "expected_regex: {}".format(expected_regex.pattern)
     release = host.file('/etc/openstack-release').content
     assert re.search(expected_regex, release)
