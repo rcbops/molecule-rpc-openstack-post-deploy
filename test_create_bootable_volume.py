@@ -34,7 +34,7 @@ def test_create_bootable_volume(host):
             "snapshot_id": null,
             "backup_id": null,
             "name": volume_name,
-            "imageRef": image_id,
+            "imageref": image_id,
             "volume_type": null,
             "metadata": {},
             "consistencygroup_id": null
@@ -43,7 +43,10 @@ def test_create_bootable_volume(host):
 
     helpers.create_bootable_volume(data, host)
 
-    assert volume_name in helpers.openstack_name_list('volume', host)
+    volumes = helpers.get_resource_list_by_name('volume', host)
+    assert volumes
+    volume_names = [x['Name'] for x in volumes]
+    assert volume_name in volume_names
 
     # Tear down
     helpers.delete_volume(volume_name, host)

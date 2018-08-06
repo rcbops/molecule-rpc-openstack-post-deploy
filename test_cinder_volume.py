@@ -29,7 +29,10 @@ def test_cinder_volume_created(host):
     host.run_expect([0], cmd)
 
     # Verify the volume is created
-    assert volume_name in helpers.openstack_name_list('volume', host)
+    volumes = helpers.get_resource_list_by_name('volume', host)
+    assert volumes
+    volume_names = [x['Name'] for x in volumes]
+    assert volume_name in volume_names
 
     # Tear down
     helpers.delete_volume(volume_name, host)
