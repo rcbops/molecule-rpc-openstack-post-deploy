@@ -34,6 +34,7 @@
   when:
     - test_router_instance.rc == 0
     - rpc_product_release != "newton"
+    - rpc_product_release != ""
 
 - name: Unset gateway on test router (newton)
   shell: |
@@ -42,7 +43,8 @@
     neutron router-gateway-clear "{{ test_router }}"'
   when:
     - test_router_instance.rc == 0
-    - rpc_product_release == "newton"
+    - rpc_product_release == "newton" or
+      rpc_product_release == ""
 
 - name: Remove test subnet from router
   shell: |
@@ -126,6 +128,7 @@
     openstack router set --external-gateway "{{ gateway_network }}" "{{ test_router }}"'
   when:
     - rpc_product_release != "newton"
+    - rpc_product_release != ""
 
 - name: Set external gateway on router (newton)
   shell: |
@@ -133,4 +136,5 @@
     -- bash -c '. /root/openrc ; \
     neutron router-gateway-set "{{ test_router }}" "{{ gateway_network }}"'
   when:
-    - rpc_product_release == "newton"
+    - rpc_product_release == "newton" or
+      rpc_product_release == ""
