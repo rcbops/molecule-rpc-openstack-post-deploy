@@ -44,3 +44,17 @@
   args:
     executable: /bin/bash
     chdir: /opt/openstack-ansible-ops/multi-node-aio-xenial-ansible/playbooks/
+
+- name: create directory for ansible custome facts
+  file:
+    state: directory
+    recurse: yes
+    path: /etc/ansible/facts.d
+
+- name: install custom fact for service setup
+  copy:
+    content: "{\"already_ran\" : \"true\"}"
+    dest: /etc/ansible/facts.d/service_setup.fact
+
+- name: re-read facts after adding custome fact
+  setup: filter=ansible_local
