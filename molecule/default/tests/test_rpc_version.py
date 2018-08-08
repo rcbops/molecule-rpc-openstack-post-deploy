@@ -72,6 +72,7 @@ def test_openstack_codename(host):
 
 
 @pytest.mark.test_id('d7fc32ba-432a-11e8-81d4-6a00035510c0')
+@pytest.mark.skip(reason="RI-410")
 @pytest.mark.jira('ASC-234')
 def test_rpc_version(host):
     """Test to verify expected version of installed RPC-OpenStack
