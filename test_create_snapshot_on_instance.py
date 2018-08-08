@@ -21,7 +21,6 @@ flavor = 'm1.tiny'
 
 @pytest.mark.test_id('26aa7902-53da-11e8-96e0-6a0003552100')
 @pytest.mark.jira('asc-259')
-@pytest.mark.skip(reason='WIP')
 @pytest.mark.run(order=4)
 def test_create_snapshot_of_an_instance(host):
     """Create an instance and then create snapshot on it"""
@@ -53,7 +52,6 @@ def test_create_snapshot_of_an_instance(host):
 
 @pytest.mark.test_id('4ca28c34-7e24-11e8-a634-9cdc71d6c128')
 @pytest.mark.jira('asc-691')
-@pytest.mark.skip(reason='WIP')
 @pytest.mark.run(order=5)
 def test_create_instance_from_snapshot(host):
 
@@ -71,14 +69,5 @@ def test_create_instance_from_snapshot(host):
     # Verify the new instance is successfully booted using the snapshot
     assert (helpers.get_expected_value('server', new_instance_name, 'status', 'ACTIVE', host, 20))
 
-
-@pytest.mark.test_id('48fff282-7e25-11e8-a634-9cdc71d6c128')
-@pytest.mark.jira('asc-691')
-@pytest.mark.skip(reason='WIP')
-@pytest.mark.run(order=6)
-def test_teardown(host):
-    """tear down"""
-
-    helpers.delete_it('server', instance_name, host)
-    helpers.delete_it('server', new_instance_name, host)
+    # Cleaning up: Delete newly created snapshot
     helpers.delete_it('image', snapshot_name, host)
