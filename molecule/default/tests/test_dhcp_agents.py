@@ -2,24 +2,12 @@ import os
 import testinfra.utils.ansible_runner
 import pytest
 import json
+import pytest_rpc.helpers as helpers
 
 """ASC-157: Perform Post Deploy System validations"""
 
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
     os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('os-infra_hosts')[:1]
-
-
-def get_osa_version(branch):
-    if branch in ['newton', 'newton-rc']:
-        return ('Newton', '14')
-    elif branch in ['pike', 'pike-rc']:
-        return ('Pike', '16')
-    elif branch in ['queens', 'queens-rc']:
-        return ('Queens', '17')
-    elif branch in ['rocky', 'rocky-rc']:
-        return ('Rocky', '18')
-    else:
-        return ('', '')
 
 
 @pytest.mark.test_id('d7fc25ae-432a-11e8-a20a-6a00035510c0')
@@ -30,7 +18,7 @@ def test_openvswitch(host):
     """
 
     expected_codename, expected_major = \
-        get_osa_version(os.environ['RPC_PRODUCT_RELEASE'])
+        helpers.get_osa_version(os.environ['RPC_PRODUCT_RELEASE'])
     print "expected_major: {}".format(expected_major)
     try:
         osa_major = int(expected_major)
