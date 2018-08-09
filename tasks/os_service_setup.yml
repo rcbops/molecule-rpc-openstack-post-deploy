@@ -12,8 +12,17 @@
     repo=https://github.com/openstack/openstack-ansible-ops.git
     dest=/opt/openstack-ansible-ops
 
-- name: Create virtualenv for the submodule
+- name: Create python2 virtualenv for the submodule
   shell: virtualenv /opt/molecule-test-env-on-sut
+  when:
+    - rpc_product_release != "master" or
+      rpc_product_release != "rocky"
+
+- name: Create python3 virtualenv for the submodule
+  shell: virtualenv --python=python3 /opt/molecule-test-env-on-sut
+  when:
+    - rpc_product_release == "master" or
+      rpc_product_release == "rocky"
 
 - name: Install python modules into /opt/molecule-test-env-on-sut virtualenv
   pip:
