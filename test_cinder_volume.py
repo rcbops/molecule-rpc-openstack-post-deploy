@@ -31,7 +31,12 @@ def test_cinder_volume_created(host):
     # Verify the volume is created
     volumes = helpers.get_resource_list_by_name('volume', host)
     assert volumes
-    volume_names = [x['Name'] for x in volumes]
+
+    try:
+        volume_names = [x['Name'] for x in volumes]
+    except KeyError:
+        volume_names = [x['Display Name'] for x in volumes]  # for newton
+
     assert volume_name in volume_names
 
     # Tear down
