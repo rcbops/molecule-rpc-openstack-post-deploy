@@ -33,7 +33,7 @@ def test_create_bootable_volume(host):
     cmd = "{} openstack volume create --size 1 --image {} --bootable {}'".format(utility_container, image_id, volume_name)
     host.run_expect([0], cmd)
 
-    volumes = helpers.openstack_name_list('volume', host)
+    volumes = helpers.get_resource_list_by_name('volume', host)
     assert volumes
     volume_names = [x['Name'] for x in volumes]
     assert volume_name in volume_names
@@ -60,7 +60,7 @@ def test_create_instance_from_bootable_volume(host):
 
     host.run_expect([0], cmd)
 
-    instances = helpers.openstack_name_list('server', host)
+    instances = helpers.get_resource_list_by_name('server', host)
     assert instances
     instance_names = [x['Name'] for x in instances]
     assert instance_name in instance_names
