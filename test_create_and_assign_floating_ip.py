@@ -74,6 +74,3 @@ def test_assign_floating_ip_to_instance(host):
     # Ensure the IP can be pinged from infra1
     cmd = "ping -c1 {}".format(floating_ip)
     assert (host.run_expect([0], cmd))
-
-    # Cleaning test env after testing: Delete floating IP
-    helpers.delete_it('floating ip', floating_ip, host)
