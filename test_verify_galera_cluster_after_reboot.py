@@ -20,6 +20,7 @@ galera_container = ("lxc-attach -n $(lxc-ls -1 | grep galera | head -n 1) -- ")
 
 
 @pytest.mark.test_id('2e1fa570-6827-11e8-a634-9cdc71d6c128')
+@pytest.mark.skip(reason='all reboot tasks removed from playbook')
 @pytest.mark.jira('asc-233')
 def test_verify_galera_cluster(host):
     """Verify the galera cluster survived after the reboot"""
