@@ -38,6 +38,3 @@ def test_cinder_volume_created(host):
         volume_names = [x['Display Name'] for x in volumes]  # for newton
 
     assert volume_name in volume_names
-
-    # Tear down
-    helpers.delete_volume(volume_name, host)
