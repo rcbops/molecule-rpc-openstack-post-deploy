@@ -3,6 +3,7 @@ import os
 import pytest
 import testinfra.utils.ansible_runner
 from time import sleep
+import json
 
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
     os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('os-infra_hosts')[:1]
@@ -19,6 +20,46 @@ flavor = 'm1.tiny'
 floating_ip = None
 
 
+def create_floating_ip(network_name, run_on_host):
+    """Create floating IP on a network
+
+    Args:
+        network_name (str): The name of the OpenStack network object on which the floating IP is created.
+        run_on_host (testinfra.Host): Testinfra host object to execute the action on.
+
+    Returns:
+        str: The newly created floating ip name
+
+    Raises:
+        AssertionError: If operation is unsuccessful.
+    """
+
+    network_id = helpers.get_id_by_name('network', network_name, run_on_host)
+    assert network_id is not None
+
+    cmd = (". ~/openrc ; "
+           "openstack floating ip create -f json {}".format(network_id))
+    output = helpers.run_on_container(cmd, 'utility', run_on_host)
+
+    assert (output.rc == 0)
+
+    try:
+        result = json.loads(output.stdout)
+    except ValueError:
+        result = output.stdout
+
+    assert type(result) is dict
+
+    key = None
+    if 'name' in result.keys():
+        key = 'name'
+    elif 'floating_ip_address' in result.keys():
+        key = 'floating_ip_address'
+
+    assert key
+    return result[key]
+
+
 @pytest.mark.test_id('a97e1202-796a-11e8-ba13-525400bd8005')
 @pytest.mark.jira('asc-254')
 @pytest.mark.run(order=1)
@@ -26,7 +67,7 @@ def test_create_floating_ip(host):
     """Create floating IP"""
 
     global floating_ip
-    floating_ip = helpers.create_floating_ip(gateway_net, host)
+    floating_ip = create_floating_ip(gateway_net, host)
     assert floating_ip
 
     # Before being assigned, the floating IP status should be 'DOWN'
