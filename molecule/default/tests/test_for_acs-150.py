@@ -90,12 +90,6 @@ class TestForRPC10PlusPostDeploymentQCProcess(object):
     def test_create_snapshot_of_an_instance(self, host):
         """See RPC 10+ Post-Deployment QC process document"""
 
-    @pytest.mark.test_id('d7fc3e85-432a-11e8-a9a2-6a00035510c0')
-    @pytest.mark.skip(reason='Need implementation')
-    @pytest.mark.jira('ASC-150')
-    def test_verify_mbu_installation(self, host):
-        """See RPC 10+ Post-Deployment QC process document"""
-
     @pytest.mark.test_id('d7fc3f4c-432a-11e8-bf4f-6a00035510c0')
     @pytest.mark.skip(reason='Need implementation')
     @pytest.mark.jira('ASC-150')
