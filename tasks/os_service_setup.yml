@@ -13,13 +13,13 @@
     dest=/opt/openstack-ansible-ops
 
 - name: Create python2 virtualenv for the submodule
-  shell: virtualenv /opt/molecule-test-env-on-sut
+  shell: virtualenv --no-pip --no-setuptools --no-wheel --no-download --no-site-packages /opt/molecule-test-env-on-sut
   when:
     - rpc_product_release != "master" or
       rpc_product_release != "rocky"
 
 - name: Create python3 virtualenv for the submodule
-  shell: virtualenv --python=python3 /opt/molecule-test-env-on-sut
+  shell: virtualenv --no-pip --no-setuptools --no-wheel --no-download --no-site-packages --python=python3 /opt/molecule-test-env-on-sut
   when:
     - rpc_product_release == "master" or
       rpc_product_release == "rocky"
