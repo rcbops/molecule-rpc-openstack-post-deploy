@@ -13,16 +13,30 @@
     dest=/opt/openstack-ansible-ops
 
 - name: Create python2 virtualenv for the submodule
-  shell: virtualenv --no-download --no-site-packages /opt/molecule-test-env-on-sut
+  shell: virtualenv --no-pip --no-setuptools --no-wheel --no-download --no-site-packages  \
+    /opt/molecule-test-env-on-sut
   when:
     - rpc_product_release != "master" or
       rpc_product_release != "rocky"
 
 - name: Create python3 virtualenv for the submodule
-  shell: virtualenv --no-download --no-site-packages --python=python3 /opt/molecule-test-env-on-sut
+  shell: virtualenv --no-pip --no-setuptools --no-wheel --no-download --no-site-packages  \
+    --python=python3 /opt/molecule-test-env-on-sut
   when:
     - rpc_product_release == "master" or
       rpc_product_release == "rocky"
+
+- name: Install pip/setuptools/wheel on the virtualenv on SUT
+  shell: |
+    . /opt/molecule-test-env-on-sut/bin/activate
+    CURL_CMD="curl --silent --show-error --retry 5"
+    OUTPUT_FILE="get-pip.py"
+    ${CURL_CMD} https://bootstrap.pypa.io/get-pip.py > ${OUTPUT_FILE}  \
+      || ${CURL_CMD} https://raw.githubusercontent.com/pypa/get-pip/master/get-pip.py > ${OUTPUT_FILE}
+    GETPIP_OPTIONS="pip setuptools wheel"
+    python ${OUTPUT_FILE} ${GETPIP_OPTIONS} \
+      || python ${OUTPUT_FILE} --isolated ${GETPIP_OPTIONS}
+    deactivate
 
 - name: Install python modules into /opt/molecule-test-env-on-sut virtualenv
   pip:
