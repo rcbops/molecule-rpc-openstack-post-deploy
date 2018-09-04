@@ -33,8 +33,7 @@ def create_server_on(target_host, image_id, flavor, network_id, compute_zone, se
 
 
 @pytest.mark.test_id('c3002bde-59f1-11e8-be3b-6c96cfdb252f')
-@pytest.mark.jira('ASC-241', 'ASC-883')
-@pytest.mark.skip(reason='Skip until ASC-883 is resolved')
+@pytest.mark.jira('ASC-241')
 def test_hypervisor_vms(host):
     """ASC-241: Per network, spin up an instance on each hypervisor, perform
     external ping, and tear-down """
