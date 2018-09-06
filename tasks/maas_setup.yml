@@ -1,0 +1,16 @@
+---
+- name: Copy the rpc_maas var file
+  copy:
+    src: "/opt/rpc-openstack/etc/openstack_deploy/user_rpco_maas_variables.yml.example"
+    dest: "/etc/openstack_deploy/user_rpco_maas_variables.yml"
+    owner: "root"
+    group: "root"
+    mode: "0600"
+
+- name: Set the rpc_maas vars
+  shell: |
+    cd /opt/rpc-maas/playbooks
+    sed -i 's|^# influx_telegraf_targets|influx_telegraf_targets|g' /etc/openstack_deploy/user_rpco_maas_variables.yml
+    openstack-ansible site.yml
+  changed_when: false
+  failed_when: false
