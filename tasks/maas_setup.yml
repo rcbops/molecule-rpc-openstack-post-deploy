@@ -7,6 +7,16 @@
     group: "root"
     mode: "0600"
 
+- name: Clean old rpc-maas dir if previously existing
+  file:
+    state: absent
+    path: /opt/rpc-maas
+
+- name: Clone rpc-maas repo
+  git:
+    repo=https://github.com/rcbops/rpc-maas.git
+    dest=/opt/rpc-maas
+
 - name: Set the rpc_maas vars
   shell: |
     cd /opt/rpc-maas/playbooks
