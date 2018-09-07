@@ -21,6 +21,6 @@
   shell: |
     cd /opt/rpc-maas/playbooks
     sed -i 's|^# influx_telegraf_targets|influx_telegraf_targets|g' /etc/openstack_deploy/user_rpco_maas_variables.yml
-    openstack-ansible site.yml
+    openstack-ansible -e maas_pre_flight_metadata_check_enabled=false site.yml
   changed_when: false
   failed_when: false
