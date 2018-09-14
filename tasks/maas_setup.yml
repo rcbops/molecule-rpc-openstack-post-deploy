@@ -17,10 +17,13 @@
     repo=https://github.com/rcbops/rpc-maas.git
     dest=/opt/rpc-maas
 
+- name: Maas setup
+  shell: |
+    cat /opt/rpc-maas/tests/user_rpcm_secrets.yml >> /etc/openstack_deploy/user_secrets.yml
+    cp /etc/openstack_deploy/user_secrets.yml /etc/openstack_deploy/user_rpcm_secrets.yml
+
 - name: Set the rpc_maas vars
   shell: |
-    echo 'maas_rabbitmq_password: secrete' | tee -a /etc/openstack_deploy/user_secrets.yml
-    cat /etc/openstack_deploy/user_secrets.yml
     cd /opt/rpc-maas/playbooks
     sed -i 's|^# influx_telegraf_targets|influx_telegraf_targets|g' /etc/openstack_deploy/user_rpco_maas_variables.yml
     openstack-ansible -e maas_pre_flight_metadata_check_enabled=false site.yml
