@@ -20,7 +20,6 @@
 - name: Maas setup
   shell: |
     cat /opt/rpc-maas/tests/user_rpcm_secrets.yml >> /etc/openstack_deploy/user_secrets.yml
-    cp /etc/openstack_deploy/user_secrets.yml /etc/openstack_deploy/user_rpcm_secrets.yml
 
 - name: Set the rpc_maas vars
   shell: |
@@ -29,3 +28,6 @@
     openstack-ansible -e maas_pre_flight_metadata_check_enabled=false site.yml
   changed_when: false
   failed_when: false
+
+- name: Debug Maas playbook content
+  shell: tail -n +1 /etc/openstack_deploy/*.yml
