@@ -1,20 +1,10 @@
 ---
-- name: Check for flavor in nova
-  shell: |
-    lxc-attach -n "{{ utility_container.stdout }}"  \
-    -- bash -c '. /root/openrc ; \
-    openstack flavor list | grep "{{ flavor.name }}"'
-  register: nova_flavor
-  changed_when: false
-  failed_when: false
-
-- name: Create test flavor
-  shell: |
-    lxc-attach -n "{{ utility_container.stdout }}" \
-    -- bash -c '. /root/openrc ; \
-    openstack flavor create \
-    --ram 512 \
-    --disk 10 \
-    --vcpus 1 \
-    "{{ flavor.name }}"'
-  when: nova_flavor.rc == 1
+- name: Ensure test flavor
+  os_nova_flavor:
+    cloud: default
+    state: present
+    name: "{{ flavor.name }}"
+    ram: 512
+    vcpus: 1
+    disk: 10
+  delegate_to: "{{ cli_host }}"
