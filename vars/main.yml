@@ -31,4 +31,46 @@ test_volume: post-deploy-volume
 test_router: TEST-ROUTER
 test_network: TEST-VXLAN
 test_subnet: TEST-VXLAN-SUBNET
-gateway_network: GATEWAY_NET
+working_inventory: /tmp/inventory
+
+# Create shared networks and subnets:
+router_name: GATEWAY_NET_ROUTER
+provider_net_name: GATEWAY_NET
+provider_net_cidr: 10.0.248.0/22
+provider_dns_server: "{{ DNS_NAMESERVER | default('8.8.8.8') }}"
+provider_subnet_name: "{{ provider_net_name }}_SUBNET"
+
+private_net_name: PRIVATE_NET
+private_net_cidr: 192.168.0.0/24
+private_subnet_name: "{{ private_net_name }}_SUBNET"
+
+networks:
+  - name: "{{ provider_net_name }}"
+    shared: true
+    external: true
+    network_type: flat
+    physical_network: datacentre
+  - name: "{{ private_net_name }}"
+    shared: true
+    external: true
+    network_type: vxlan
+    segmentation_id: 101
+subnets:
+  - name: "{{ provider_subnet_name }}"
+    network_name: "{{ provider_net_name }}"
+    ip_version: 4
+    cidr: "{{ provider_net_cidr }}"
+    gateway_ip: "{{ provider_net_cidr | ipaddr('1') | ipaddr('address') }}"
+    enable_dhcp: "{{ enable_provider_net_dhcp | default(false) | bool }}"
+    allocation_pool_start: "{{ provider_net_cidr | ipaddr('201') | ipaddr('address') }}"
+    allocation_pool_end:   "{{ provider_net_cidr | ipaddr('255') | ipaddr('address') }}"
+    dns_nameservers:
+       - "{{ provider_dns_server }}"
+  - name: "{{ private_subnet_name }}"
+    network_name: "{{ private_net_name }}"
+    ip_version: 4
+    cidr: "{{ private_net_cidr }}"
+    gateway_ip: "{{ private_net_cidr | ipaddr('1') | ipaddr('address') }}"
+    enable_dhcp: true
+    allocation_pool_start: "{{ private_net_cidr | ipaddr('10') | ipaddr('address') }}"
+    allocation_pool_end:   "{{ private_net_cidr | ipaddr('254') | ipaddr('address') }}"
