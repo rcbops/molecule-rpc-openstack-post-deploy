@@ -18,16 +18,7 @@
     dest=/opt/rpc-maas
 
 - name: Maas credentials setup
-  shell: |
-    echo 'maas_rabbitmq_password: secrete' | tee -a /etc/openstack_deploy/user_secrets.yml
-    echo 'maas_keystone_password: secrete' | tee -a /etc/openstack_deploy/user_secrets.yml
-    echo 'maas_rally_users_password: secrete' | tee -a /etc/openstack_deploy/user_secrets.yml
-    echo 'maas_rally_galera_password: secrete' | tee -a /etc/openstack_deploy/user_secrets.yml
-    echo 'maas_swift_accesscheck_password: secrete' | tee -a /etc/openstack_deploy/user_secrets.yml
-    echo 'influxdb_db_root_password: secrete' | tee -a /etc/openstack_deploy/user_secrets.yml
-    echo 'influxdb_db_metric_password: secrete' | tee -a /etc/openstack_deploy/user_secrets.yml
-    echo 'grafana_db_password: secrete' | tee -a /etc/openstack_deploy/user_secrets.yml
-    echo 'grafana_admin_password: secrete' | tee -a /etc/openstack_deploy/user_secrets.yml
+  shell: sed -e '/^\(#\|-\|$\)/d' /opt/rpc-maas/tests/user_rpcm_secrets.yml >> /etc/openstack_deploy/user_secrets.yml
 
 - name: Set the rpc_maas vars
   shell: |
