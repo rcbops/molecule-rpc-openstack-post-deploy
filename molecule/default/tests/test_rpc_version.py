@@ -57,27 +57,3 @@ def test_openstack_codename(host):
     print "expected_regex: {}".format(expected_regex.pattern)
     release = host.file('/etc/openstack-release').content
     assert re.search(expected_regex, release)
-
-
-@pytest.mark.test_id('d7fc32ba-432a-11e8-81d4-6a00035510c0')
-@pytest.mark.skip(reason="RI-410")
-@pytest.mark.jira('ASC-234')
-def test_rpc_version(host):
-    """Test to verify expected version of installed RPC-OpenStack
-
-    Args:
-        host(testinfra.host.Host): host fixture that will iterate over
-        testinfra_hosts
-    """
-
-    # Expected example:
-    # r13.1.0rc1-987-gbb6b806
-    print "expected_major: {}".format(expected_major)
-    if expected_major.isdigit():
-        pat = r'r?' + expected_major + r'.\d+.\d+'
-    else:
-        pat = r'r?' + r'.\d+' + r'.\d+.\d+'
-    expected_regex = re.compile(pat)
-    print "expected_regex: {}".format(expected_regex.pattern)
-    res = host.run("cd /opt/rpc-openstack ; git describe --tags")
-    assert re.search(expected_regex, res.stdout)
