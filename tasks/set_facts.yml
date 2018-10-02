@@ -23,11 +23,12 @@
       rpc_openstack['rpc_product_release'] is undefined
 
 - name: Find the proper inventory file rpc-o
-  shell: find /opt/openstack-ansible -name dynamic_inventory.py -print
+  shell: find /etc/openstack_deploy -name openstack_inventory.py -print
   register: find_inventory_file
   ignore_errors: true
   when:
     - rpc_openstack is defined
+  delegate_to: localhost
 
 - name: Find the proper inventory file osp-mnaio
   shell: find /opt -name hosts -print
@@ -35,10 +36,16 @@
   ignore_errors: true
   when:
     - rpc_openstack is undefined
+  delegate_to: localhost
+
+- name: Copy inventory to working file
+  copy:
+    src: "{{ find_inventory_file.stdout }}"
+    dest: "{{ working_inventory }}"
 
 - name: Set proper inventory file
   set_fact:
-    inventory_file: "{{ find_inventory_file.stdout }}"
+    inventory_file: "{{ working_inventory }}"
 
 - name: Register utility_container
   shell: |
