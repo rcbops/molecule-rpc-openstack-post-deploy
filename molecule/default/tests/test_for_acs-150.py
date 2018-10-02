@@ -14,12 +14,12 @@ class TestForRPC10PlusPostDeploymentQCProcess(object):
 
     @pytest.mark.test_id('d7fc3423-432a-11e8-aaa8-6a00035510c0')
     @pytest.mark.skip(reason='Need implementation')
-    @pytest.mark.jira('ASC-150')
+    @pytest.mark.jira('ASC-150', 'ASC-235')
     def test_verify_ceph_deploy(self, host):
         """See RPC 10+ Post-Deployment QC process document"""
 
     @pytest.mark.test_id('d7fc3f4c-432a-11e8-bf4f-6a00035510c0')
     @pytest.mark.skip(reason='Need implementation')
-    @pytest.mark.jira('ASC-150')
+    @pytest.mark.jira('ASC-150', 'ASC-263')
     def test_verify_ssl_config_f5(self, host):
         """See RPC 10+ Post-Deployment QC process document"""
