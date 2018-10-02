@@ -13,6 +13,6 @@
   os_server:
     cloud: default
     state: absent
-    name: "{{ item.name }}"
+    name: "{{ item.id }}"
   with_items: "{{ openstack_servers }}"
   delegate_to: "{{ cli_host }}"
