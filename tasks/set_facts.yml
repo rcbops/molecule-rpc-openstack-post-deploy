@@ -58,3 +58,29 @@
   set_fact:
     cli_host: "{{ ansible_hostname }}"
     #cli_host: "{{ utility_container if utility_container is defined else ansible_hostname }}"
+
+- name: Check for pip on "{{ cli_host }}"
+  command: which pip
+  register: which_pip
+  ignore_errors: True
+  delegate_to: "{{ cli_host }}"
+
+- name: Install pip/setuptools/wheel on "{{ cli_host }}"
+  shell: |
+    CURL_CMD="curl --silent --show-error --retry 5"
+    OUTPUT_FILE="get-pip.py"
+    ${CURL_CMD} https://bootstrap.pypa.io/get-pip.py > ${OUTPUT_FILE}  \
+      || ${CURL_CMD} https://raw.githubusercontent.com/pypa/get-pip/master/get-pip.py > ${OUTPUT_FILE}
+    GETPIP_OPTIONS="pip setuptools wheel"
+    python ${OUTPUT_FILE} ${GETPIP_OPTIONS} \
+      || python ${OUTPUT_FILE} --isolated ${GETPIP_OPTIONS}
+  when:
+    - which_pip is defined
+    - which_pip.failed
+  delegate_to: "{{ cli_host }}"
+
+- name: Install shade on cli_host to enable os_* modules
+  pip:
+    name: "shade==1.28.0"
+    state: present
+  delegate_to: "{{ cli_host }}"
