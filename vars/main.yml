@@ -1,5 +1,6 @@
 ---
 # vars file for molecule-rpc-openstack-post-deploy
+public_key: "{{ lookup('file', '/root/.ssh/id_rsa.pub') }}"
 ops_apt_util_packages:
   - bash-completion
   - bridge-utils

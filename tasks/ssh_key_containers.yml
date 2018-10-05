@@ -1,0 +1,9 @@
+---
+- name: Get all containers
+  shell: |
+    lxc-ls -1
+  register: containers
+- name: Add authorized key on containers
+  shell: |
+    lxc-attach -n "{{ item }}" -- bash -c 'echo "{{ public_key }}" >> /root/.ssh/authorized_keys'
+  with_items: "{{ containers.stdout_lines }}"

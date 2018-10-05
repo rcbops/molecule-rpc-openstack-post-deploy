@@ -26,6 +26,7 @@
 - name: Install "openvswitch-switch" package
   apt:
      name: openvswitch-switch
+- import_tasks: ssh_key_containers.yml
 - import_tasks: os_service_setup.yml
   when: ansible_local.service_setup is not defined
 - import_tasks: support_key.yml
