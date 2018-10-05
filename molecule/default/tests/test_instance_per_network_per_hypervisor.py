@@ -108,7 +108,11 @@ def test_hypervisor_vms(host):
                                           network['id'], compute['Zone'],
                                           instance_name)
                 assert helpers.get_expected_value('server', server['id'],
+                                                  'OS-EXT-STS:power_state', 'Running', host, 15)
+                assert helpers.get_expected_value('server', server['id'],
                                                   'status', 'ACTIVE', host, 15)
+                assert helpers.get_expected_value('server', server['id'],
+                                                  'OS-EXT-STS:vm_state', 'active', host, 15)
                 server_list.append(server['id'])
 
     for server in server_list:
@@ -129,7 +133,7 @@ def test_hypervisor_vms(host):
         # confirm SSH port access
         cmd = "{} 'ip netns exec \
                qdhcp-{} nc -w1 {} 22'".format(na_pre, network['id'], ip)
-        for attempt in range(10):
+        for attempt in range(30):
             res = host.run(cmd)
             try:
                 assert 'SSH' in res.stdout
