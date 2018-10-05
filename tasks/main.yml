@@ -1,31 +1,11 @@
 ---
 # tasks file for molecule-rpc-openstack-post-deploy
-- name: Set the rpc-openstack variables
-  set_fact:
-    rpc_openstack: "{{ ansible_local['rpc_openstack']['rpc_product'] }}"
-  when:
-    - ansible_local.rpc_openstack is defined
-    - ansible_local.rpc_openstack.rpc_product is defined
-
-- name: Set the rpc-release variable
-  set_fact:
-    rpc_product_release: "{{ rpc_openstack['rpc_product_release'] }}"
-  when:
-    - rpc_openstack is defined
-    - rpc_openstack['rpc_product_release'] is defined
-    - rpc_product_release is undefined or
-      rpc_product_release == 'undefined'
-
-- name: Set the rpc-release variable from environment
-  set_fact:
-    rpc_product_release: "{{ lookup('env', 'RPC_PRODUCT_RELEASE') }}"
-  when:
-    - rpc_openstack is undefined or
-      rpc_openstack['rpc_product_release'] is undefined
-
+- import_tasks: set_facts.yml
 - name: Install "openvswitch-switch" package
   apt:
      name: openvswitch-switch
+  when:
+    - ansible_local.rpc_openstack is defined
 - import_tasks: ssh_key_containers.yml
 - import_tasks: os_service_setup.yml
   when: ansible_local.service_setup is not defined
