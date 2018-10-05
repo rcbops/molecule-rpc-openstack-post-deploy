@@ -1,8 +1,5 @@
 ---
-- name: Register utility container
-  shell: |
-    lxc-ls -1 | grep utility | head -n 1
-  register: utility_container
+# cli_host fact set in set_facts.yml
 
 - name: Install packages required for RPC support
   apt:
@@ -64,52 +61,69 @@
   failed_when: false
   when: support_key_check.stat.exists |bool or support_key_create|changed
 
-- name: Get container rootfs directory list
-  shell: "ls -1 -d /var/lib/lxc/*/rootfs"
-  register: container_rootfs_list
-
-- name: Distribute support SSH private key to containers
+- name: Distribute support SSH private key
   copy:
-    dest: "{{ item }}/root/.ssh/rpc_support"
+    dest: "/root/.ssh/rpc_support"
     content: "{{ support_key.content | b64decode }}"
     owner: "root"
     group: "root"
     mode: "0600"
-  with_items: "{{ container_rootfs_list.stdout_lines }}"
+  with_items: "{{ groups['all'] }}"
   when:
     - support_key.content |default('') |length > 64
 
-- name: Distribute support SSH public key to containers
+- name: Distribute support SSH public key
   copy:
-    dest: "{{ item }}/root/.ssh/rpc_support.pub"
+    dest: "/root/.ssh/rpc_support.pub"
     content: "{{ support_pub_key.content | b64decode }}"
     owner: "root"
     group: "root"
     mode: "0600"
-  with_items: "{{ container_rootfs_list.stdout_lines }}"
+  with_items: "{{ groups['all'] }}"
   when:
     - support_pub_key.content |default('') |length > 64
 
-- name: Check for support keypair in nova
-  shell: |
-    lxc-attach -n "{{ utility_container.stdout }}" -- bash -c '. /root/openrc ; nova keypair-list | grep rpc_support'
-  register: nova_support_key
-  changed_when: false
-  failed_when: false
-
-- name: Delete support keypair in nova
-  shell: |
-    lxc-attach -n "{{ utility_container.stdout }}" -- bash -c '. /root/openrc ; nova keypair-delete rpc_support'
-  register: nova_support_key_delete
-  changed_when: nova_support_key_delete.rc == 0
-  failed_when: false
-  retries: 2
-  delay: 10
-  when: nova_support_key.rc == 0 and support_key_fingerprint.stdout not in nova_support_key.stdout
+#### Begin os_auth setup: the following should be moved to its own file
+# TODO: Implement this! Currenly, I am hand crafting the clouds.yaml file
+#- name: Get openrc file
+#  fetch:
+#    src: /root/overcloudrc  # TODO: abstract for rpc-o (openrc)
+#    dest: /root/openrc
+#    flat: True
+#  delegate_to: "{{ cli_host }}"
+#
+#- name: Register clouds.yaml
+#  stat:
+#    path: /root/.config/openstack/clouds.yaml
+#  register: clouds_st
+#- name: create clouds.yaml file
+#  template:
+#    src: clouds.yaml.j2
+#    dest: /root/.config/openstack/clouds.yaml
+#  when: not clouds_st.stat.exists
+#########
+# contents of working /root/.config/openstack/clouds.yaml on OSP director
+#clouds:
+#  default:
+#    auth:
+#      auth_url: http://192.168.24.13:5000/v3
+#      project_name: admin
+#      tenant_name: admin
+#      username: admin
+#      password: HTrVTxUT7sh4MjpfdbY88vttz
+#      user_domain_name: Default
+#      project_domain_name: Default
+#    region_name: regionOne
+#    interface: internal
+#    identity_api_version: "3"
+#### End os_auth setup
 
 - name: Add support key to nova
-  shell: |
-    lxc-attach -n "{{ utility_container.stdout }}" -- bash -c '. /root/openrc ; nova keypair-add --pub-key /root/.ssh/rpc_support.pub rpc_support'
-  retries: 2
-  delay: 10
-  when: nova_support_key_delete|changed or nova_support_key.rc == 1
+  os_keypair:
+    cloud: default
+    state: present
+    name: rpc_support
+    public_key_file: "/root/.ssh/rpc_support.pub"
+  when:
+    - support_pub_key.content |default('') |length > 64
+  delegate_to: "{{ cli_host }}"
