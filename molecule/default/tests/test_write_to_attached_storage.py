@@ -63,7 +63,6 @@ def attach_volume_to_server(volume, server, run_on_host):
 
 @pytest.mark.test_id('3d77bc35-7a21-11e8-90d1-6a00035510c0')
 @pytest.mark.jira('ASC-257', 'ASC-883', 'RI-417')
-@pytest.mark.xfail(strict=True)  # The test will be recorded as failed if unexpected XPASS when 'RI-417' is fixed
 def test_volume_attached(host):
     vars = host.ansible('include_vars',
                         'file=./vars/main.yml')['ansible_facts']
