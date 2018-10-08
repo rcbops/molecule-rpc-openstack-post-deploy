@@ -50,15 +50,6 @@
     - ipaddr==2.2.0
     - netaddr==0.7.19
 
-- name: Find the proper inventory file
-  shell: find /opt/openstack-ansible -name dynamic_inventory.py -print
-  register: find_inventory_file
-  ignore_errors: true
-
-- name: Set proper inventory file
-  set_fact:
-    inventory_file: "{{ find_inventory_file.stdout }}"
-
 - name: Run openstack-service-setup
   shell: |
     . /opt/molecule-test-env-on-sut/bin/activate
