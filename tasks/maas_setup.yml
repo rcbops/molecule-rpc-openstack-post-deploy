@@ -28,12 +28,5 @@
   changed_when: false
   failed_when: false
 
-- name: Run maas-verify-local
-  shell: |
-    cd /opt/rpc-maas/playbooks
-    openstack-ansible maas-verify.yml --tags "maas-verify-local" -vvv
-  changed_when: false
-  failed_when: false
-
 - name: Debug Maas playbook content
   shell: tail -n +1 /etc/openstack_deploy/*.yml
