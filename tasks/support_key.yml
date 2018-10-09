@@ -1,9 +1,4 @@
 ---
-- name: Register utility container
-  shell: |
-    lxc-ls -1 | grep utility | head -n 1
-  register: utility_container
-
 - name: Install packages required for RPC support
   apt:
     pkg: "{{ item }}"
