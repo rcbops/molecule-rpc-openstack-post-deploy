@@ -23,10 +23,13 @@ ssh_pre = ("ssh -o UserKnownHostsFile=/dev/null "
 @pytest.mark.test_id('b1e888fa-546a-11e8-9902-6c96cfdb252f')
 def test_cinder_lvs_volume_on_node(host):
     # get list of volumes and associated hosts from utility container
-    cmd = "{} cinder list --all-t --fields os-vol-host-attr:host '".format(os_pre)
+    cmd = "{} cinder list --all-t --fields os-vol-host-attr:host,status '".format(os_pre)
     vol_table = host.run(cmd).stdout
     vol_hosts = helpers.parse_table(vol_table)[1]
-    for vol, chost in vol_hosts:
+    for vol, chost, status in vol_hosts:
+        print vol, chost, status
+        if status != 'available':
+            continue
         chost = chost.split('@')[0].split('.')[0]
         # VOLEXISTS test
         cmd = "{} {} lvs | grep volume-{}".format(ssh_pre, chost, vol)
