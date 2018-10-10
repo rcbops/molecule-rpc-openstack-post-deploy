@@ -37,7 +37,8 @@ def test_create_bootable_volume(host):
     assert volumes
     volume_names = [x['Name'] for x in volumes]
     assert volume_name in volume_names
-    assert (helpers.get_expected_value('volume', volume_name, 'status', 'available', host))
+    assert helpers.get_expected_value('volume', volume_name, 'status',
+                                      'available', host, retries=50)
 
 
 @pytest.mark.test_id('8b701dbc-7584-11e8-ba5b-fe14fb7452aa')
@@ -49,6 +50,12 @@ def test_create_instance_from_bootable_volume(host):
     Args:
         host(testinfra.host.Host): A hostname in dynamic_inventory.json/molecule.yml
     """
+
+    # Fail fast if the previous test didn't pass
+    vol_avail = helpers.get_expected_value('volume', volume_name, 'status',
+                                           'available', host, retries=1)
+    if not vol_avail:
+            pytest.skip("Dependent volume not avail")
 
     volume_id = helpers.get_id_by_name('volume', volume_name, host)
     assert volume_id is not None
