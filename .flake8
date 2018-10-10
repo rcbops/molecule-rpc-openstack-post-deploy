@@ -3,8 +3,13 @@ ignore = E501
 pytest_mark1 = name=test_id
                value_match=uuid
                enforce_unique_value=true
+               exclude_methods=true
 pytest_mark2 = name=jira
                regex_match=[a-zA-Z]+-\d+
                allow_multiple_args=true
+               exclude_methods=true
+pytest_mark3 = name=test_case_with_steps
+               exclude_methods=true
+               exclude_functions=true
 filename_check1 = filter_regex=test_.+
                   filename_regex=test_[\w-]+$
