@@ -13,9 +13,15 @@ testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
 
 
 @pytest.mark.test_id('d7fc4b42-432a-11e8-9ef9-6a00035510c0')
-@pytest.mark.jira('ASC-299')
+@pytest.mark.jira('ASC-299', 'RI-519')
 def test_verify_swift_stat(host):
     """Verify the swift endpoint status."""
+
+    r = host.ansible("setup")["ansible_facts"]["ansible_local"]["rpc_openstack"]["rpc_product"]["rpc_product_release"]
+    codename, major = helpers.get_osa_version(r)
+
+    if not major.isdigit() or major > 17:
+        pytest.xfail("openrc credentials are not available on the swift proxy node past queens")
 
     result = helpers.run_on_swift('swift stat -v', host)
 
