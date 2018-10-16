@@ -1,11 +1,6 @@
 ---
 # Task file for locating the 'clouds.yaml' file and placing it on the deployment host if necessary.
 
-- name: Register Utility Container
-  shell: |
-    lxc-ls -1 | grep utility | head -n 1
-  register: utility_container
-
 - name: Attempt to Locate '{{ os_clouds_yaml_path }}' on Utility Container
   shell: |
     lxc-attach -n "{{ utility_container.stdout }}" \
