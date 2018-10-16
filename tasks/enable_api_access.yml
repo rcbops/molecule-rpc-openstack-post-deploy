@@ -1,0 +1,48 @@
+---
+# Task file for locating the 'clouds.yaml' file and placing it on the deployment host if necessary.
+
+- name: Register Utility Container
+  shell: |
+    lxc-ls -1 | grep utility | head -n 1
+  register: utility_container
+
+- name: Attempt to Locate '{{ os_clouds_yaml_path }}' on Utility Container
+  shell: |
+    lxc-attach -n "{{ utility_container.stdout }}" \
+    -- bash -c 'test -f "{{ os_clouds_yaml_path }}"'
+  register: utility_clouds_yaml_exists
+  ignore_errors: yes
+
+- name: Attempt to Locate '{{ os_clouds_yaml_path }}' on Infra1 Host
+  stat:
+    path: "{{ os_clouds_yaml_path }}"
+  register: infra1_clouds_yaml_exists
+  failed_when: utility_clouds_yaml_exists.rc == 1 and infra1_clouds_yaml_exists.stat.exists == False
+
+- name: Ensure '{{ os_config_path }}' Path Exists on Deployment Host
+  file:
+    path: "{{ os_config_path }}"
+    state: directory
+  delegate_to: localhost
+
+- name: Copy '{{ os_clouds_yaml_path }}' from 'infra1' Host to Deployment Host
+  fetch:
+    src: "{{ os_clouds_yaml_path }}"
+    dest: "{{ os_clouds_yaml_path }}"
+    flat: yes
+  when: infra1_clouds_yaml_exists.stat.exists
+
+- name: Get '{{ os_clouds_yaml_path }}' from Utility Container
+  block:
+    - name: Attempt to Extract '{{ os_clouds_yaml_path }}' Contents from Utility Container
+      shell: |
+        lxc-attach -n "{{ utility_container.stdout }}" \
+        -- bash -c 'cat "{{ os_clouds_yaml_path }}"'
+      register: utility_clouds_yaml_contents
+
+    - name: Copy '{{ os_clouds_yaml_path }}' from Utility Container to Deployment Host
+      copy:
+        dest: "{{ os_clouds_yaml_path }}"
+        content: "{{ utility_clouds_yaml_contents.stdout }}"
+      delegate_to: localhost
+  when: utility_clouds_yaml_exists.rc == 0

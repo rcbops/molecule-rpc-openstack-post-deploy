@@ -18,3 +18,4 @@
 - import_tasks: network_setup.yml
 - import_tasks: server_setup.yml
 - import_tasks: volume_setup.yml
+- import_tasks: enable_api_access.yml
