@@ -24,18 +24,22 @@
   shell: |
     cd /opt/rpc-maas/playbooks
     sed -i 's|^# influx_telegraf_targets|influx_telegraf_targets|g' /etc/openstack_deploy/user_rpco_maas_variables.yml
+    date
     openstack-ansible -e maas_pre_flight_metadata_check_enabled=false site.yml -vvv
-  async: 1200
-  poll: 5
+    date
+  async: 3600
+  poll: 30
   changed_when: false
   failed_when: false
 
 - name: Run maas-verify-local
   shell: |
     cd /opt/rpc-maas/playbooks
+    date
     openstack-ansible maas-verify.yml --tags "maas-verify-local" -vvv
-  async: 1800
-  poll: 5
+    date
+  async: 7200
+  poll: 30
   changed_when: false
   failed_when: false
   register: run_maas_verify_local
