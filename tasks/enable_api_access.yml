@@ -1,0 +1,71 @@
+---
+# Task file for locating the 'clouds.yaml' file and placing it on the deployment host and infra1 host.
+
+- name: Attempt to Locate '{{ os_clouds_yaml_path }}' on Utility Container
+  shell: |
+    lxc-attach -n "{{ utility_container.stdout }}" \
+    -- bash -c 'test -f "{{ os_clouds_yaml_path }}"'
+  register: utility_clouds_yaml_exists
+  ignore_errors: yes
+
+- name: Attempt to Locate '{{ os_clouds_yaml_path }}' on 'infra1' Host
+  stat:
+    path: "{{ os_clouds_yaml_path }}"
+  register: infra1_clouds_yaml_exists
+  failed_when: utility_clouds_yaml_exists.rc == 1 and infra1_clouds_yaml_exists.stat.exists == False
+
+- name: Ensure '{{ os_config_path }}' Path Exists on Deployment Host
+  file:
+    path: "{{ os_config_path }}"
+    state: directory
+  delegate_to: localhost
+
+- name: Ensure '{{ os_config_path }}' Path Exists on 'infra1' Host
+  file:
+    path: "{{ os_config_path }}"
+    state: directory
+
+- name: Extract Raw Contents from 'infra1' Host
+  block:
+    - name: Attempt to Extract '{{ os_clouds_yaml_path }}' Contents from 'infra1' Host
+      slurp:
+        src: "{{ os_clouds_yaml_path }}"
+      register: raw_infra1_clouds_yaml_contents
+
+    - name: Set 'clouds_yaml' Fact with Verification Disabled
+      set_fact:
+        clouds_yaml: |-
+          {{ raw_infra1_clouds_yaml_contents.content |
+            b64decode |
+            from_yaml |
+            combine({'clouds': {'default': {'verify': False}}}, recursive=True)
+          }}
+  when: infra1_clouds_yaml_exists.stat.exists
+
+- name: Extract Raw Contents from Utility Container
+  block:
+    - name: Attempt to Extract '{{ os_clouds_yaml_path }}' Contents from Utility Container
+      shell: |
+        lxc-attach -n "{{ utility_container.stdout }}" \
+        -- bash -c 'cat "{{ os_clouds_yaml_path }}"'
+      register: raw_utility_clouds_yaml_contents
+
+    - name: Set 'clouds_yaml' Fact with Verification Disabled
+      set_fact:
+        clouds_yaml: |-
+          {{ raw_utility_clouds_yaml_contents.stdout |
+            from_yaml |
+            combine({'clouds': {'default': {'verify': False}}}, recursive=True)
+          }}
+  when: utility_clouds_yaml_exists.rc == 0
+
+- name: Create '{{ os_clouds_yaml_path }}' Configuration File on 'infra1 Host
+  copy:
+    content: "{{ clouds_yaml | to_nice_yaml(indent=2) }}"
+    dest: "{{ os_clouds_yaml_path }}"
+
+- name: Create '{{ os_clouds_yaml_path }}' Configuration File on Deployment Host
+  copy:
+    content: "{{ clouds_yaml | to_nice_yaml(indent=2) }}"
+    dest: "{{ os_clouds_yaml_path }}"
+  delegate_to: localhost
