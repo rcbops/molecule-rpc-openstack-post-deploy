@@ -81,3 +81,5 @@ subnets:
     enable_dhcp: true
     allocation_pool_start: "{{ private_net_cidr | ipaddr('10') | ipaddr('address') }}"
     allocation_pool_end: "{{ private_net_cidr | ipaddr('254') | ipaddr('address') }}"
+gateway_network: GATEWAY_NET
+custom_fact_path: /etc/ansible/facts.d

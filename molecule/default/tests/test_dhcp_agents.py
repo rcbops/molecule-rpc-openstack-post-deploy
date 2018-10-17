@@ -17,7 +17,7 @@ def test_openvswitch(host):
     Ensure DHCP agents for all networks are up
     """
 
-    r = host.ansible("setup")["ansible_facts"]["ansible_local"]["rpc_openstack"]["rpc_product"]["rpc_product_release"]
+    r = host.ansible("setup")["ansible_facts"]["ansible_local"]["system_tests"]["rpc_product_release"]
     expected_codename, expected_major = helpers.get_osa_version(r)
     print "expected_major: {}".format(expected_major)
     try:
