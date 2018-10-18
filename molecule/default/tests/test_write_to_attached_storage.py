@@ -58,8 +58,16 @@ def test_volume_attached(host):
     volume_name = vars['test_volume']
 
     floating_ip = helpers.create_floating_ip('GATEWAY_NET', host)
-    attach_floating_ip(server_name, floating_ip, host)
-    attach_volume_to_server(volume_name, server_name, host)
+
+    if helpers.get_expected_value('server', server_name, 'status', 'ACTIVE', host, 30):
+        attach_floating_ip(server_name, floating_ip, host)
+    else:
+        pytest.skip("Server is not available")
+
+    if helpers.get_expected_value('volume', volume_name, 'status', 'available', host, 30):
+        attach_volume_to_server(volume_name, server_name, host)
+    else:
+        pytest.skip("Volume is not available")
 
     # ensure attachment and retrieve associated device
     cmd = "{} volume show  \
