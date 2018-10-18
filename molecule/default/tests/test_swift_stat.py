@@ -17,7 +17,7 @@ testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
 def test_verify_swift_stat(host):
     """Verify the swift endpoint status."""
 
-    r = host.ansible("setup")["ansible_facts"]["ansible_local"]["rpc_openstack"]["rpc_product"]["rpc_product_release"]
+    r = host.ansible("setup")["ansible_facts"]["ansible_local"]["system_tests"]["rpc_product_release"]
     codename, major = helpers.get_osa_version(r)
 
     if not major.isdigit() or major > 17:

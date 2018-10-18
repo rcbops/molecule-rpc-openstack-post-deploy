@@ -1,4 +1,29 @@
 ---
+- name: Ensure path for ansible custom facts
+  file:
+    state: directory
+    recurse: yes
+    path: "{{ custom_fact_path }}"
+
+- name: Ensure file for ansible custom facts
+  file:
+    state: touch
+    path: "{{ custom_fact_path }}/system_tests.fact"
+
+- name: Create beginning of custom fact file
+  lineinfile:
+    state: present
+    insertbefore: BOF
+    line: "{"
+    path: "{{ custom_fact_path }}/system_tests.fact"
+
+- name: Create end of custom fact file
+  lineinfile:
+    state: present
+    insertbefore: EOF
+    line: "}"
+    path: "{{ custom_fact_path }}/system_tests.fact"
+
 - name: Set the rpc-openstack variables
   set_fact:
     rpc_openstack: "{{ ansible_local['rpc_openstack']['rpc_product'] }}"
@@ -21,6 +46,13 @@
   when:
     - rpc_openstack is undefined or
       rpc_openstack['rpc_product_release'] is undefined
+
+- name: Create custom fact for rpc_product_release
+  lineinfile:
+    state: present
+    insertbefore: '^}$'
+    line: '"rpc_product_release" : "{{ rpc_product_release }}"'
+    path: "{{ custom_fact_path }}/system_tests.fact"
 
 - name: Find the proper inventory file
   shell: find /opt/openstack-ansible -name dynamic_inventory.py -print
