@@ -24,19 +24,6 @@ key_name = 'rpc_support'
 
 # fresh helpers
 # TODO: move these to pytest-rpc
-def create_floating_ip(network_name, run_on_host):
-    cmd = "{} floating ip create \
-           -f json \
-           {} {}".format(os_pre, network_name, os_post)
-    res = run_on_host.run(cmd)
-
-    try:
-        floating_ip = json.loads(res.stdout)['floating_ip_address']
-    except (ValueError, KeyError):
-        return ''
-
-    return floating_ip
-
 
 def attach_floating_ip(server, floating_ip, run_on_host):
     cmd = "{} server add floating ip  \
@@ -70,9 +57,17 @@ def test_volume_attached(host):
     server_name = vars['test_server']
     volume_name = vars['test_volume']
 
-    floating_ip = create_floating_ip('GATEWAY_NET', host)
-    attach_floating_ip(server_name, floating_ip, host)
-    attach_volume_to_server(volume_name, server_name, host)
+    floating_ip = helpers.create_floating_ip('GATEWAY_NET', host)
+
+    if helpers.get_expected_value('server', server_name, 'status', 'ACTIVE', host, 30):
+        attach_floating_ip(server_name, floating_ip, host)
+    else:
+        pytest.skip("Server is not available")
+
+    if helpers.get_expected_value('volume', volume_name, 'status', 'available', host, 30):
+        attach_volume_to_server(volume_name, server_name, host)
+    else:
+        pytest.skip("Volume is not available")
 
     # ensure attachment and retrieve associated device
     cmd = "{} volume show  \
