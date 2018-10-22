@@ -2,6 +2,17 @@
 # Clone openstack-ansible-ops to infra host and execute
 # openstack-service-setup playbook.
 
+- name: Add Utility to remote inventory
+  blockinfile:
+    path: "{{ inventory_file }}"
+    block: |
+      [utility]
+      director
+      [utility_all]
+      director
+  when:
+    - rpc_openstack is undefined
+
 - name: Clean old openstack-ansible-ops dir if previously existing
   file:
     state: absent
@@ -11,6 +22,26 @@
   git:
     repo=https://github.com/openstack/openstack-ansible-ops.git
     dest=/opt/openstack-ansible-ops
+
+- name: Hack the repo to install shade via pip rather than apt
+  shell: |
+    sed -i 's/apt:/pip:/' openstack-service-setup.yml
+    sed -i 's/python-shade/shade/' openstack-service-setup.yml
+  args:
+    executable: /bin/bash
+    chdir: /opt/openstack-ansible-ops/multi-node-aio-xenial-ansible/playbooks/
+
+- name: Hack the repo to set physical network
+  shell: |
+    sed -i 's/physical_network: flat/physical_network: "{{ physical_network }}"/' openstack-service-config.yml
+  args:
+    executable: /bin/bash
+    chdir: /opt/openstack-ansible-ops/multi-node-aio-xenial-ansible/playbooks/vars
+
+- name: install virtualenv
+  package:
+    name: python-virtualenv
+    state: present
 
 - name: Create python2 virtualenv for the submodule
   shell: virtualenv --no-pip --no-setuptools --no-wheel --no-download --no-site-packages  \
@@ -58,17 +89,3 @@
   args:
     executable: /bin/bash
     chdir: /opt/openstack-ansible-ops/multi-node-aio-xenial-ansible/playbooks/
-
-- name: create directory for ansible custome facts
-  file:
-    state: directory
-    recurse: yes
-    path: /etc/ansible/facts.d
-
-- name: install custom fact for service setup
-  copy:
-    content: "{\"already_ran\" : \"true\"}"
-    dest: /etc/ansible/facts.d/service_setup.fact
-
-- name: re-read facts after adding custome fact
-  setup: filter=ansible_local
