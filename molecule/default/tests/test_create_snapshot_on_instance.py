@@ -5,7 +5,7 @@ import testinfra.utils.ansible_runner
 from time import sleep
 
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
-    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('os-infra_hosts')[:1]
+    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('shared-infra_hosts')[:1]
 
 utility_container = ("lxc-attach -n $(lxc-ls -1 | grep utility | head -n 1) "
                      "-- bash -c '. /root/openrc ; ")
