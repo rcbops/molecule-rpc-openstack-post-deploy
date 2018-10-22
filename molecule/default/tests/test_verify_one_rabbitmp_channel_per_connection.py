@@ -9,7 +9,7 @@ RPC 10+ manual test 13
 """
 
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
-    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('os-infra_hosts')[:1]
+    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('shared-infra_hosts')[:1]
 
 # attach the rabbitMQ container:
 attach_rabbitmq_container = "lxc-attach -n `lxc-ls -1 | grep rabbit | head -n 1` -- "
