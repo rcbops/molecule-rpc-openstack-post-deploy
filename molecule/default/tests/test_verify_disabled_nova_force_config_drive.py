@@ -8,7 +8,7 @@ import testinfra.utils.ansible_runner
 ################################################################
 # RPC 10+ manual test 1
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
-    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('compute-infra_hosts')[:1]
+    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('shared-infra_hosts')[:1]
 
 
 @pytest.mark.test_id('43e5ed40-4335-11e8-a701-6a00035510c0')
