@@ -11,10 +11,10 @@
 #  when: ansible_local.service_setup is not defined
 - import_tasks: osp_osa_ops.yml
 - import_tasks: support_key.yml
-- include_tasks: security_group_setup.yml
-- include_tasks: flavor_setup.yml
-- include_tasks: server_delete.yml
-- include_tasks: network_setup.yml
-- include_tasks: server_setup.yml
-- include_tasks: volume_setup.yml
-#- include_tasks: maas_setup.yml
+- import_tasks: security_group_setup.yml
+- import_tasks: flavor_setup.yml
+- import_tasks: server_delete.yml
+- import_tasks: network_setup.yml
+- import_tasks: server_setup.yml
+- import_tasks: volume_setup.yml
+#- import_tasks: maas_setup.yml
