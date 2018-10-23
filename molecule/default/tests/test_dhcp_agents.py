@@ -7,7 +7,7 @@ import pytest_rpc.helpers as helpers
 """ASC-157: Perform Post Deploy System validations"""
 
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
-    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('os-infra_hosts')[:1]
+    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('shared-infra_hosts')[:1]
 
 
 @pytest.mark.test_id('d7fc25ae-432a-11e8-a20a-6a00035510c0')

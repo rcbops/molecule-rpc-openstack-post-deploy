@@ -9,7 +9,7 @@ See RPC 10+ Post-Deployment QC process document
 """
 
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
-    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('os-infra_hosts')[:1]
+    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('shared-infra_hosts')[:1]
 
 
 @pytest.mark.test_id('d7fc49a8-432a-11e8-a2ea-6a00035510c0')
