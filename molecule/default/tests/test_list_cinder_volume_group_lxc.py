@@ -17,7 +17,7 @@ def test_cinder_lvm_volume(host):
     """
 
     output = host.run('vgs cinder-volumes')
-    assert re.search("cinder-volumes\s+[0-9]*\s+[0-9]*\s+", output.stdout)
+    assert re.search(r'cinder-volumes\s+[0-9]*\s+[0-9]*\s+', output.stdout)
 
 
 @pytest.mark.test_id('d7fc594a-432a-11e8-8764-6a00035510c0')
