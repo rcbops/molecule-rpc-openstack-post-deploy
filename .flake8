@@ -1,5 +1,5 @@
 [flake8]
-ignore = E501
+ignore = E501,W503
 pytest_mark1 = name=test_id
                value_match=uuid
                enforce_unique_value=true
