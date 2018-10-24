@@ -48,4 +48,4 @@ def verify_nova_force_config_drive_is_disabled(checked_host):
             cmd = "grep nova_force_config_drive " + conf_file
             output = checked_host.check_output(cmd)
             # Verify the 'nova_force_config_drive' is set to be False
-            assert (re.search('nova_force_config_drive:\s+[F|f]alse', output))
+            assert (re.search(r'nova_force_config_drive:\s+[F|f]alse', output))
