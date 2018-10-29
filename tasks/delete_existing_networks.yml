@@ -14,7 +14,7 @@
 # For each network
 #   openstack network delete network
 
-####################  Begin Remove Routers  #####################
+################  Begin Router Data Collection  #################
 - name: Get router list
   shell: |
     lxc-attach -n "{{ utility_container.stdout }}"  \
@@ -24,61 +24,76 @@
 
 - name: Set router list fact
   set_fact:
-    router_list_output: "{{ output.stdout_lines }}"
+    router_list: "{{ output.stdout_lines }}"
 
+- name: Print router list
+  debug: var=router_list
+
+- name: Get router ports
+  shell: |
+    lxc-attach -n "{{ utility_container.stdout }}"  \
+    -- bash -c '. /root/openrc ; \
+    openstack port list -f value --router "{{ item }}"'
+  register: output
+  with_items: "{{ router_list }}"
+
+- name: Set routers fact
+  set_fact:
+    routers: "{{ routers |default({}) | combine({item.0: item.1.stdout_lines}) }}"
+  with_together:
+    - "{{ router_list }}"
+    - "{{ output.results }}"
+
+- name: Print routers
+  debug: var=routers
+
+- name: Reset routers (with regex subnet_id)
+  set_fact:
+    routers: "{{ routers | combine(new_item, recursive=true) }}"
+  vars:
+    new_item: |-
+      { '{{item.key}}': {{ item.value | map('regex_replace', "^.*subnet_id='([-\w]+)'.*?$", '\1') | list }} }
+  with_dict: "{{ routers }}"
+
+- name: Print routers
+  debug: var=routers
+#################  End Router Data Collection  ##################
+
+####################  Begin Remove Routers  #####################
 - name: Unset external-gateway on router
   shell: |
     lxc-attach -n "{{ utility_container.stdout }}"  \
     -- bash -c '. /root/openrc ; \
     openstack router unset --external-gateway "{{ item }}"'
-  with_items: "{{ router_list_output }}"
-
-- name: Get router details
-  shell: |
-    lxc-attach -n "{{ utility_container.stdout }}"  \
-    -- bash -c '. /root/openrc ; \
-    openstack router show -f json "{{ item }}"'
-  register: output
-  with_items: "{{ router_list_output }}"
-
-- name: Set router details fact
-  set_fact:
-    router_details_output: "{{ output.results }}"
+  with_items: "{{ router_list }}"
 
 - name: Remove subnets from routers
   shell: |
     lxc-attach -n "{{ utility_container.stdout }}"  \
     -- bash -c '. /root/openrc ; \
-    openstack router remove subnet {{ (item.stdout | from_json).id }} {{ (item.stdout | from_json).interfaces_info | from_json | json_query("[*].subnet_id") | join(" ") }}'
-  when:  '(item.stdout | from_json).interfaces_info | from_json | json_query("[*].subnet_id") | join(" ")'
-  with_items: "{{ router_details_output }}"
+    openstack router remove subnet {{ item.key }} {{ item.value | join(" ") }}'
+  when:
+    - routers is defined
+    - item.value is defined
+    - item.value != ''
+    - item.value != []
+  with_dict: "{{ routers }}"
 
 - name: Delete router
   shell: |
     lxc-attach -n "{{ utility_container.stdout }}"  \
     -- bash -c '. /root/openrc ; \
     openstack router delete "{{ item }}"'
-  with_list: "{{ router_list_output }}"
+  with_list: "{{ router_list }}"
 ####################  End Remove Routers    #####################
 
 ####################  Begin Remove Subnets  #####################
-- name: Get subnets
-  shell: |
-    lxc-attach -n "{{ utility_container.stdout }}"  \
-    -- bash -c '. /root/openrc ; \
-    openstack subnet list -f value -c ID'
-  register: output
-
-- name: Set subnet list fact
-  set_fact:
-    subnet_list_output: "{{ output.stdout_lines }}"
-
 - name: Delete subnets
   shell: |
     lxc-attach -n "{{ utility_container.stdout }}"  \
     -- bash -c '. /root/openrc ; \
-    openstack subnet delete "{{ item }}"'
-  with_items: "{{ subnet_list_output }}"
+    openstack subnet delete "{{ item.value | join(" ") }}"'
+  with_dict: "{{ routers }}"
 ####################  End Remove Subnets    #####################
 
 ####################  Begin Remove Networks #####################
