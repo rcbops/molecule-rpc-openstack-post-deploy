@@ -10,7 +10,7 @@
   when:
     - ansible_os_family == 'Debian'
   register: support_package_installs
-  until: support_package_installs|success
+  until: support_package_installs is success
   retries: 2
   delay: 10
 
@@ -43,13 +43,13 @@
   slurp:
     src: "/root/.ssh/rpc_support"
   register: support_key
-  when: support_key_check.stat.exists |bool or support_key_create|changed
+  when: support_key_check.stat.exists |bool or support_key_create is changed
 
 - name: Get contents of support SSH pub key
   slurp:
     src: "/root/.ssh/rpc_support.pub"
   register: support_pub_key
-  when: support_key_check.stat.exists |bool or support_key_create|changed
+  when: support_key_check.stat.exists |bool or support_key_create is changed
 
 - name: Get fingerprint of rpc_support SSH key
   shell: |
@@ -57,7 +57,7 @@
   register: support_key_fingerprint
   changed_when: support_key_fingerprint.rc == 0
   failed_when: false
-  when: support_key_check.stat.exists |bool or support_key_create|changed
+  when: support_key_check.stat.exists |bool or support_key_create is changed
 
 - name: Get container rootfs directory list
   shell: "ls -1 -d /var/lib/lxc/*/rootfs"
@@ -107,4 +107,4 @@
     lxc-attach -n "{{ utility_container.stdout }}" -- bash -c '. /root/openrc ; nova keypair-add --pub-key /root/.ssh/rpc_support.pub rpc_support'
   retries: 2
   delay: 10
-  when: nova_support_key_delete|changed or nova_support_key.rc == 1
+  when: nova_support_key_delete is changed or nova_support_key.rc == 1
