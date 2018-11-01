@@ -1,39 +1,7 @@
 ---
-- name: Check for test volume
-  shell: |
-    lxc-attach -n "{{ utility_container.stdout }}"  \
-    -- bash -c '. /root/openrc ; \
-    openstack volume list | grep "{{ test_volume }}"'
-  register: test_volume_instance
-  changed_when: false
-  failed_when: false
-
-- name: Check test volume status
-  # get_expected_status('volume', volume_name, 'available', host)
-  shell: |
-    lxc-attach -n "{{ utility_container.stdout }}"  \
-    -- bash -c ". /root/openrc ; \
-    openstack volume show -f json \"{{ test_volume }}\" | python -c 'import sys, json; print json.load(sys.stdin)[\"status\"]'"
-  register: test_volume_status
-  until: test_volume_status.stdout.strip().lower() == 'available'
-  retries: 3
-  delay: 30
-  when: test_volume_instance.rc == 0
-
-- name: Delete test volume
-  shell: |
-    lxc-attach -n "{{ utility_container.stdout }}"  \
-    -- bash -c '. /root/openrc ; \
-    openstack volume delete "{{ test_volume }}"'
-  when:
-    - test_volume_instance.rc == 0
-    - test_volume_status.stdout is defined and test_volume_status.stdout.strip().lower() == 'available'
-
 - name: Create test volume
-  shell: |
-    lxc-attach -n "{{ utility_container.stdout }}" \
-    -- bash -c '. /root/openrc ; \
-    openstack volume create \
-    -f json \
-    --size 1 \
-    "{{ test_volume }}"'
+  os_volume:
+    cloud: default
+    state: present
+    display_name: "{{ test_volume }}"
+    size: 1
