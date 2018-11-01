@@ -32,6 +32,9 @@ test_router: TEST-ROUTER
 test_network: TEST-VXLAN
 test_subnet: TEST-VXLAN-SUBNET
 working_inventory: /tmp/inventory
+gateway_network: GATEWAY_NET
+private_network: PRIVATE_NET
+custom_fact_path: /etc/ansible/facts.d
 
 # vars for copying 'clouds.yaml' to the deployment host
 overcloudrc_path: /home/stack/overcloudrc
@@ -81,5 +84,3 @@ subnets:
     enable_dhcp: true
     allocation_pool_start: "{{ private_net_cidr | ipaddr('10') | ipaddr('address') }}"
     allocation_pool_end: "{{ private_net_cidr | ipaddr('254') | ipaddr('address') }}"
-gateway_network: GATEWAY_NET
-custom_fact_path: /etc/ansible/facts.d
