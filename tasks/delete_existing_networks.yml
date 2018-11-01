@@ -37,8 +37,8 @@
   register: output
   with_items: "{{ router_list }}"
 
-# router_list: list of routers as strings. These are used as dictionary keys
-#     for the "routers" fact.
+# router_list: list of routers as strings. These are used as values for the
+#     "id" key in the "routers" fact.
 # output: dictionary containing "results" key with list of ansible results
 #     from port list for each router. Each list element contains a dictionary
 #     of the results for one router. The "stdout_lines" key contains a list of
@@ -62,29 +62,37 @@
 #        ]
 #    }
 #  Output:
-#    routers={ "first_router_id": [ "subnet_1a" ],
-#              "second_router_id": [ "subnet_2a" ]
-#            }
-- name: Set routers fact
+#    routers=[
+#        { "id": "first_router_id", "subnets": [ "subnet_1a" ] },
+#        { "id": "second_router_id", "subnets": [ "subnet_2a" ] }
+#            ]
+
+- name: Set routers_i fact
   set_fact:
-    routers: "{{ routers |default({}) | combine({item.0: item.1.stdout_lines}) }}"
+    routers_i: "{{ routers_i |default([]) + [ {'id': item.0, 'subnets': item.1.stdout_lines} ] }}"
   with_together:
     - "{{ router_list }}"
     - "{{ output.results }}"
 
-- name: Print routers
-  debug: var=routers
+- name: Print routers_i
+  debug: var=routers_i
+  when: routers_i is defined
 
-- name: Reset routers (with regex subnet_id)
+- name: Set routers (with regex subnet_id)
   set_fact:
-    routers: "{{ routers | combine(new_item, recursive=true) }}"
+    routers: "{{ routers |default([]) + [ new_item ] }}"
   vars:
     new_item: |-
-      { '{{item.key}}': {{ item.value | map('regex_replace', "^.*subnet_id='([-\w]+)'.*?$", '\1') | list }} }
-  with_dict: "{{ routers }}"
+      { 'id': '{{item.id}}',
+        'subnets': {{ item.subnets | map('regex_replace', "^.*subnet_id='([-\w]+)'.*?$", '\1') | list }}
+      }
+  with_items: "{{ routers_i }}"
+  when: routers_i is defined
 
 - name: Print routers
   debug: var=routers
+  when: routers is defined
+
 #################  End Router Data Collection  ##################
 
 ####################  Begin Remove Routers  #####################
@@ -99,13 +107,11 @@
   shell: |
     lxc-attach -n "{{ utility_container.stdout }}"  \
     -- bash -c '. /root/openrc ; \
-    openstack router remove subnet {{ item.key }} {{ item.value | join(" ") }}'
-  when:
-    - routers is defined
-    - item.value is defined
-    - item.value != ''
-    - item.value != []
-  with_dict: "{{ routers }}"
+    openstack router remove subnet {{ item.0.id }} {{ item.1 }}'
+  with_subelements:
+    - "{{ routers }}"
+    - subnets
+  when: routers is defined
 
 - name: Delete router
   shell: |
@@ -120,8 +126,11 @@
   shell: |
     lxc-attach -n "{{ utility_container.stdout }}"  \
     -- bash -c '. /root/openrc ; \
-    openstack subnet delete "{{ item.value | join(" ") }}"'
-  with_dict: "{{ routers }}"
+    openstack subnet delete {{ item.1 }}'
+  with_subelements:
+    - "{{ routers }}"
+    - subnets
+  when: routers is defined
 ####################  End Remove Subnets    #####################
 
 ####################  Begin Remove Networks #####################
