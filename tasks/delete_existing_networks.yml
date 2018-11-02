@@ -82,6 +82,7 @@
     - "{{ routers }}"
     - subnets
   when: routers is defined
+  ignore_errors: yes
 
 - name: Delete router
   shell: |
@@ -101,6 +102,7 @@
     - "{{ routers }}"
     - subnets
   when: routers is defined
+  ignore_errors: yes
 ####################  End Remove Subnets    #####################
 
 ####################  Begin Remove Networks #####################
