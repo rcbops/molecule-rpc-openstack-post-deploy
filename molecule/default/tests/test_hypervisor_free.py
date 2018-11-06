@@ -9,22 +9,17 @@ target_host = 'infra1'
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
     os.environ['MOLECULE_INVENTORY_FILE']).get_hosts(target_host)
 
-cpu_ratio = 1
-ram_ratio = 1
-disk_ratio = 1
 
-
-@pytest.mark.test_id('d7fc4ff0-432a-11e8-aca5-6a00035510c0')
-@pytest.mark.jira('asc-157')
-def test_get_nova_allocation_ratios(host):
+@pytest.fixture
+def get_nova_allocation_ratios(host):
     """Retrieve resource allocation ratios from nova_conductor host.
 
-    Resource allocation ratio values are obtained from the nova_conductor host
-    and stored as global variables for use by other tests.
+    Args:
+        host (testinfra.Host): Testinfra host object to execute the action on.
+
+    Returns:
+        dict: Ratios
     """
-    global cpu_ratio
-    global ram_ratio
-    global disk_ratio
 
     # Find the 'nova_conductor' container that corresponds with the
     # 'target_host'
@@ -59,15 +54,19 @@ def test_get_nova_allocation_ratios(host):
     assert ram_res.rc == 0
     assert disk_res.rc == 0
 
+    ratios = {
+        'cpu_ratio': cpu_ratio,
+        'ram_ratio': ram_ratio,
+        'disk_ratio': disk_ratio
+    }
+
+    return ratios
+
 
 @pytest.mark.test_id('d7fc518c-432a-11e8-9015-6a00035510c0')
 @pytest.mark.jira('asc-157')
-def test_hypervisor_free(host):
+def test_hypervisor_free(get_nova_allocation_ratios, host):
     """Validate the resource levels for hypervisor"""
-
-    global cpu_ratio
-    global ram_ratio
-    global disk_ratio
 
     os_pre = ("lxc-attach -n $(lxc-ls -1 | grep utility | head -n 1) "
               "-- bash -c '. /root/openrc ; openstack ")
@@ -80,7 +79,9 @@ def test_hypervisor_free(host):
     assert "vcpus" in stats
     assert "vcpus_used" in stats
     assert "free_disk_gb" in stats
-    assert ((stats['memory_mb']) * ram_ratio
+    assert ((stats['memory_mb']) * get_nova_allocation_ratios['ram_ratio']
             - (stats['memory_mb_used'])) / 1024 > 0
-    assert (stats['vcpus'] * cpu_ratio - stats['vcpus_used']) > 0
-    assert (stats['free_disk_gb'] * disk_ratio) > 0
+    assert (stats['vcpus'] * get_nova_allocation_ratios['cpu_ratio']
+            - stats['vcpus_used']) > 0
+    assert (stats['free_disk_gb']
+            * get_nova_allocation_ratios['disk_ratio']) > 0
