@@ -5,8 +5,10 @@ import json
 
 """ASC-157: Perform Post Deploy System validations"""
 
+target_host = 'infra1'
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
-    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('infra1')
+    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts(target_host)
+
 cpu_ratio = 1
 ram_ratio = 1
 disk_ratio = 1
@@ -14,7 +16,6 @@ disk_ratio = 1
 
 @pytest.mark.test_id('d7fc4ff0-432a-11e8-aca5-6a00035510c0')
 @pytest.mark.jira('asc-157')
-@pytest.mark.skip(reason='expected ratio values not defined')
 def test_get_nova_allocation_ratios(host):
     """Retrieve resource allocation ratios from nova_conductor host.
 
@@ -25,8 +26,17 @@ def test_get_nova_allocation_ratios(host):
     global ram_ratio
     global disk_ratio
 
-    os_pre = ("lxc-attach -n $(lxc-ls -1 | grep nova_conductor | head -n 1) "
-              "-- bash -c \" ")
+    # Find the 'nova_conductor' container that corresponds with the
+    # 'target_host'
+    nova_conductor_containers = testinfra.utils.ansible_runner.AnsibleRunner(
+        os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('nova_conductor')
+    host_containers = testinfra.utils.ansible_runner.AnsibleRunner(
+        os.environ['MOLECULE_INVENTORY_FILE']).get_hosts(target_host + '-host_containers')
+    nova_conductors = [i for i in nova_conductor_containers if i in set(host_containers)]
+    assert len(nova_conductors) > 0
+    nova_conductor = nova_conductors[0]
+
+    os_pre = "lxc-attach -n {} -- bash -c \" ".format(nova_conductor)
     cmd = ' '.join(["awk -F= '/^cpu_allocation_ratio/ {print $2}'",
                     "/etc/nova/nova.conf"])
     cpu_res = host.run("{} {}\"".format(os_pre, cmd))
