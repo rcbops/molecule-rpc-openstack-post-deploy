@@ -25,13 +25,6 @@
     path: "{{ os_config_path }}"
     state: directory
 
-- name: Ensure 'shade' Python Package Installed on 'infra1' Host
-  pip:
-    name: "{{ item }}"
-    state: present
-  with_items:
-    - shade
-
 - name: Extract Raw Contents from 'infra1' Host
   block:
     - name: Attempt to Extract '{{ os_clouds_yaml_path }}' Contents from 'infra1' Host
