@@ -62,7 +62,7 @@
 - name: create directory for ansible custome facts
   file:
     state: directory
-    recurse: yes
+    recurse: true
     path: /etc/ansible/facts.d
 
 - name: install custom fact for service setup

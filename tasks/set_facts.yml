@@ -2,7 +2,7 @@
 - name: Ensure path for ansible custom facts
   file:
     state: directory
-    recurse: yes
+    recurse: true
     path: "{{ custom_fact_path }}"
 
 - name: Ensure file for ansible custom facts
@@ -67,4 +67,3 @@
   shell: |
     lxc-ls -1 | grep utility | head -n 1
   register: utility_container
-

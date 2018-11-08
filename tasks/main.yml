@@ -1,6 +1,7 @@
 ---
 # tasks file for molecule-rpc-openstack-post-deploy
 - import_tasks: set_facts.yml
+- import_tasks: enable_api_access.yml
 - name: Install "openvswitch-switch" package
   apt:
      name: openvswitch-switch
