@@ -1,0 +1,40 @@
+---
+- name: Slurp '{{ overcloudrc_path }}' Contents from '{{ inventory_hostname }}' Host
+  shell: "cat {{ overcloudrc_path }} | grep \"export OS_\""
+  register: overcloudrc
+
+- name: Extract '{{ overcloudrc_path }}' Contents from '{{ inventory_hostname }}' Host
+  set_fact:
+    overcloudrc_data: |-
+      {{
+        overcloudrc_data | default({}) |
+        combine({ item.split('=')[0] |
+                  regex_replace('export\s+'): item.split('=')[1] })
+      }}
+  with_items: "{{ overcloudrc.stdout_lines }}"
+
+- name: Debug overcloudrc_data
+  debug:
+    var: overcloudrc_data
+
+- name: Ensure '{{ os_config_path }}' on localhost
+  file:
+    path: "{{ os_config_path }}"
+    state: directory
+  delegate_to: localhost
+
+- name: Ensure '{{ os_config_path }}' on '{{ inventory_hostname }}'
+  file:
+    path: "{{ os_config_path }}"
+    state: directory
+
+- name: Create clouds.yml file on localhost
+  template:
+    src: clouds.yml.j2
+    dest: "{{ os_clouds_yml_path }}"
+  delegate_to: localhost
+
+- name: Create clouds.yml file on '{{ inventory_hostname }}'
+  template:
+    src: clouds.yml.j2
+    dest: "{{ os_clouds_yml_path }}"

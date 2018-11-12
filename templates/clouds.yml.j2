@@ -1,0 +1,13 @@
+clouds:
+  default:
+    auth:
+      auth_url: {{ overcloudrc_data.OS_AUTH_URL }}
+      project_name: {{ overcloudrc_data.OS_PROJECT_NAME }}
+      tenant_name: {{ overcloudrc_data.OS_PROJECT_NAME }}
+      username: {{ overcloudrc_data.OS_USERNAME }}
+      password: {{ overcloudrc_data.OS_PASSWORD }}
+      user_domain_name: {{ overcloudrc_data.OS_USER_DOMAIN_NAME }}
+      project_domain_name: {{ overcloudrc_data.OS_PROJECT_DOMAIN_NAME }}
+    region_name: regionOne
+    interface: internal
+    identity_api_version: "{{ overcloudrc_data.OS_IDENTITY_API_VERSION }}"

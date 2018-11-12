@@ -33,6 +33,11 @@ test_network: TEST-VXLAN
 test_subnet: TEST-VXLAN-SUBNET
 working_inventory: /tmp/inventory
 
+# vars for copying 'clouds.yaml' to the deployment host
+overcloudrc_path: /home/stack/overcloudrc
+os_config_path: /root/.config/openstack
+os_clouds_yml_path: "{{ os_config_path }}/clouds.yaml"
+
 # Create shared networks and subnets:
 router_name: GATEWAY_NET_ROUTER
 provider_net_name: GATEWAY_NET
