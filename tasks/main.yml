@@ -4,7 +4,7 @@
 - import_tasks: create_clouds.yml
 - name: Install "openvswitch-switch" package
   apt:
-     name: openvswitch-switch
+    name: openvswitch-switch
   when:
     - ansible_local.rpc_openstack is defined
 - import_tasks: osp_osa_ops.yml
