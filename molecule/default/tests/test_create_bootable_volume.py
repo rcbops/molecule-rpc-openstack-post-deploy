@@ -9,44 +9,44 @@ testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
 
 @pytest.mark.test_id('3c469966-4fcb-11e8-a604-6a0003552100')
 @pytest.mark.jira('asc-258')
-def test_create_bootable_volume(host):
-    """Test to verify that a bootable volume can be created based on a Glance image
+def test_create_bootable_volume(openstack_properties, host):
+    """Test to verify that a bootable volume can be created based on a
+    Glance image
 
     Args:
-        host(testinfra.host.Host): A hostname in dynamic_inventory.json/molecule.yml
+        openstack_properties (dict): fixture 'openstack_properties' from
+        conftest.py
+        host(testinfra.host.Host): Testinfra host fixture.
     """
+    image_id = helpers.get_id_by_name('image',
+                                      openstack_properties['image_name'],
+                                      host)
+    assert image_id is not None
 
-    null = None
-    false = False
-    volume_name = 'test_volume'
-    image_name = 'Cirros-0.3.5'
-    zone = 'nova'
+    random_str = helpers.generate_random_string(7)
+    volume_name = "test_volume_{}".format(random_str)
 
-    image_id = helpers.get_id_by_name('image', image_name, host)
+    data = {'volume': {'size': '2',
+                       'imageref': image_id,
+                       'name': volume_name,
+                       'zone': openstack_properties['zone'],
+                       }
+            }
 
-    data = {
-        "volume": {
-            "size": 1,
-            "zone": zone,
-            "source_volid": null,
-            "description": null,
-            "multiattach": false,
-            "snapshot_id": null,
-            "backup_id": null,
-            "name": volume_name,
-            "imageref": image_id,
-            "volume_type": null,
-            "metadata": {},
-            "consistencygroup_id": null
-        }
-    }
-
-    helpers.create_bootable_volume(data, host)
+    volume_id = helpers.create_bootable_volume(data, host)
+    assert volume_id is not None
 
     volumes = helpers.get_resource_list_by_name('volume', host)
     assert volumes
     volume_names = [x['Name'] for x in volumes]
+
     assert volume_name in volume_names
+    assert helpers.get_expected_value('volume',
+                                      volume_name,
+                                      'status',
+                                      'available',
+                                      host,
+                                      retries=50)
 
     # Tear down
     helpers.delete_volume(volume_name, host)
