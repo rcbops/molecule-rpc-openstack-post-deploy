@@ -47,6 +47,3 @@ def test_create_bootable_volume(openstack_properties, host):
                                       'available',
                                       host,
                                       retries=50)
-
-    # Tear down
-    helpers.delete_volume(volume_name, host)
