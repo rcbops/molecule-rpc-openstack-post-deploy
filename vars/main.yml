@@ -33,6 +33,11 @@ test_network: TEST-VXLAN
 test_subnet: TEST-VXLAN-SUBNET
 working_inventory: /tmp/inventory
 
+# vars for copying 'clouds.yaml' to the deployment host
+overcloudrc_path: /home/stack/overcloudrc
+os_config_path: /root/.config/openstack
+os_clouds_yml_path: "{{ os_config_path }}/clouds.yaml"
+
 # Create shared networks and subnets:
 router_name: GATEWAY_NET_ROUTER
 provider_net_name: GATEWAY_NET
@@ -65,9 +70,9 @@ subnets:
     gateway_ip: "{{ provider_net_cidr | ipaddr('1') | ipaddr('address') }}"
     enable_dhcp: "{{ enable_provider_net_dhcp | default(false) | bool }}"
     allocation_pool_start: "{{ provider_net_cidr | ipaddr('201') | ipaddr('address') }}"
-    allocation_pool_end:   "{{ provider_net_cidr | ipaddr('255') | ipaddr('address') }}"
+    allocation_pool_end: "{{ provider_net_cidr | ipaddr('255') | ipaddr('address') }}"
     dns_nameservers:
-       - "{{ provider_dns_server }}"
+      - "{{ provider_dns_server }}"
   - name: "{{ private_subnet_name }}"
     network_name: "{{ private_net_name }}"
     ip_version: 4
@@ -75,4 +80,4 @@ subnets:
     gateway_ip: "{{ private_net_cidr | ipaddr('1') | ipaddr('address') }}"
     enable_dhcp: true
     allocation_pool_start: "{{ private_net_cidr | ipaddr('10') | ipaddr('address') }}"
-    allocation_pool_end:   "{{ private_net_cidr | ipaddr('254') | ipaddr('address') }}"
+    allocation_pool_end: "{{ private_net_cidr | ipaddr('254') | ipaddr('address') }}"

@@ -9,4 +9,5 @@
     network: "{{ test_network }}"
     key_name: rpc_support
     security_groups: rpc-support
+    auto_ip: false
   delegate_to: "{{ cli_host }}"

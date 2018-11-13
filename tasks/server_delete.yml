@@ -14,5 +14,9 @@
     cloud: default
     state: absent
     name: "{{ item.id }}"
-  with_items: "{{ openstack_servers }}"
+  with_items: "{{ openstack_servers.ansible_facts.openstack_servers }}"
+  when:
+    - openstack_servers is defined
+    - openstack_servers.ansible_facts is defined
+    - openstack_servers.ansible_facts.openstack_servers is defined
   delegate_to: "{{ cli_host }}"

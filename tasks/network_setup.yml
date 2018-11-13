@@ -4,7 +4,7 @@
     cloud: default
     state: present
     name: "{{ test_network }}"
-    external: False
+    external: false
   delegate_to: "{{ cli_host }}"
 
 - name: Create test subnet
@@ -16,7 +16,7 @@
     cidr: 192.168.1.0/24
     allocation_pool_start: 192.168.1.2
     allocation_pool_end: 192.168.1.254
-    gateway_ip:  192.168.1.1
+    gateway_ip: 192.168.1.1
   delegate_to: "{{ cli_host }}"
 
 - name: Create test router
