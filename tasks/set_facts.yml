@@ -57,7 +57,6 @@
 - name: Set cli_host
   set_fact:
     cli_host: "{{ ansible_hostname }}"
-    # cli_host: "{{ utility_container if utility_container is defined else ansible_hostname }}"
 
 - name: Check for pip on "{{ cli_host }}"
   command: which pip
