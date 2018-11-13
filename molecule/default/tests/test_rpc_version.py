@@ -5,12 +5,7 @@ import re
 import pytest_rpc.helpers as helpers
 
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
-    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('os-infra_hosts')[:1]
-
-
-# TODO: find a better way to look up the branch in scope
-expected_codename, expected_major = \
-    helpers.get_osa_version(os.environ['RPC_PRODUCT_RELEASE'])
+    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('shared-infra_hosts')[:1]
 
 
 @pytest.mark.test_id('2c596d8f-7957-11e8-8017-6a00035510c0')
@@ -22,6 +17,9 @@ def test_openstack_release_version(host):
         host(testinfra.host.Host): host fixture that will iterate over
         testinfra_hosts
     """
+
+    r = host.ansible("setup")["ansible_facts"]["ansible_local"]["system_tests"]["rpc_product_release"]
+    expected_codename, expected_major = helpers.get_osa_version(r)
 
     # Expected example:
     # DISTRIB_RELEASE="r16.2.0"
@@ -45,6 +43,9 @@ def test_openstack_codename(host):
         host(testinfra.host.Host): host fixture that will iterate over
         testinfra_hosts
     """
+
+    r = host.ansible("setup")["ansible_facts"]["ansible_local"]["system_tests"]["rpc_product_release"]
+    expected_codename, expected_major = helpers.get_osa_version(r)
 
     # Expected example:
     # DISTRIB_CODENAME="Pike"

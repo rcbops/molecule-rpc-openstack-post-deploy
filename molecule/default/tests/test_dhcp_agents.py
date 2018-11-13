@@ -7,7 +7,7 @@ import pytest_rpc.helpers as helpers
 """ASC-157: Perform Post Deploy System validations"""
 
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
-    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('os-infra_hosts')[:1]
+    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('shared-infra_hosts')[:1]
 
 
 @pytest.mark.test_id('d7fc25ae-432a-11e8-a20a-6a00035510c0')
@@ -17,8 +17,8 @@ def test_openvswitch(host):
     Ensure DHCP agents for all networks are up
     """
 
-    expected_codename, expected_major = \
-        helpers.get_osa_version(os.environ['RPC_PRODUCT_RELEASE'])
+    r = host.ansible("setup")["ansible_facts"]["ansible_local"]["system_tests"]["rpc_product_release"]
+    expected_codename, expected_major = helpers.get_osa_version(r)
     print "expected_major: {}".format(expected_major)
     try:
         osa_major = int(expected_major)

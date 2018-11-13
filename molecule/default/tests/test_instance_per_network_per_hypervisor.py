@@ -10,7 +10,7 @@ from time import sleep
 external ping, and tear-down """
 
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
-    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('os-infra_hosts')[:1]
+    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('shared-infra_hosts')[:1]
 
 os_pre = ("lxc-attach -n $(lxc-ls -1 | grep utility | head -n 1) "
           "-- bash -c '. /root/openrc ; openstack ")
@@ -34,7 +34,6 @@ def create_server_on(target_host, image_id, flavor, network_id, compute_zone, se
 
 @pytest.mark.test_id('c3002bde-59f1-11e8-be3b-6c96cfdb252f')
 @pytest.mark.jira('ASC-241', 'ASC-883', 'ASC-789', 'RI-417')
-@pytest.mark.xfail(strict=True)  # The test will be recorded as failed if unexpected XPASS when 'RI-417' is fixed
 def test_hypervisor_vms(host):
     """ASC-241: Per network, spin up an instance on each hypervisor, perform
     external ping, and tear-down """

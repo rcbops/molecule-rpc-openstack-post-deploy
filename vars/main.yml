@@ -32,6 +32,9 @@ test_router: TEST-ROUTER
 test_network: TEST-VXLAN
 test_subnet: TEST-VXLAN-SUBNET
 working_inventory: /tmp/inventory
+gateway_network: GATEWAY_NET
+private_network: PRIVATE_NET
+custom_fact_path: /etc/ansible/facts.d
 
 # vars for copying 'clouds.yaml' to the deployment host
 overcloudrc_path: /home/stack/overcloudrc

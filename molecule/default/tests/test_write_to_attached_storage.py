@@ -10,7 +10,7 @@ from time import sleep
 on it, and verify you can write to it. """
 
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
-    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('os-infra_hosts')[:1]
+    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('shared-infra_hosts')[:1]
 
 os_pre = ("lxc-attach -n $(lxc-ls -1 | grep utility | head -n 1) "
           "-- bash -c '. /root/openrc ; openstack ")
@@ -24,19 +24,6 @@ key_name = 'rpc_support'
 
 # fresh helpers
 # TODO: move these to pytest-rpc
-def create_floating_ip(network_name, run_on_host):
-    cmd = "{} floating ip create \
-           -f json \
-           {} {}".format(os_pre, network_name, os_post)
-    res = run_on_host.run(cmd)
-
-    try:
-        floating_ip = json.loads(res.stdout)['floating_ip_address']
-    except (ValueError, KeyError):
-        return ''
-
-    return floating_ip
-
 
 def attach_floating_ip(server, floating_ip, run_on_host):
     cmd = "{} server add floating ip  \
@@ -63,7 +50,6 @@ def attach_volume_to_server(volume, server, run_on_host):
 
 @pytest.mark.test_id('3d77bc35-7a21-11e8-90d1-6a00035510c0')
 @pytest.mark.jira('ASC-257', 'ASC-883', 'RI-417')
-@pytest.mark.xfail(strict=True)  # The test will be recorded as failed if unexpected XPASS when 'RI-417' is fixed
 def test_volume_attached(host):
     vars = host.ansible('include_vars',
                         'file=./vars/main.yml')['ansible_facts']
@@ -71,9 +57,17 @@ def test_volume_attached(host):
     server_name = vars['test_server']
     volume_name = vars['test_volume']
 
-    floating_ip = create_floating_ip('GATEWAY_NET', host)
-    attach_floating_ip(server_name, floating_ip, host)
-    attach_volume_to_server(volume_name, server_name, host)
+    floating_ip = helpers.create_floating_ip('GATEWAY_NET', host)
+
+    if helpers.get_expected_value('server', server_name, 'status', 'ACTIVE', host, 30):
+        attach_floating_ip(server_name, floating_ip, host)
+    else:
+        pytest.skip("Server is not available")
+
+    if helpers.get_expected_value('volume', volume_name, 'status', 'available', host, 30):
+        attach_volume_to_server(volume_name, server_name, host)
+    else:
+        pytest.skip("Volume is not available")
 
     # ensure attachment and retrieve associated device
     cmd = "{} volume show  \
