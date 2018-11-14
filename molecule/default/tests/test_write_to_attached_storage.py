@@ -3,18 +3,21 @@ import testinfra.utils.ansible_runner
 import pytest
 import json
 import re
-import pytest_rpc.helpers as helpers
+import pytest_rpc_helpers as helpers
 from time import sleep
 
 """ASC-257: Attach a volume to an instance, create a partition and filesystem
 on it, and verify you can write to it. """
 
-testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
-    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('shared-infra_hosts')[:1]
+# TODO: Put these values into ansible facts
+cli_host = 'director'
+cli_openrc_path = '/home/stack/overcloudrc'
 
-os_pre = ("lxc-attach -n $(lxc-ls -1 | grep utility | head -n 1) "
-          "-- bash -c '. /root/openrc ; openstack ")
-os_post = "'"
+testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
+    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts(cli_host)
+
+os_pre = ". {} ; openstack ".format(cli_openrc_path)
+os_post = ''
 
 ssh = "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
        -i ~/.ssh/rpc_support ubuntu@{}"
