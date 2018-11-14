@@ -14,18 +14,21 @@ the future, we should create keystone submodule for them
 RPC 10+ manual test 7
 """
 
-testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
-    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('shared-infra_hosts')[:1]
+# TODO: Put these values into ansible facts
+cli_host = 'director'
+cli_openrc_path = '/home/stack/overcloudrc'
 
-utility_container = ("lxc-attach -n $(lxc-ls -1 | grep utility | head -n 1) "
-                     "-- bash -c '. /root/openrc ; ")
+testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
+    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts(cli_host)
+
+os_pre = ". {} ; ".format(cli_openrc_path)
 
 
 @pytest.mark.test_id('43e5ef8c-4335-11e8-9995-6a00035510c0')
 @pytest.mark.jira('asc-236')
 def test_keystone_users(host):
     """Verify the requested users were created"""
-    cmd = "{} openstack user list --domain=default'".format(utility_container)
+    cmd = "{} openstack user list --domain=default".format(os_pre)
     output = host.run(cmd)
     assert ("cinder" in output.stdout)
     assert ("glance" in output.stdout)
@@ -39,6 +42,6 @@ def test_keystone_users(host):
 @pytest.mark.jira('asc-236')
 def test_keystone_tenants(host):
     """Verify the service tenant was created """
-    cmd = "{} openstack project list'".format(utility_container)
+    cmd = "{} openstack project list".format(os_pre)
     output = host.run(cmd)
     assert ("service" in output.stdout)
