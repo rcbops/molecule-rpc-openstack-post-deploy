@@ -2,11 +2,14 @@ import os
 import pytest
 import testinfra.utils.ansible_runner
 
-testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
-    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('shared-infra_hosts')[:1]
+# TODO: Put these values into ansible facts
+cli_host = 'director'
+cli_openrc_path = '/home/stack/overcloudrc'
 
-utility_container = ("lxc-attach -n $(lxc-ls -1 | grep utility | head -n 1) "
-                     "-- bash -c '. /root/openrc ; ")
+testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
+    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts(cli_host)
+
+os_pre = ". {} ; ".format(cli_openrc_path)
 
 
 @pytest.mark.test_id('d7fc5630-432a-11e8-b9da-6a00035510c0')
@@ -17,6 +20,6 @@ def test_cinder_service(host):
     Args:
         host(testinfra.host.Host): A hostname in dynamic_inventory.json/molecule.yml
     """
-    cmd = "{} cinder service-list'".format(utility_container)
+    cmd = "{} cinder service-list".format(os_pre)
     output = host.run(cmd)
     assert ("cinder-volume" in output.stdout)
