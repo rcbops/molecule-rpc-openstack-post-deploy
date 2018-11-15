@@ -158,3 +158,142 @@ def create_floating_ip(network_name, run_on_host):
     assert key in result.keys()
 
     return result[key]
+
+
+def create_bootable_volume(data, run_on_host):
+    """Create a bootable volume using a json file
+
+    Args:
+        data (dict): Dictionary in the following format:
+                     { 'volume': { 'size': '',
+                                   'imageref': '',
+                                   'name': '',
+                                   'zone': '',
+                                 }
+                     }
+        run_on_host (testinfra.Host): Testinfra host object to execute the
+                                      action on.
+
+    Returns:
+        str: The id of the created resource
+
+    Raises:
+        AssertionError: If failed to create the resource
+    """
+
+    cmd = ("{} volume create "
+           "-f json "
+           "--size {} "
+           "--image {} "
+           "--availability-zone {} "
+           "--bootable {}".format(os_pre,
+                                  data['volume']['size'],
+                                  data['volume']['imageref'],
+                                  data['volume']['zone'],
+                                  data['volume']['name']))
+
+    output = run_on_host.run(cmd)
+
+    try:
+        result = json.loads(output.stdout)
+    except ValueError:
+        result = output.stdout
+
+    assert type(result) is dict
+    assert 'id' in result
+
+    return result['id']
+
+
+def delete_volume(volume_name, run_on_host, addl_flags=''):
+    """Delete OpenStack volume
+
+    Args:
+        volume_name (str): OpenStack volume identifier (name or id).
+        run_on_host (testinfra.Host): Testinfra host object to execute the
+                                      action on.
+
+    Raises:
+        AssertionError: If operation unsuccessful.
+    """
+
+    delete_it('volume', volume_name, run_on_host, addl_flags=addl_flags)
+
+
+def delete_it(service_type, service_name, run_on_host, addl_flags=''):
+    """Delete an OpenStack object
+
+    Args:
+        service_type (str): The OpenStack object type to query for.
+        service_name (str): The name of the OpenStack object to query for.
+        run_on_host (testinfra.Host): Testinfra host object to execute the action on.
+        addl_flags (str): Additional flags to pass to the openstack command
+
+    Raises:
+        AssertionError: If operation is unsuccessful.
+    """
+
+    service_id = get_id_by_name(service_type, service_name, run_on_host)
+    cmd = ("{} {} delete "
+           "{} "
+           "{}".format(os_pre, service_type, addl_flags, service_id))
+
+    assert run_on_host.run(cmd).rc == 0
+    assert (resource_not_in_the_list(service_type, service_name, run_on_host))
+
+
+def resource_not_in_the_list(service_type, service_name, run_on_host):
+    """ Verify if the resource in NOT in the list
+
+    Args:
+        service_type (str): The OpenStack object type to query for.
+        service_name (str): The name of the OpenStack object to query for.
+        run_on_host (testinfra.Host): Testinfra host object to execute the action on.
+
+    Returns:
+        bool: True if the resource is NOT in the list, False if the resource is in the list
+    """
+
+    return _resource_in_list(service_type, service_name, False, run_on_host)
+
+
+def _resource_in_list(service_type, service_name, expected_resource, run_on_host, retries=10):
+    """Verify if a volume/server/image is existing
+
+    Args:
+        service_type (str): The OpenStack object type to query for.
+        service_name (str): The name of the OpenStack object to query for.
+        expected_resource (bool): Whether or not the resource is expected in the list
+        run_on_host (testinfra.Host): Testinfra host object to execute the action on.
+        retries (int): The maximum number of retry attempts.
+
+    Returns:
+        bool: Whether the expected resource was found or not.
+    """
+
+    SLEEP = 2
+
+    for i in range(0, retries):
+
+        res_id = get_id_by_name(service_type, service_name, run_on_host)
+
+        # Expecting that a resource IS in the list, for example after creating
+        # a resource, it is not shown in the list until several seconds later,
+        # retry every SLEEP seconds until reaching max retries (default = 10)
+        # to ensure the expected resource seen in the list.
+        if expected_resource:
+            if res_id:
+                return True
+            else:
+                sleep(SLEEP)
+
+        # Expecting that a resource is NOT in the list, for example after
+        # deleting a resource, it is STILL shown in the list until several
+        # seconds later, retry every SLEEP seconds until reaching max retries
+        # (default = 10) to ensure the resource is removed from the list
+        else:
+            if not res_id:
+                return True
+            else:
+                sleep(SLEEP)
+    return False
