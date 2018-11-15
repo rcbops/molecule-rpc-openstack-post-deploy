@@ -395,3 +395,31 @@ def create_snapshot_from_instance(snapshot_name, instance_name, run_on_host):
     assert 'id' in result
 
     return result['id']
+
+
+def parse_table(ascii_table):
+    """Parse an OpenStack ascii table
+
+    Args:
+        ascii_table (str): OpenStack ascii table.
+
+    Returns:
+        list of str: Column headers from table.
+        list of str: Rows from table.
+    """
+    header = []
+    data = []
+    for line in filter(None, ascii_table.split('\n')):
+        if '-+-' in line:
+            continue
+        if not header:
+            header = list(filter(lambda x: x != '|', line.split()))
+            continue
+        data_row = []
+        splitted_line = list(filter(lambda x: x != '|', line.split()))
+        for i in range(len(splitted_line)):
+            data_row.append(splitted_line[i])
+        while len(data_row) < len(header):
+            data_row.append('')
+        data.append(data_row)
+    return header, data
