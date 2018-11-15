@@ -8,6 +8,7 @@ testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
     os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('shared-infra_hosts')[:1]
 
 
+@pytest.mark.xfail(reason='rpc version mapping not applicable to OSP')
 @pytest.mark.test_id('2c596d8f-7957-11e8-8017-6a00035510c0')
 @pytest.mark.jira('ASC-234')
 def test_openstack_release_version(host):
@@ -34,6 +35,7 @@ def test_openstack_release_version(host):
     assert re.search(expected_regex, release)
 
 
+@pytest.mark.xfail(reason='rpc version mapping not applicable to OSP')
 @pytest.mark.test_id('0d8e4105-789e-11e8-8335-6a00035510c0')
 @pytest.mark.jira('ASC-234')
 def test_openstack_codename(host):
