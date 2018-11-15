@@ -33,7 +33,6 @@ def test_keystone_users(host):
     assert ("cinder" in output.stdout)
     assert ("glance" in output.stdout)
     assert ("heat" in output.stdout)
-    assert ("keystone" in output.stdout)
     assert ("neutron" in output.stdout)
     assert ("nova" in output.stdout)
 

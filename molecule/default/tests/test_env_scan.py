@@ -43,10 +43,8 @@ def test_users(host):
     user_names = [d['Name'] for d in users]
     assert "admin" in user_names
     assert "cinder" in user_names
-    assert "dispersion" in user_names
     assert "glance" in user_names
     assert "heat" in user_names
-    assert "keystone" in user_names
     assert "neutron" in user_names
     assert "nova" in user_names
     assert "swift" in user_names
