@@ -2,6 +2,7 @@
 # dependent on an RPC-O installation.
 
 import json
+import uuid
 from time import sleep
 
 # TODO: Put these values into ansible facts
@@ -297,3 +298,100 @@ def _resource_in_list(service_type, service_name, expected_resource, run_on_host
             else:
                 sleep(SLEEP)
     return False
+
+
+def generate_random_string(string_length=10):
+    """Generate a random string of specified length string_length.
+
+    Args:
+        string_length (int): Size of string to generate.
+
+    Returns:
+        str: Random string of specified length (maximum of 32 characters)
+    """
+    random_str = str(uuid.uuid4())
+    random_str = random_str.upper()
+    random_str = random_str.replace("-", "")
+    return random_str[0:string_length]  # Return the random_str string.
+
+
+def create_instance(data, run_on_host):
+    """Create an instance from source (a glance image or a snapshot)
+
+    Args:
+        data (dict): Dictionary in the following format:
+                    data = {
+                        "instance_name": 'instance_name',
+                        "from_source": 'image',
+                        "source_name": 'image_name',
+                        "flavor": 'flavor',
+                        "network_name": 'network',
+                    }
+        run_on_host (testinfra.host.Host): A hostname where the command is being executed.
+
+    Returns:
+        str: The id of the created resource
+
+    Raises:
+        AssertionError: If failed to create the resource
+
+    Example:
+    `openstack server create --image <image_id> flavor <flavor> --nic <net-id=network_id> server/instance_name`
+    `openstack server create --snapshot <snapshot_id> flavor <flavor> --nic <net-id=network_id> server/instance_name`
+    """
+    source_id = get_id_by_name(data['from_source'], data['source_name'], run_on_host)
+    network_id = get_id_by_name('network', data['network_name'], run_on_host)
+
+    cmd = ("{} server create "
+           "-f json "
+           "--{} {} "
+           "--flavor {} "
+           "--nic net-id={} {}".format(os_pre, data['from_source'],
+                                       source_id, data['flavor'],
+                                       network_id,
+                                       data['instance_name']))
+
+    output = run_on_host.run(cmd)
+
+    try:
+        result = json.loads(output.stdout)
+    except ValueError:
+        result = output.stdout
+
+    assert type(result) is dict
+    assert 'id' in result
+
+    return result['id']
+
+
+def create_snapshot_from_instance(snapshot_name, instance_name, run_on_host):
+    """Create snapshot on an instance
+
+    Args:
+        snapshot_name (str): The name of the OpenStack snapshot to be created.
+        instance_name (str): The name of the OpenStack instance from which the snapshot is created.
+        run_on_host (testinfra.Host): Testinfra host object to execute the action on.
+
+    Returns:
+        str: The id of the created resource
+
+    Raises:
+        AssertionError: If failed to create the resource
+    """
+
+    instance_id = get_id_by_name('server', instance_name, run_on_host)
+    cmd = ("{} server image create "
+           "-f json "
+           "--name {} {}".format(os_pre, snapshot_name, instance_id))
+
+    output = run_on_host.run(cmd)
+
+    try:
+        result = json.loads(output.stdout)
+    except ValueError:
+        result = output.stdout
+
+    assert type(result) is dict
+    assert 'id' in result
+
+    return result['id']
