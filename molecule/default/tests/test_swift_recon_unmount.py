@@ -12,6 +12,7 @@ testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
     os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('shared-infra_hosts')[:1]
 
 
+@pytest.mark.xfail(reason='ASC-1031 - OSP MNAIO deploys ceph not swift')
 @pytest.mark.test_id('4b0691b8-8b9e-11e8-8fb0-a860b622fd2c')
 @pytest.mark.jira('ASC-298')
 def test_verify_swift_ring_mounted(host):
