@@ -9,12 +9,15 @@ from time import sleep
 """ASC-241: Per network, spin up an instance on each hypervisor, perform
 external ping, and tear-down """
 
-testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
-    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('shared-infra_hosts')[:1]
+# TODO: Put these values into ansible facts
+cli_host = 'director'
+cli_openrc_path = '/home/stack/overcloudrc'
 
-os_pre = ("lxc-attach -n $(lxc-ls -1 | grep utility | head -n 1) "
-          "-- bash -c '. /root/openrc ; openstack ")
-os_post = "'"
+testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
+    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts(cli_host)
+
+os_pre = ". {} ; openstack ".format(cli_openrc_path)
+os_post = ''
 
 
 def create_server_on(target_host, image_id, flavor, network_id, compute_zone, server_name):
