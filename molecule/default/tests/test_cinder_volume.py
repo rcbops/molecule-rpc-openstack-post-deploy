@@ -1,4 +1,4 @@
-import pytest_rpc.helpers as helpers
+import pytest_rpc_helpers as helpers
 import os
 import pytest
 import testinfra.utils.ansible_runner
@@ -9,12 +9,15 @@ RPC 10+ manual test 14.
 """
 
 
+# TODO: Put these values into ansible facts
+cli_host = 'director'
+cli_openrc_path = '/home/stack/overcloudrc'
+
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
-    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('shared-infra_hosts')[:1]
+    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts(cli_host)
 
 
-utility_container = ("lxc-attach -n $(lxc-ls -1 | grep utility | head -n 1) "
-                     "-- bash -c '. /root/openrc ; ")
+os_pre = ". {} ; ".format(cli_openrc_path)
 
 
 @pytest.mark.test_id('02a17d7d-4a42-11e8-bdcf-6a00035510c0')
@@ -25,7 +28,7 @@ def test_cinder_volume_created(host):
     # Create a test volume
     random_str = helpers.generate_random_string(4)
     volume_name = "test_volume_{}".format(random_str)
-    cmd = "{} openstack volume create --size 1 --availability-zone nova {}'".format(utility_container, volume_name)
+    cmd = "{} openstack volume create --size 1 --availability-zone nova {}".format(os_pre, volume_name)
     host.run_expect([0], cmd)
 
     # Verify the volume is created
