@@ -13,6 +13,7 @@ testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
 os_pre = ". {} ; ".format(cli_openrc_path)
 
 
+@pytest.mark.xfail(reason='ASC-1262 - External IP cannot be pinged')
 @pytest.mark.test_id('ab24ffbd-798b-11e8-a2b2-6c96cfdb2e43')
 @pytest.mark.jira('asc-254')
 def test_assign_floating_ip_to_instance(openstack_properties, host):
