@@ -20,6 +20,7 @@ backup_folder_on_container = '/var/backup'
 # ======================================================================================================================
 # Test Cases
 # ======================================================================================================================
+@pytest.mark.xfail(reason='ASC-1261 - Backup folder not on OSP')
 @pytest.mark.test_id('406be222-cbee-11e8-ae3a-0025227c8120')
 @pytest.mark.jira('asc-262')
 @pytest.mark.test_case_with_steps()
