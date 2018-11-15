@@ -35,6 +35,7 @@ def create_server_on(target_host, image_id, flavor, network_id, compute_zone, se
     return server
 
 
+@pytest.mark.xfail(reason='ASC-1263 - No neutron_agent role on OSP')
 @pytest.mark.test_id('c3002bde-59f1-11e8-be3b-6c96cfdb252f')
 @pytest.mark.jira('ASC-241', 'ASC-883', 'ASC-789', 'RI-417')
 def test_hypervisor_vms(host):
