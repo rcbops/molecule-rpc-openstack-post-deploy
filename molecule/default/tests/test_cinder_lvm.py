@@ -22,6 +22,7 @@ ssh_pre = ("ssh -o UserKnownHostsFile=/dev/null "
            "-o StrictHostKeyChecking=no -q ")
 
 
+@pytest.mark.xfail(reason='ASC-1260 - The cinder host is not accessible in OSP')
 @pytest.mark.jira('asc-157')
 @pytest.mark.test_id('b1e888fa-546a-11e8-9902-6c96cfdb252f')
 def test_cinder_lvs_volume_on_node(host):

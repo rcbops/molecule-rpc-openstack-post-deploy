@@ -21,6 +21,7 @@ ssh_pre = ("ssh -o UserKnownHostsFile=/dev/null "
            "-o StrictHostKeyChecking=no -q ")
 
 
+@pytest.mark.xfail(reason='ASC-1259 - virsh query does not work on OSP deployment')
 @pytest.mark.jira('asc-157')
 @pytest.mark.test_id('01912ed1-547c-11e8-847a-6c96cfdb252f')
 def test_cinder_verify_attach(host):
