@@ -51,6 +51,7 @@ def attach_volume_to_server(volume, server, run_on_host):
 # End fresh helpers
 
 
+@pytest.mark.xfail(reason='ASC-1264 - No route to floating ip from cli_host')
 @pytest.mark.test_id('3d77bc35-7a21-11e8-90d1-6a00035510c0')
 @pytest.mark.jira('ASC-257', 'ASC-883', 'RI-417')
 def test_volume_attached(host):
@@ -83,9 +84,10 @@ def test_volume_attached(host):
 
     # ensure we can SSH to server
     backoff = 1
-    for i in range(10):
+    cmd = "{} 'sudo ls'".format(ssh.format(floating_ip))
+    ssh_attempt = host.run(cmd)
+    for i in range(1):
         try:
-            cmd = "{} 'sudo ls'".format(ssh.format(floating_ip))
             ssh_attempt = host.run_expect([0], cmd)
         except AssertionError:
             sleep(backoff)
