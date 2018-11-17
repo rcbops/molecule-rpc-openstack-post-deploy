@@ -1,0 +1,27 @@
+---
+- name: Ensure '{{ glance_nfs_share_path }}' Path Exists on Deployment Host
+  file:
+    path: "{{ glance_nfs_share_path }}"
+    state: directory
+    mode: 0777
+  delegate_to: localhost
+
+- name: Update 'localhost' on Deployment Host to Utilize System Python Interpreter
+  add_host:
+    host: localhost
+    ansible_python_interpreter: /usr/bin/python
+
+- name: Setup NFS Server and Export '{{ glance_nfs_share_path }}' Share on Deployment Host
+  import_role:
+    name: geerlingguy.nfs
+  vars:
+    nfs_exports:
+      - "{{ glance_nfs_share_path }} *(rw,sync)"
+  delegate_to: localhost
+
+- name: Export NFS Shares on Deployment Host
+  shell: exportfs -ra
+  delegate_to: localhost
+
+# Reset 'localhost' vars back to original state
+- meta: refresh_inventory
