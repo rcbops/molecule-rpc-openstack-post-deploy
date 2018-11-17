@@ -19,6 +19,15 @@
       - "{{ glance_nfs_share_path }} *(rw,sync)"
   delegate_to: localhost
 
+# This has to be done so that the handler for geerlingguy.nfs runs without
+# error. Handlers are not smart enough to respect delegation, hence making sure
+# the NFS tools called by the handler are available on all playbook hosts.
+- name: Install NFS Tools on 'infra1' Host (Hack)
+  import_role:
+    name: geerlingguy.nfs
+
+# Since the handler can't target the delegated host, we have to manually export
+# the NFS share.
 - name: Export NFS Shares on Deployment Host
   shell: exportfs -ra
   delegate_to: localhost
