@@ -1,3 +1,4 @@
+import pytest_rpc_helpers as helpers
 import os
 import pytest
 import re
@@ -9,14 +10,9 @@ import testinfra.utils.ansible_runner
 RPC 10+ manual test 8
 """
 
-# TODO: Put these values into ansible facts
-cli_host = 'director'
-cli_openrc_path = '/home/stack/overcloudrc'
-
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
-    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts(cli_host)
+    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts(helpers.cli_host)
 
-os_pre = ". {} ; ".format(cli_openrc_path)
 tenant = 'service'
 
 
@@ -63,13 +59,15 @@ def test_update_quotas_2nd_time_using_name(host):
 
 def update_quotas(run_on_host, name, instances, cores, ram):
     """Update quote using openstack cli 'openstack quota set'"""
-    cmd = "{} openstack quota set --instances {} --cores {} --ram {} {}".format(os_pre, instances, cores, ram, name)
+    cmd = ("{} quota set --instances {} "
+           "--cores {} --ram {} {}"
+           ).format(helpers.os_pre, instances, cores, ram, name)
     run_on_host.run_expect([0], cmd)
 
 
 def verify_updated_quotas(run_on_host, name, instances, cores, ram):
     """Verify updated quotas using openstack cli 'openstack quota show <PROJECT_NAME|PROJECT_ID>'"""
-    cmd = "{} openstack quota show {}".format(os_pre, name)
+    cmd = "{} quota show {}".format(helpers.os_pre, name)
     output = run_on_host.run(cmd)
     assert get_quota('instances', output.stdout) == instances
     assert get_quota('cores', output.stdout) == cores
@@ -78,7 +76,7 @@ def verify_updated_quotas(run_on_host, name, instances, cores, ram):
 
 def get_tenant_id(tenant_name, run_on_host):
     """Get tenant id associated with tenant name"""
-    cmd = "{} openstack project list | grep {}".format(os_pre, tenant_name)
+    cmd = "{} project list | grep {}".format(helpers.os_pre, tenant_name)
     output = run_on_host.run(cmd)
     print cmd
     print output

@@ -3,14 +3,8 @@ import os
 import pytest
 import testinfra.utils.ansible_runner
 
-# TODO: Put these values into ansible facts
-cli_host = 'director'
-cli_openrc_path = '/home/stack/overcloudrc'
-
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
     os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('shared-infra_hosts')[:1]
-
-os_pre = ". {} ; openstack ".format(cli_openrc_path)
 
 
 @pytest.mark.test_id('8b701dbc-7584-11e8-ba5b-fe14fb7452aa')
@@ -55,7 +49,7 @@ def test_create_instance_from_bootable_volume(openstack_properties,
     cmd = ("{} server create "
            " --volume {}"
            " --flavor {}"
-           " --nic net-id={} {}".format(os_pre,
+           " --nic net-id={} {}".format(helpers.os_pre,
                                         volume_id,
                                         openstack_properties['flavor'],
                                         network_id,

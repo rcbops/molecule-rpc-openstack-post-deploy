@@ -3,16 +3,8 @@ import os
 import pytest
 import testinfra.utils.ansible_runner
 
-# TODO: Put these values into ansible facts
-cli_host = 'director'
-cli_openrc_path = '/home/stack/overcloudrc'
-
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
     os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('shared-infra_hosts')[:1]
-
-utility_container = ("lxc-attach -n $(lxc-ls -1 | grep utility | head -n 1) "
-                     "-- bash -c '. /root/openrc ; ")
-os_pre = ". {} ; ".format(cli_openrc_path)
 
 random_str = helpers.generate_random_string(5)
 instance_name = "test_instance_01_{}".format(random_str)

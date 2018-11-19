@@ -1,3 +1,4 @@
+import pytest_rpc_helpers as helpers
 import os
 import testinfra.utils.ansible_runner
 import pytest
@@ -5,14 +6,8 @@ import json
 
 """ASC-157: Perform Post Deploy System validations"""
 
-# TODO: Put these values into ansible facts
-cli_host = 'director'
-cli_openrc_path = '/home/stack/overcloudrc'
-
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
-    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts(cli_host)
-
-os_pre = ". {} ; openstack ".format(cli_openrc_path)
+    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts(helpers.cli_host)
 
 
 @pytest.fixture
@@ -43,7 +38,7 @@ def get_nova_allocation_ratios(host):
 def test_hypervisor_free(get_nova_allocation_ratios, host):
     """Validate the resource levels for hypervisor"""
 
-    cmd = "{} hypervisor stats show -f json".format(os_pre)
+    cmd = "{} hypervisor stats show -f json".format(helpers.os_pre)
     res = host.run(cmd)
     stats = json.loads(res.stdout)
     assert res.rc == 0

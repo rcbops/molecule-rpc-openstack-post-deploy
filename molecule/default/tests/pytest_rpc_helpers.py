@@ -9,7 +9,8 @@ from time import sleep
 cli_host = 'director'
 cli_openrc_path = '/home/stack/overcloudrc'
 
-os_pre = ". {} ; openstack ".format(cli_openrc_path)
+cli_pre = ". {} ; ".format(cli_openrc_path)
+os_pre = "{} openstack ".format(cli_pre)
 
 
 def get_expected_value(resource_type,

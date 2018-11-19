@@ -9,15 +9,8 @@ RPC 10+ manual test 14.
 """
 
 
-# TODO: Put these values into ansible facts
-cli_host = 'director'
-cli_openrc_path = '/home/stack/overcloudrc'
-
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
-    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts(cli_host)
-
-
-os_pre = ". {} ; ".format(cli_openrc_path)
+    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts(helpers.cli_host)
 
 
 @pytest.mark.test_id('02a17d7d-4a42-11e8-bdcf-6a00035510c0')
@@ -28,7 +21,9 @@ def test_cinder_volume_created(host):
     # Create a test volume
     random_str = helpers.generate_random_string(4)
     volume_name = "test_volume_{}".format(random_str)
-    cmd = "{} openstack volume create --size 1 --availability-zone nova {}".format(os_pre, volume_name)
+    cmd = ("{} volume create "
+           "--size 1 "
+           "--availability-zone nova {}".format(helpers.os_pre, volume_name))
     host.run_expect([0], cmd)
 
     # Verify the volume is created

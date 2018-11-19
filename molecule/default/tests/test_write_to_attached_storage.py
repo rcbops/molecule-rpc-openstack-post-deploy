@@ -9,15 +9,8 @@ from time import sleep
 """ASC-257: Attach a volume to an instance, create a partition and filesystem
 on it, and verify you can write to it. """
 
-# TODO: Put these values into ansible facts
-cli_host = 'director'
-cli_openrc_path = '/home/stack/overcloudrc'
-
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
-    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts(cli_host)
-
-os_pre = ". {} ; openstack ".format(cli_openrc_path)
-os_post = ''
+    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts(helpers.cli_host)
 
 ssh = "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
        -i ~/.ssh/rpc_support ubuntu@{}"
@@ -31,7 +24,7 @@ key_name = 'rpc_support'
 def attach_floating_ip(server, floating_ip, run_on_host):
     cmd = "{} server add floating ip  \
            {} \
-           {} {}".format(os_pre, server, floating_ip, os_post)
+           {} {}".format(helpers.os_pre, server, floating_ip)
 
     try:
         run_on_host.run_expect([0], cmd)
@@ -44,7 +37,7 @@ def attach_floating_ip(server, floating_ip, run_on_host):
 def attach_volume_to_server(volume, server, run_on_host):
     cmd = "{} server add volume  \
            {} \
-           {} {}".format(os_pre, server, volume, os_post)
+           {} {}".format(helpers.os_pre, server, volume)
     run_on_host.run(cmd)
     return helpers.get_expected_value('volume', volume, 'status', 'in-use',
                                       run_on_host)
@@ -76,7 +69,7 @@ def test_volume_attached(host):
     # ensure attachment and retrieve associated device
     cmd = "{} volume show  \
            -f json \
-           {} {}".format(os_pre, volume_name, os_post)
+           {} {}".format(helpers.os_pre, volume_name)
     res = host.run(cmd)
     volume = json.loads(res.stdout)
     assert len(volume['attachments']) == 1

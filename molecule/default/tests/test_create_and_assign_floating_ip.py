@@ -3,14 +3,8 @@ import os
 import pytest
 import testinfra.utils.ansible_runner
 
-# TODO: Put these values into ansible facts
-cli_host = 'director'
-cli_openrc_path = '/home/stack/overcloudrc'
-
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
-    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts(cli_host)
-
-os_pre = ". {} ; ".format(cli_openrc_path)
+    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts(helpers.cli_host)
 
 
 @pytest.mark.xfail(reason='ASC-1262 - External IP cannot be pinged')
@@ -62,8 +56,8 @@ def test_assign_floating_ip_to_instance(openstack_properties, host):
     )
 
     # Assigning floating ip to a server
-    cmd = ("{} openstack server add "
-           "floating ip {} {}".format(os_pre,
+    cmd = ("{} server add "
+           "floating ip {} {}".format(helpers.os_pre,
                                       instance_id,
                                       floating_ip)
            )
