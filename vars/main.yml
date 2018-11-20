@@ -38,3 +38,7 @@ custom_fact_path: /etc/ansible/facts.d
 # vars for copying 'clouds.yaml' to the deployment host
 os_config_path: /root/.config/openstack
 os_clouds_yaml_path: "{{ os_config_path }}/clouds.yaml"
+
+# vars for NFS server on deployment host for glance images
+glance_nfs_share_path: /mnt/share/glance/images
+glance_nfs_mount_path: /var/lib/glance/images

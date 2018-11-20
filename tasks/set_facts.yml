@@ -67,3 +67,13 @@
   shell: |
     lxc-ls -1 | grep utility | head -n 1
   register: utility_container
+
+- name: Capture Deployment Host IP Address
+  shell: |
+    ip addr show bond0 | grep -Po 'inet \K[\d.]+'
+  register: deployment_host_ip_raw
+  delegate_to: localhost
+
+- name: Set Deployment Host IP Address Fact
+  set_fact:
+    deployment_host_ip: "{{ deployment_host_ip_raw.stdout }}"
