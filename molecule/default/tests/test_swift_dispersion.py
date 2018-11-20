@@ -13,6 +13,7 @@ testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
     os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('shared-infra_hosts')[:1]
 
 
+@pytest.mark.xfail(reason='ASC-1031 - OSP MNAIO deploys ceph not swift')
 @pytest.mark.test_id('d7fc4cdc-432a-11e8-a5dc-6a00035510c0')
 @pytest.mark.jira('ASC-300')
 def test_verify_dispersion_populate(host):
@@ -22,6 +23,7 @@ def test_verify_dispersion_populate(host):
     assert result.rc == 0
 
 
+@pytest.mark.xfail(reason='ASC-1031 - OSP MNAIO deploys ceph not swift')
 @pytest.mark.test_id('d7fc4e61-432a-11e8-bcf5-6a00035510c0')
 @pytest.mark.jira('ASC-300')
 def test_verify_dispersion_report(host):

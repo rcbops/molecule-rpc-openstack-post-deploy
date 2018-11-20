@@ -1,3 +1,4 @@
+import pytest_rpc_helpers as helpers
 import os
 import testinfra.utils.ansible_runner
 import pytest
@@ -6,10 +7,7 @@ import json
 """ASC-157: Perform Post Deploy System validations"""
 
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
-    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('shared-infra_hosts')[:1]
-
-os_pre = ("lxc-attach -n $(lxc-ls -1 | grep utility | head -n 1) "
-          "-- bash -c '. /root/openrc ; openstack ")
+    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts(helpers.cli_host)
 
 
 @pytest.mark.test_id('d7fc26a8-432a-11e8-8340-6a00035510c0')
@@ -19,7 +17,7 @@ def test_projects(host):
     Ensure presence of basic projects
     """
 
-    cmd = "{} project list -f json'".format(os_pre)
+    cmd = "{} project list -f json".format(helpers.os_pre)
     res = host.run(cmd)
     projects = json.loads(res.stdout)
     project_names = [d['Name'] for d in projects]
@@ -34,16 +32,14 @@ def test_users(host):
     Ensure presence of basic users
     """
 
-    cmd = "{} user list --domain=default -f json'".format(os_pre)
+    cmd = "{} user list --domain=default -f json".format(helpers.os_pre)
     res = host.run(cmd)
     users = json.loads(res.stdout)
     user_names = [d['Name'] for d in users]
     assert "admin" in user_names
     assert "cinder" in user_names
-    assert "dispersion" in user_names
     assert "glance" in user_names
     assert "heat" in user_names
-    assert "keystone" in user_names
     assert "neutron" in user_names
     assert "nova" in user_names
     assert "swift" in user_names
@@ -56,7 +52,7 @@ def test_networks(host):
     Ensure presence of basic networks
     """
 
-    cmd = "{} network list -f json'".format(os_pre)
+    cmd = "{} network list -f json".format(helpers.os_pre)
     res = host.run(cmd)
     networks = json.loads(res.stdout)
     network_names = [d['Name'] for d in networks]
@@ -71,7 +67,7 @@ def test_servers(host):
     Ensure presence of basic nova servers
     """
 
-    cmd = "{} server list -f json'".format(os_pre)
+    cmd = "{} server list -f json".format(helpers.os_pre)
     res = host.run(cmd)
     assert res.rc == 0
 
@@ -83,7 +79,7 @@ def test_flavors(host):
     Ensure presence of basic nova flavors
     """
 
-    cmd = "{} flavor list -f json'".format(os_pre)
+    cmd = "{} flavor list -f json".format(helpers.os_pre)
     res = host.run(cmd)
     flavors = json.loads(res.stdout)
     flavor_names = [d['Name'] for d in flavors]
@@ -98,7 +94,7 @@ def test_image(host):
     Ensure presence of basic glance images
     """
 
-    cmd = "{} image list -f json'".format(os_pre)
+    cmd = "{} image list -f json".format(helpers.os_pre)
     res = host.run(cmd)
     images = json.loads(res.stdout)
     image_names = [d['Name'] for d in images]

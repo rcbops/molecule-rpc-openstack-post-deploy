@@ -15,6 +15,7 @@ testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
 rb_cmd_tmpl = "swift-ring-builder /etc/swift/{}.ring.gz"
 
 
+@pytest.mark.xfail(reason='ASC-1031 - OSP MNAIO deploys ceph not swift')
 @pytest.mark.test_id('d7fc460f-432a-11e8-bd68-6a00035510c0')
 @pytest.mark.jira('ASC-296')
 def test_verify_account_ring_has_data(host):
@@ -28,6 +29,7 @@ def test_verify_account_ring_has_data(host):
     assert swift_data['partitions'] > 0
 
 
+@pytest.mark.xfail(reason='ASC-1031 - OSP MNAIO deploys ceph not swift')
 @pytest.mark.test_id('c5d0e70a-8611-11e8-a8d1-6a00035510c0')
 @pytest.mark.jira('ASC-296')
 def test_verify_account_ring_balance(host):
@@ -41,6 +43,7 @@ def test_verify_account_ring_balance(host):
     assert swift_data['balance'] < 1
 
 
+@pytest.mark.xfail(reason='ASC-1031 - OSP MNAIO deploys ceph not swift')
 @pytest.mark.test_id('c7b7eb0c-8611-11e8-ae69-6a00035510c0')
 @pytest.mark.jira('ASC-296')
 def test_verify_container_ring_has_data(host):
@@ -54,6 +57,7 @@ def test_verify_container_ring_has_data(host):
     assert swift_data['partitions'] > 0
 
 
+@pytest.mark.xfail(reason='ASC-1031 - OSP MNAIO deploys ceph not swift')
 @pytest.mark.test_id('c82f8178-8611-11e8-861e-6a00035510c0')
 @pytest.mark.jira('ASC-296')
 def test_verify_container_ring_balance(host):
@@ -67,6 +71,7 @@ def test_verify_container_ring_balance(host):
     assert swift_data['balance'] < 1
 
 
+@pytest.mark.xfail(reason='ASC-1031 - OSP MNAIO deploys ceph not swift')
 @pytest.mark.test_id('c902ba5c-8611-11e8-9b8e-6a00035510c0')
 @pytest.mark.jira('ASC-296')
 def test_verify_object_ring_has_data(host):
@@ -80,6 +85,7 @@ def test_verify_object_ring_has_data(host):
     assert swift_data['partitions'] > 0
 
 
+@pytest.mark.xfail(reason='ASC-1031 - OSP MNAIO deploys ceph not swift')
 @pytest.mark.test_id('c999e97d-8611-11e8-a927-6a00035510c0')
 @pytest.mark.jira('ASC-296')
 def test_verify_object_ring_balance(host):

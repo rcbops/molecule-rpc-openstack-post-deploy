@@ -1,15 +1,13 @@
-import pytest_rpc.helpers as helpers
+import pytest_rpc_helpers as helpers
 import os
 import pytest
 import testinfra.utils.ansible_runner
 
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
-    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('shared-infra_hosts')[:1]
-
-utility_container = ("lxc-attach -n $(lxc-ls -1 | grep utility | head -n 1) "
-                     "-- bash -c '. /root/openrc ; ")
+    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts(helpers.cli_host)
 
 
+@pytest.mark.xfail(reason='ASC-1262 - External IP cannot be pinged')
 @pytest.mark.test_id('ab24ffbd-798b-11e8-a2b2-6c96cfdb2e43')
 @pytest.mark.jira('asc-254')
 def test_assign_floating_ip_to_instance(openstack_properties, host):
@@ -58,10 +56,10 @@ def test_assign_floating_ip_to_instance(openstack_properties, host):
     )
 
     # Assigning floating ip to a server
-    cmd = ("{} openstack server add "
-           "floating ip {} {}'".format(utility_container,
-                                       instance_id,
-                                       floating_ip)
+    cmd = ("{} server add "
+           "floating ip {} {}".format(helpers.os_pre,
+                                      instance_id,
+                                      floating_ip)
            )
     host.run_expect([0], cmd)
 

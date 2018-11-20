@@ -1,4 +1,4 @@
-import pytest_rpc.helpers as helpers
+import pytest_rpc_helpers as helpers
 import os
 import pytest
 import testinfra.utils.ansible_runner

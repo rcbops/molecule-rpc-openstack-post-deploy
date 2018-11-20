@@ -3,18 +3,14 @@ import testinfra.utils.ansible_runner
 import pytest
 import random
 import json
-import pytest_rpc.helpers as helpers
+import pytest_rpc_helpers as helpers
 from time import sleep
 
 """ASC-241: Per network, spin up an instance on each hypervisor, perform
 external ping, and tear-down """
 
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
-    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('shared-infra_hosts')[:1]
-
-os_pre = ("lxc-attach -n $(lxc-ls -1 | grep utility | head -n 1) "
-          "-- bash -c '. /root/openrc ; openstack ")
-os_post = "'"
+    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts(helpers.cli_host)
 
 
 def create_server_on(target_host, image_id, flavor, network_id, compute_zone, server_name):
@@ -25,13 +21,14 @@ def create_server_on(target_host, image_id, flavor, network_id, compute_zone, se
            --nic net-id={} \
            --availability-zone {} \
            --key-name 'rpc_support' \
-           {} {}".format(os_pre, image_id, flavor,
-                         network_id, compute_zone, server_name, os_post)
+           {}".format(helpers.os_pre, image_id, flavor,
+                      network_id, compute_zone, server_name)
     res = target_host.run(cmd)
     server = json.loads(res.stdout)
     return server
 
 
+@pytest.mark.xfail(reason='ASC-1263 - No neutron_agent role on OSP')
 @pytest.mark.test_id('c3002bde-59f1-11e8-be3b-6c96cfdb252f')
 @pytest.mark.jira('ASC-241', 'ASC-883', 'ASC-789', 'RI-417')
 def test_hypervisor_vms(host):
@@ -51,7 +48,7 @@ def test_hypervisor_vms(host):
     testable_networks = []
 
     # get image id (sounds like a helper, or register it as an ansible value)
-    cmd = "{} image list -f json {}".format(os_pre, os_post)
+    cmd = "{} image list -f json".format(helpers.os_pre)
     res = host.run(cmd)
     images = json.loads(res.stdout)
     assert len(images) > 0
@@ -78,12 +75,12 @@ def test_hypervisor_vms(host):
     r = random.randint(1111, 9999)
 
     # get list of internal networks
-    net_cmd = "{} network list -f json {}".format(os_pre, os_post)
+    net_cmd = "{} network list -f json".format(helpers.os_pre)
     net_res = host.run(net_cmd)
     networks = json.loads(net_res.stdout)
     for network in networks:
-        cmd = "{} network show {} -f json {}".format(os_pre, network['ID'],
-                                                     os_post)
+        cmd = "{} network show {} -f json".format(helpers.os_pre,
+                                                  network['ID'])
         res = host.run(cmd)
         network_detail = json.loads(res.stdout)
         if network_detail['router:external'] == 'External':
@@ -96,7 +93,7 @@ def test_hypervisor_vms(host):
     # iterate over internal networks
     for network in testable_networks:
         # spin up instance per hypervisor
-        cmd = "{} compute service list -f json {}".format(os_pre, os_post)
+        cmd = "{} compute service list -f json".format(helpers.os_pre)
         res = host.run(cmd)
         computes = json.loads(res.stdout)
         for compute in computes:
@@ -118,14 +115,13 @@ def test_hypervisor_vms(host):
         # test ssh
         print "DEBUG OUTPUT"
         print server
-        cmd = "{} server show {} -f json {}".format(os_pre, server, os_post)
+        cmd = "{} server show {} -f json".format(helpers.os_pre, server)
         res = host.run(cmd)
         server_detail = json.loads(res.stdout)
         network_name, ip = server_detail['addresses'].split('=')
         # get network detail (again)
         # This will include network id and subnets.
-        cmd = "{} network show {} -f json {}".format(os_pre, network_name,
-                                                     os_post)
+        cmd = "{} network show {} -f json".format(helpers.os_pre, network_name)
         res = host.run(cmd)
         network = json.loads(res.stdout)
 
@@ -144,8 +140,8 @@ def test_hypervisor_vms(host):
             assert 'SSH' in res.stdout
 
         # get gateway ip via subnet detail
-        cmd = "{} subnet show {} -f json {}".format(os_pre,
-                                                    network['subnets'], os_post)
+        cmd = "{} subnet show {} -f json".format(helpers.os_pre,
+                                                 network['subnets'])
         res = host.run(cmd)
         sub = json.loads(res.stdout)
         if sub['gateway_ip']:

@@ -11,9 +11,6 @@ RPC 10+ manual test 13
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
     os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('shared-infra_hosts')[:1]
 
-# attach the rabbitMQ container:
-attach_rabbitmq_container = "lxc-attach -n `lxc-ls -1 | grep rabbit | head -n 1` -- "
-
 
 @pytest.mark.test_id('43e5eed1-4335-11e8-bff9-6a00035510c0')
 @pytest.mark.jira('asc-255')
@@ -21,6 +18,15 @@ def test_verify_rabbitmq_channel_per_connection(host):
     """Verify the glance images created by:
     https://github.com/openstack/openstack-ansible-ops/blob/master/multi-node-aio/playbooks/vars/openstack-service-config.yml
     """
+
+    # attach the rabbitMQ container:
+    try:
+        rpc_release = host.ansible("setup")["ansible_facts"]["ansible_local"]["system_tests"]["rpc_product_release"]
+        if rpc_release != '':
+            attach_rabbitmq_container = "lxc-attach -n `lxc-ls -1 | grep rabbit | head -n 1` -- "
+    except (TypeError, NameError):
+        attach_rabbitmq_container = ''
+
     cmd = attach_rabbitmq_container + "rabbitmqctl list_connections name channels | sort -nk 4 | tail -n1 | awk \'{print $4}\'"
     output = host.run(cmd)
     assert (output.stdout == '1')
