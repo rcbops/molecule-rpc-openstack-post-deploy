@@ -1,7 +1,6 @@
 import os
 import testinfra.utils.ansible_runner
 import pytest
-import random
 import json
 import pytest_rpc.helpers as helpers
 from time import sleep
@@ -75,7 +74,7 @@ def test_hypervisor_vms(host):
                    -o UserKnownHostsFile=/dev/null \
                    {} ".format(neutron_agent)
 
-    r = random.randint(1111, 9999)
+    r = os.urandom(10).encode('hex')
 
     # get list of internal networks
     net_cmd = "{} network list -f json {}".format(os_pre, os_post)
