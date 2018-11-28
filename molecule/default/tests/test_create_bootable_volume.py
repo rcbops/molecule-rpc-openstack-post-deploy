@@ -2,6 +2,7 @@ import pytest_rpc.helpers as helpers
 import os
 import pytest
 import testinfra.utils.ansible_runner
+import utils as tmp_var
 
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
     os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('shared-infra_hosts')[:1]
@@ -41,7 +42,7 @@ def test_create_bootable_volume(openstack_properties, host):
     volume_names = [x['Name'] for x in volumes]
 
     assert volume_name in volume_names
-    assert helpers.get_expected_value('volume',
+    assert tmp_var.get_expected_value('volume',
                                       volume_name,
                                       'status',
                                       'available',
