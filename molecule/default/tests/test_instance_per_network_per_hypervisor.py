@@ -132,7 +132,7 @@ def test_hypervisor_vms(host):
         # confirm SSH port access
         cmd = "{} 'ip netns exec \
                qdhcp-{} nc -w1 {} 22'".format(na_pre, network['id'], ip)
-        for attempt in range(30):
+        for attempt in range(60):
             res = host.run(cmd)
             try:
                 assert 'SSH' in res.stdout
