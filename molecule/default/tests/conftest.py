@@ -31,8 +31,6 @@ def openstack_properties(host):
         'image_name': 'Cirros-0.3.5',
         'network_name': os_vars['gateway_network'],
         'private_net': os_vars['private_network'],
-        'glance_nfs_share_path': os_vars['glance_nfs_share_path'],
-        'glance_nfs_mount_path': os_vars['glance_nfs_mount_path'],
         'flavor': 'm1.tiny',
         'zone': 'nova'
     }
