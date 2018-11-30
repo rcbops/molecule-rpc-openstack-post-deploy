@@ -7,20 +7,25 @@ os_pre = ("lxc-attach -n $(lxc-ls -1 | grep utility | head -n 1) "
           "-- bash -c '. /root/openrc ; ")
 os_post = "'"
 os_galera = ("lxc-attach -n $(lxc-ls -1 | grep galera | head -n 1) -- ")
-line = "#######################################################################"
+line = "\n###################################################################\n"
+logs = list()
 
 
-# TODO: move this function to pytest_RPC
+# TODO: move this function to pytest-rpc (ASC-1339)
 def show_all_status(run_on_host):
+    logs.append("\n===== Debug: get_show_all_stastus logs =====\n")
+
     # Show Galera Status:
-    print line
-    print "# Galera Status:"
-    mysql_cmd = "mysql -h localhost -e \"SHOW STATUS WHERE Variable_name " \
-                "LIKE 'wsrep_clu%'\""
-    print "Command: {}".format(mysql_cmd)
+    logs.append(line)
+    logs.append("#Galera Status:\n")
+    mysql_cmd = "mysql -h localhost -e " \
+                "\"SHOW STATUS WHERE Variable_name " \
+                "LIKE 'wsrep_clu%' " \
+                "OR Variable_name " \
+                "LIKE 'wsrep_local_state%';\""
+    logs.append("Command: {}\n".format(mysql_cmd))
     cmd = "{} {}".format(os_galera, mysql_cmd)
-    galera_result = run_on_host.run(cmd)
-    print galera_result.stdout
+    logs.append(run_on_host.run(cmd).stdout)
 
     # openstack resoure List:
     list_resources = ['compute service',
@@ -53,17 +58,22 @@ def show_all_status(run_on_host):
         cmd = "openstack service show {}".format(resource)
         run_command(cmd, run_on_host)
 
-
-def run_command(cmd, run_on_host):
-    print line
-    print "Command: {}".format(cmd)
-    cmd = "{} {} {}".format(os_pre, cmd, os_post)
-    result = run_on_host.run(cmd)
-    print result.stdout
-    print "\n=== End of running command {} ===\n\n\n".format(cmd)
+    # Print all the status:
+    logs.append("\n===== End of Debug: get_show_all_stastus logs =====\n")
+    print(logs)
 
 
-# TODO: move this modified function to pytest_RPC
+def run_command(run_cmd, run_on_host):
+    logs.append(line)
+    logs.append("\n=== Start of running below command: ===\n")
+    logs.append("Command: {}\n".format(run_cmd))
+    cmd = "{} {} {}".format(os_pre, run_cmd, os_post)
+    logs.append(run_on_host.run(cmd).stdout)
+
+    logs.append("\n=== End of running command `{}` ===\n\n\n".format(run_cmd))
+
+
+# TODO: move this modified function to pytest-rpc (ASC-1339)
 def get_expected_value(resource_type,
                        resource_name,
                        key,
@@ -114,13 +124,6 @@ def get_expected_value(resource_type,
             break
 
     # Printing out logs if failed
-    print("\n===== Debug: get_expected_value logs =====")
-    # noinspection PyUnboundLocalVariable
-    print("\ncmd = {}".format(cmd))
-    # noinspection PyUnboundLocalVariable
-    print("\nOutput:\n {}".format(result))
-    print("\n===== End of get_expected_value logs =====")
-    show_status = show_all_status(run_on_host).stdout
-    print("\nOpenstack status:\n {}".format(show_status))
+    print(show_all_status(run_on_host))
 
     return False
