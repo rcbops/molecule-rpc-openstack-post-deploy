@@ -1,0 +1,11 @@
+---
+- name: Verify galera status
+  shell: |
+    lxc-attach -n "{{ galera_container.stdout }}" --  \
+    mysql -h localhost -e "SHOW STATUS WHERE VARIABLE_NAME LIKE 'wsrep_cluster_conf_id';"
+
+  register: galera_status
+  until: galera_status.stdout.find("wsrep_cluster_conf_id") != -1
+  retries: 5
+  delay: 2
+  ignore_errors: yes
