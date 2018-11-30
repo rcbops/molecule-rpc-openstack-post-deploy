@@ -10,4 +10,5 @@
     key_name: rpc_support
     security_groups: rpc-support
     auto_ip: false
+    timeout: 600
   delegate_to: localhost
