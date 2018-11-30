@@ -80,6 +80,7 @@ def test_volume_attached(host):
 
     # ensure we can SSH to server
     backoff = 1
+    ssh_attempt = 1
     for i in range(10):
         try:
             cmd = "{} 'sudo ls'".format(ssh.format(floating_ip))

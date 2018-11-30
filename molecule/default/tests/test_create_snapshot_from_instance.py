@@ -2,6 +2,7 @@ import pytest_rpc.helpers as helpers
 import os
 import pytest
 import testinfra.utils.ansible_runner
+import utils as tmp_var
 
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
     os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('shared-infra_hosts')[:1]
@@ -32,21 +33,21 @@ class TestCreateSnapshotFromInstance(object):
 
         helpers.create_instance(data_image, host)
 
-        assert helpers.get_expected_value('server',
+        assert tmp_var.get_expected_value('server',
                                           instance_name,
                                           'status',
                                           'ACTIVE',
                                           host,
                                           retries=40)
 
-        assert helpers.get_expected_value('server',
+        assert tmp_var.get_expected_value('server',
                                           instance_name,
                                           'OS-EXT-STS:power_state',
                                           'Running',
                                           host,
                                           retries=20)
 
-        assert helpers.get_expected_value('server',
+        assert tmp_var.get_expected_value('server',
                                           instance_name,
                                           'OS-EXT-STS:vm_state',
                                           'active',
@@ -59,7 +60,7 @@ class TestCreateSnapshotFromInstance(object):
                                                             host)
 
         # Verify the snapshot is successfully created:
-        assert helpers.get_expected_value('image',
+        assert tmp_var.get_expected_value('image',
                                           snapshot_id,
                                           'status',
                                           'active',
@@ -80,7 +81,7 @@ class TestCreateSnapshotFromInstance(object):
         instance_id = helpers.create_instance(data_snapshot, host)
 
         # Verify the new instance is successfully booted using the snapshot
-        assert helpers.get_expected_value('server',
+        assert tmp_var.get_expected_value('server',
                                           instance_id,
                                           'status',
                                           'ACTIVE',

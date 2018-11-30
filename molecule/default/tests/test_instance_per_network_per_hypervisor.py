@@ -17,7 +17,12 @@ os_pre = ("lxc-attach -n $(lxc-ls -1 | grep utility | head -n 1) "
 os_post = "'"
 
 
-def create_server_on(target_host, image_id, flavor, network_id, compute_zone, server_name):
+def create_server_on(target_host,
+                     image_id,
+                     flavor,
+                     network_id,
+                     compute_zone,
+                     server_name):
     cmd = "{} server create \
            -f json \
            --image {} \
@@ -25,8 +30,13 @@ def create_server_on(target_host, image_id, flavor, network_id, compute_zone, se
            --nic net-id={} \
            --availability-zone {} \
            --key-name 'rpc_support' \
-           {} {}".format(os_pre, image_id, flavor,
-                         network_id, compute_zone, server_name, os_post)
+           {} {}".format(os_pre,
+                         image_id,
+                         flavor,
+                         network_id,
+                         compute_zone,
+                         server_name,
+                         os_post)
     res = target_host.run(cmd)
     server = json.loads(res.stdout)
     return server
@@ -82,7 +92,8 @@ def test_hypervisor_vms(host):
     net_res = host.run(net_cmd)
     networks = json.loads(net_res.stdout)
     for network in networks:
-        cmd = "{} network show {} -f json {}".format(os_pre, network['ID'],
+        cmd = "{} network show {} -f json {}".format(os_pre,
+                                                     network['ID'],
                                                      os_post)
         res = host.run(cmd)
         network_detail = json.loads(res.stdout)
@@ -101,17 +112,33 @@ def test_hypervisor_vms(host):
         computes = json.loads(res.stdout)
         for compute in computes:
             if compute['Binary'] == 'nova-compute':
-                instance_name = "rpctest-{}-{}-{}".format(r, compute['Host'],
+                instance_name = "rpctest-{}-{}-{}".format(r,
+                                                          compute['Host'],
                                                           network['name'])
-                server = create_server_on(host, image['ID'], flavor_name,
-                                          network['id'], compute['Zone'],
+                server = create_server_on(host,
+                                          image['ID'],
+                                          flavor_name,
+                                          network['id'],
+                                          compute['Zone'],
                                           instance_name)
-                assert helpers.get_expected_value('server', server['id'],
-                                                  'OS-EXT-STS:power_state', 'Running', host, 15)
-                assert helpers.get_expected_value('server', server['id'],
-                                                  'status', 'ACTIVE', host, 15)
-                assert helpers.get_expected_value('server', server['id'],
-                                                  'OS-EXT-STS:vm_state', 'active', host, 15)
+                assert helpers.get_expected_value('server',
+                                                  server['id'],
+                                                  'OS-EXT-STS:power_state',
+                                                  'Running',
+                                                  host,
+                                                  retries=15)
+                assert helpers.get_expected_value('server',
+                                                  server['id'],
+                                                  'status',
+                                                  'ACTIVE',
+                                                  host,
+                                                  retries=15)
+                assert helpers.get_expected_value('server',
+                                                  server['id'],
+                                                  'OS-EXT-STS:vm_state',
+                                                  'active',
+                                                  host,
+                                                  retries=15)
                 server_list.append(server['id'])
 
     for server in server_list:
@@ -124,7 +151,8 @@ def test_hypervisor_vms(host):
         network_name, ip = server_detail['addresses'].split('=')
         # get network detail (again)
         # This will include network id and subnets.
-        cmd = "{} network show {} -f json {}".format(os_pre, network_name,
+        cmd = "{} network show {} -f json {}".format(os_pre,
+                                                     network_name,
                                                      os_post)
         res = host.run(cmd)
         network = json.loads(res.stdout)
@@ -132,7 +160,7 @@ def test_hypervisor_vms(host):
         # confirm SSH port access
         cmd = "{} 'ip netns exec \
                qdhcp-{} nc -w1 {} 22'".format(na_pre, network['id'], ip)
-        for attempt in range(30):
+        for attempt in range(60):
             res = host.run(cmd)
             try:
                 assert 'SSH' in res.stdout
@@ -145,7 +173,8 @@ def test_hypervisor_vms(host):
 
         # get gateway ip via subnet detail
         cmd = "{} subnet show {} -f json {}".format(os_pre,
-                                                    network['subnets'], os_post)
+                                                    network['subnets'],
+                                                    os_post)
         res = host.run(cmd)
         sub = json.loads(res.stdout)
         if sub['gateway_ip']:

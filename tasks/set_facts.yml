@@ -67,3 +67,8 @@
   shell: |
     lxc-ls -1 | grep utility | head -n 1
   register: utility_container
+
+- name: Register galera container
+  shell: |
+    lxc-ls -1 | grep galera | head -n 1
+  register: galera_container
