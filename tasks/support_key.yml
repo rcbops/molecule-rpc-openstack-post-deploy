@@ -93,4 +93,4 @@
     public_key_file: "/root/.ssh/rpc_support.pub"
   when:
     - support_pub_key.content |default('') |length > 64
-delegate_to: localhost
+  delegate_to: localhost
