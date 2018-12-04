@@ -125,19 +125,19 @@ def test_hypervisor_vms(host):
                                                   'OS-EXT-STS:power_state',
                                                   'Running',
                                                   host,
-                                                  retries=15)
+                                                  retries=50)
                 assert tmp_var.get_expected_value('server',
                                                   server['id'],
                                                   'status',
                                                   'ACTIVE',
                                                   host,
-                                                  retries=15)
+                                                  retries=30)
                 assert tmp_var.get_expected_value('server',
                                                   server['id'],
                                                   'OS-EXT-STS:vm_state',
                                                   'active',
                                                   host,
-                                                  retries=15)
+                                                  retries=20)
                 server_list.append(server['id'])
 
     for server in server_list:
