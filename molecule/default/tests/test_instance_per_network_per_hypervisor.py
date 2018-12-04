@@ -2,8 +2,8 @@ import os
 import testinfra.utils.ansible_runner
 import pytest
 import json
-import pytest_rpc.helpers as helpers
 from time import sleep
+import utils as tmp_var
 
 """ASC-241: Per network, spin up an instance on each hypervisor, perform
 external ping, and tear-down """
@@ -120,24 +120,24 @@ def test_hypervisor_vms(host):
                                           network['id'],
                                           compute['Zone'],
                                           instance_name)
-                assert helpers.get_expected_value('server',
+                assert tmp_var.get_expected_value('server',
                                                   server['id'],
                                                   'OS-EXT-STS:power_state',
                                                   'Running',
                                                   host,
-                                                  retries=15)
-                assert helpers.get_expected_value('server',
+                                                  retries=50)
+                assert tmp_var.get_expected_value('server',
                                                   server['id'],
                                                   'status',
                                                   'ACTIVE',
                                                   host,
-                                                  retries=15)
-                assert helpers.get_expected_value('server',
+                                                  retries=30)
+                assert tmp_var.get_expected_value('server',
                                                   server['id'],
                                                   'OS-EXT-STS:vm_state',
                                                   'active',
                                                   host,
-                                                  retries=15)
+                                                  retries=20)
                 server_list.append(server['id'])
 
     for server in server_list:
