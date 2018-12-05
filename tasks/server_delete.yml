@@ -1,19 +1,23 @@
 ---
-- name: Check for servers
-  shell: |
-    lxc-attach -n "{{ utility_container.stdout }}"  \
-    -- bash -c '. /root/openrc ; \
-    openstack server list -c ID -f value'
-  register: server_instances
-  changed_when: false
-  failed_when: false
+- name: Register servers
+  os_server_facts:
+    cloud: default
+    server: '*'
+  register: openstack_servers
+  delegate_to: localhost
+
+- name: Show the value of openstack_servers
+  debug:
+    var: openstack_servers
 
 - name: Delete all servers
-  shell: |
-    lxc-attach -n "{{ utility_container.stdout }}"  \
-    -- bash -c '. /root/openrc ; \
-    openstack server delete "{{ item }}"'
+  os_server:
+    cloud: default
+    state: absent
+    name: "{{ item.id }}"
+  with_items: "{{ openstack_servers.ansible_facts.openstack_servers }}"
   when:
-    - server_instances.rc == 0
-    - server_instances.stdout != ""
-  with_items: "{{ server_instances.stdout_lines }}"
+    - openstack_servers is defined
+    - openstack_servers.ansible_facts is defined
+    - openstack_servers.ansible_facts.openstack_servers is defined
+  delegate_to: localhost

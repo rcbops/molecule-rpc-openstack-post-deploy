@@ -8,8 +8,6 @@
 - import_tasks: ssh_key_containers.yml
 - import_tasks: delete_existing_networks.yml
   when: ansible_local.service_setup is not defined
-- import_tasks: delete_existing_security_groups.yml
-  when: ansible_local.service_setup is not defined
 - import_tasks: os_service_setup.yml
   when: ansible_local.service_setup is not defined
 - import_tasks: support_key.yml
