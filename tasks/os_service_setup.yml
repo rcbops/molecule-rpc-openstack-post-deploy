@@ -53,8 +53,7 @@
 - name: Run openstack-service-setup
   shell: |
     . /opt/molecule-test-env-on-sut/bin/activate
-    ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i "{{ inventory_file }}" openstack-service-setup.yml
-    deactivate
+    ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i "{{ inventory_file }}" openstack-service-setup.yml && deactivate
   args:
     executable: /bin/bash
     chdir: /opt/openstack-ansible-ops/multi-node-aio-xenial-ansible/playbooks/
