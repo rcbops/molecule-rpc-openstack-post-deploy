@@ -34,6 +34,8 @@ test_subnet: TEST-VXLAN-SUBNET
 gateway_network: GATEWAY_NET
 private_network: PRIVATE_NET
 custom_fact_path: /etc/ansible/facts.d
+molecule_venv: /opt/molecule-test-env-on-sut
+osa_playbooks: /opt/openstack-ansible/playbooks
 
 # vars for copying 'clouds.yaml' to the deployment host
 os_config_path: /root/.config/openstack

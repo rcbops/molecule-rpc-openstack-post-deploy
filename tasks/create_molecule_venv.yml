@@ -1,0 +1,40 @@
+---
+# Create a Python virtual environment for running playbooks on SUT.
+
+- name: Create python2 virtualenv for the submodule
+  shell: virtualenv --no-pip --no-setuptools --no-wheel --no-download --no-site-packages  \
+    {{ molecule_venv }}
+  when:
+    - rpc_product_release != "master" or
+      rpc_product_release != "rocky"
+
+- name: Create python3 virtualenv for the submodule
+  shell: virtualenv --no-pip --no-setuptools --no-wheel --no-download --no-site-packages  \
+    --python=python3 {{ molecule_venv }}
+  when:
+    - rpc_product_release == "master" or
+      rpc_product_release == "rocky"
+
+- name: Install pip/setuptools/wheel on the virtualenv on SUT
+  shell: |
+    . {{ molecule_venv }}/bin/activate
+    CURL_CMD="curl --silent --show-error --retry 5"
+    OUTPUT_FILE="get-pip.py"
+    ${CURL_CMD} https://bootstrap.pypa.io/get-pip.py > ${OUTPUT_FILE}  \
+      || ${CURL_CMD} https://raw.githubusercontent.com/pypa/get-pip/master/get-pip.py > ${OUTPUT_FILE}
+    GETPIP_OPTIONS="pip setuptools wheel"
+    python ${OUTPUT_FILE} ${GETPIP_OPTIONS} \
+      || python ${OUTPUT_FILE} --isolated ${GETPIP_OPTIONS}
+    deactivate
+
+- name: Install python modules into virtualenv
+  pip:
+    name: "{{ item }}"
+    extra_args: --isolated
+    state: present
+    virtualenv: "{{ molecule_venv }}"
+  with_items:
+    - ansible==2.5.5
+    - shade==1.28.0
+    - ipaddr==2.2.0
+    - netaddr==0.7.19

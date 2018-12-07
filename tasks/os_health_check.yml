@@ -1,0 +1,27 @@
+---
+# Execute OpenStack health check playbooks.
+
+- name: Run "healthcheck-hosts" Playbook
+  shell: openstack-ansible healthcheck-hosts.yml
+  args:
+    executable: /bin/bash
+    chdir: "{{ osa_playbooks }}"
+  async: 600
+  poll: 15
+
+- name: Run "healthcheck-infrastructure" Playbook
+  shell: openstack-ansible healthcheck-infrastructure.yml
+  args:
+    executable: /bin/bash
+    chdir: "{{ osa_playbooks }}"
+  async: 600
+  poll: 15
+
+- name: Run "healthcheck-openstack" Playbook
+  shell: openstack-ansible healthcheck-openstack.yml
+  args:
+    executable: /bin/bash
+    chdir: "{{ osa_playbooks }}"
+  async: 1200
+  poll: 30
+  when: rpc_product_release != "queens"

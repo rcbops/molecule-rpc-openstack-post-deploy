@@ -2,10 +2,15 @@
 # tasks file for molecule-rpc-openstack-post-deploy
 - import_tasks: set_facts.yml
 - import_tasks: enable_api_access.yml
+- import_tasks: create_molecule_venv.yml
 - name: Install "openvswitch-switch" package
   apt:
      name: openvswitch-switch
 - import_tasks: ssh_key_containers.yml
+- import_tasks: os_health_check.yml
+  when:
+    - rpc_product_release != "newton" or
+      rpc_product_release != "pike"
 - import_tasks: delete_existing_networks.yml
   when: ansible_local.service_setup is not defined
 - import_tasks: os_service_setup.yml
