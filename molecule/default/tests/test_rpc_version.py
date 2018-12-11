@@ -39,7 +39,7 @@ def test_openstack_release_version(host):
 
     Args:
         host(testinfra.host.Host): host fixture that will iterate over
-        testinfra_hosts
+            testinfra_hosts
     """
 
     r = next(gen_dict_extract('rpc_product_release', host.ansible("setup")))
@@ -65,7 +65,7 @@ def test_openstack_codename(host):
 
     Args:
         host(testinfra.host.Host): host fixture that will iterate over
-        testinfra_hosts
+            testinfra_hosts
     """
 
     r = next(gen_dict_extract('rpc_product_release', host.ansible("setup")))
