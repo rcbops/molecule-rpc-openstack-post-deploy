@@ -12,14 +12,15 @@ testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
     os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('shared-infra_hosts')[:1]
 
 # attach the utility container:
-attach_utility_container = "lxc-attach -n `lxc-ls -1 | grep utility | head -n 1` -- bash -c "
+attach_utility_container = ("lxc-attach -n "
+                            "`lxc-ls -1 | grep utility | head -n 1` "
+                            "-- bash -c ")
 
 
 @pytest.mark.test_id('d7fc612b-432a-11e8-9a7a-6a00035510c0')
 @pytest.mark.jira('asc-240')
 def test_verify_glance_image(host):
-    """Verify the glance images created by:
-    https://github.com/openstack/openstack-ansible-ops/blob/master/multi-node-aio/playbooks/vars/openstack-service-config.yml
+    """Verify the glance images created by the "os_service_setup.yml" playbook.
     """
     cmd = attach_utility_container + "'. /root/openrc ; openstack image list'"
     output = host.run(cmd)
@@ -36,8 +37,7 @@ def test_verify_glance_image(host):
 @pytest.mark.test_id('d7fc62c7-432a-11e8-8102-6a00035510c0')
 @pytest.mark.jira('asc-240')
 def test_verify_vm_flavors(host):
-    """Verify the VM flavor created by:
-    https://github.com/openstack/openstack-ansible-ops/blob/master/multi-node-aio/playbooks/vars/openstack-service-config.yml
+    """Verify the VM flavor created by the "os_service_setup.yml" playbook.
     """
     cmd = attach_utility_container + "'. /root/openrc ; openstack flavor list'"
     output = host.run(cmd)

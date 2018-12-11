@@ -15,7 +15,8 @@ def test_cinder_service(host):
     """Test to verify that cinder service is running
 
     Args:
-        host(testinfra.host.Host): A hostname in dynamic_inventory.json/molecule.yml
+        host(testinfra.host.Host): A hostname in
+            dynamic_inventory.json/molecule.yml
     """
     cmd = "{} cinder service-list'".format(utility_container)
     output = host.run(cmd)

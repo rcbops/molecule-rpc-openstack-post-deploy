@@ -23,7 +23,8 @@ ssh_pre = ("ssh -o UserKnownHostsFile=/dev/null "
 @pytest.mark.test_id('b1e888fa-546a-11e8-9902-6c96cfdb252f')
 def test_cinder_lvs_volume_on_node(host):
     # get list of volumes and associated hosts from utility container
-    cmd = "{} cinder list --all-t --fields os-vol-host-attr:host,status '".format(os_pre)
+    cmd = ("{} cinder list --all-t --fields "
+           "os-vol-host-attr:host,status '".format(os_pre))
     vol_table = host.run(cmd).stdout
     vol_hosts = helpers.parse_table(vol_table)[1]
     for vol, chost, status in vol_hosts:
@@ -34,11 +35,13 @@ def test_cinder_lvs_volume_on_node(host):
         # VOLEXISTS test
         cmd = "{} {} lvs | grep volume-{}".format(ssh_pre, chost, vol)
         host.run_expect([0], cmd)
-        cmd = "{} cinder snapshot-list --all- --volume-id={} '".format(os_pre, vol)
+        cmd = ("{} cinder snapshot-list"
+               " --all- --volume-id={} '".format(os_pre, vol))
         snap_table = host.run(cmd).stdout
         snaps = helpers.parse_table(snap_table)[1]
         for snap in snaps:
             # SNAPEXISTS test
             snap_vol = snap[1]
-            cmd = "{} {} lvs | grep _snapshot-{}".format(ssh_pre, chost, snap_vol)
+            cmd = ("{} {} lvs | "
+                   "grep _snapshot-{}".format(ssh_pre, chost, snap_vol))
             host.run_expect([0], cmd)
