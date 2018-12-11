@@ -18,7 +18,7 @@ def test_assign_floating_ip_to_instance(openstack_properties, host):
 
     Args:
         openstack_properties (dict): fixture 'openstack_properties' from
-        conftest.py
+            conftest.py
         host(testinfra.host.Host): Testinfra host fixture.
     """
 
@@ -27,9 +27,9 @@ def test_assign_floating_ip_to_instance(openstack_properties, host):
     data = {
         'instance_name': "test_instance_{}".format(random_str),
         'from_source': 'image',
-        'source_name': openstack_properties['image_name'],
-        'flavor': openstack_properties['flavor'],
-        'network_name': openstack_properties['private_net'],
+        'source_name': openstack_properties['test_image_name'],
+        'flavor': openstack_properties['test_flavor'],
+        'network_name': openstack_properties['private_network'],
     }
 
     instance_id = helpers.create_instance(data, host)
@@ -54,7 +54,7 @@ def test_assign_floating_ip_to_instance(openstack_properties, host):
 
     # Creating a floating IP:
     floating_ip = helpers.create_floating_ip(
-        openstack_properties['network_name'],
+        openstack_properties['gateway_network'],
         host
     )
 

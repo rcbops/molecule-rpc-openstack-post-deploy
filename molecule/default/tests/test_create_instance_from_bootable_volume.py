@@ -18,12 +18,12 @@ def create_bootable_volume(openstack_properties, host):
 
     Args:
         openstack_properties (dict): fixture 'openstack_properties' from
-        conftest.py
+            conftest.py
         host(testinfra.host.Host): Testinfra host fixture.
     """
 
     image_id = helpers.get_id_by_name('image',
-                                      openstack_properties['image_name'],
+                                      openstack_properties['test_image_name'],
                                       host)
     assert image_id is not None
 
@@ -33,7 +33,7 @@ def create_bootable_volume(openstack_properties, host):
     data = {'volume': {'size': '1',
                        'imageref': image_id,
                        'name': volume_name,
-                       'zone': openstack_properties['zone'],
+                       'zone': openstack_properties['test_zone'],
                        }
             }
 
@@ -64,13 +64,13 @@ def test_create_instance_from_bootable_volume(openstack_properties,
 
     Args:
         openstack_properties (dict): fixture 'openstack_properties' from
-        conftest.py
+            conftest.py
         create_bootable_volume: fixture 'create_bootable_volume'
-        host(testinfra.host.Host): Testinfra host fixture
+            host(testinfra.host.Host): Testinfra host fixture
     """
 
     network_id = helpers.get_id_by_name('network',
-                                        openstack_properties['network_name'],
+                                        openstack_properties['gateway_network'],
                                         host)
     assert network_id is not None
 
@@ -82,7 +82,7 @@ def test_create_instance_from_bootable_volume(openstack_properties,
            " --flavor {}"
            " --nic net-id={} {}'".format(utility_container,
                                          create_bootable_volume,
-                                         openstack_properties['flavor'],
+                                         openstack_properties['test_flavor'],
                                          network_id,
                                          instance_name)
            )

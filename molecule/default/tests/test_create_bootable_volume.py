@@ -16,11 +16,11 @@ def test_create_bootable_volume(openstack_properties, host):
 
     Args:
         openstack_properties (dict): fixture 'openstack_properties' from
-        conftest.py
+            conftest.py
         host(testinfra.host.Host): Testinfra host fixture.
     """
     image_id = helpers.get_id_by_name('image',
-                                      openstack_properties['image_name'],
+                                      openstack_properties['test_image_name'],
                                       host)
     assert image_id is not None
 
@@ -30,7 +30,7 @@ def test_create_bootable_volume(openstack_properties, host):
     data = {'volume': {'size': '2',
                        'imageref': image_id,
                        'name': volume_name,
-                       'zone': openstack_properties['zone'],
+                       'zone': openstack_properties['test_zone'],
                        }
             }
 

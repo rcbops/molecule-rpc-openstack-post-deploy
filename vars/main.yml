@@ -31,6 +31,9 @@ test_volume: post-deploy-volume
 test_router: TEST-ROUTER
 test_network: TEST-VXLAN
 test_subnet: TEST-VXLAN-SUBNET
+test_image_name: Cirros-0.3.5
+test_flavor: m1.tiny
+test_zone: nova
 gateway_network: GATEWAY_NET
 private_network: PRIVATE_NET
 custom_fact_path: /etc/ansible/facts.d

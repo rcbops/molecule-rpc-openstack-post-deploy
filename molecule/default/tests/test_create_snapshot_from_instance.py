@@ -26,9 +26,9 @@ class TestCreateSnapshotFromInstance(object):
         data_image = {
             "instance_name": instance_name,
             "from_source": 'image',
-            "source_name": openstack_properties['image_name'],
-            "flavor": openstack_properties['flavor'],
-            "network_name": openstack_properties['private_net'],
+            "source_name": openstack_properties['test_image_name'],
+            "flavor": openstack_properties['test_flavor'],
+            "network_name": openstack_properties['private_network'],
         }
 
         helpers.create_instance(data_image, host)
@@ -73,8 +73,8 @@ class TestCreateSnapshotFromInstance(object):
             "instance_name": new_instance_name,
             "from_source": 'image',
             "source_name": snapshot_name,
-            "flavor": openstack_properties['flavor'],
-            "network_name": openstack_properties['private_net'],
+            "flavor": openstack_properties['test_flavor'],
+            "network_name": openstack_properties['private_network'],
         }
 
         # Boot new instance using the newly created snapshot:
