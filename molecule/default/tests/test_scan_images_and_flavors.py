@@ -24,14 +24,17 @@ def test_verify_glance_image(host):
     """
     cmd = attach_utility_container + "'. /root/openrc ; openstack image list'"
     output = host.run(cmd)
-    assert ("Ubuntu 14.04 LTS" in output.stdout)
-    assert ("Ubuntu 16.04" in output.stdout)
-    assert ("Fedora 27" in output.stdout)
-    assert ("CentOS 7" in output.stdout)
-    assert ("OpenSuse Leap 42.3" in output.stdout)
-    assert ("Debian 9 Latest" in output.stdout)
-    assert ("Debian TESTING" in output.stdout)
-    assert ("Cirros-0.3.5" in output.stdout)
+    images = ['Ubuntu 14.04 LTS',
+              'Ubuntu 16.04',
+              'Fedora 27',
+              'CentOS 7',
+              'OpenSuse Leap 42.3',
+              'Debian 9 Latest',
+              'Debian TESTING',
+              'Cirros-0.3.5']
+
+    for image in images:
+        assert image in output.stdout
 
 
 @pytest.mark.test_id('d7fc62c7-432a-11e8-8102-6a00035510c0')
@@ -41,11 +44,14 @@ def test_verify_vm_flavors(host):
     """
     cmd = attach_utility_container + "'. /root/openrc ; openstack flavor list'"
     output = host.run(cmd)
-    assert ("m1.micro" in output.stdout)
-    assert ("m1.tiny" in output.stdout)
-    assert ("m1.mini" in output.stdout)
-    assert ("m1.small" in output.stdout)
-    assert ("m1.medium" in output.stdout)
-    assert ("m1.large" in output.stdout)
-    assert ("m1.xlarge" in output.stdout)
-    assert ("m1.heavy" in output.stdout)
+    flavors = ['m1.micro',
+               'm1.tiny',
+               'm1.mini',
+               'm1.small',
+               'm1.medium',
+               'm1.large',
+               'm1.xlarge',
+               'm1.heavy']
+
+    for flavor in flavors:
+        assert flavor in output.stdout
