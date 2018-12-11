@@ -76,11 +76,15 @@ def test_hypervisor_free(get_nova_allocation_ratios, host):
     res = host.run(cmd)
     stats = json.loads(res.stdout)
     assert res.rc == 0
-    assert "memory_mb" in stats
-    assert "memory_mb_used" in stats
-    assert "vcpus" in stats
-    assert "vcpus_used" in stats
-    assert "free_disk_gb" in stats
+    check_items = ['memory_mb',
+                   'memory_mb_used',
+                   'vcpus',
+                   'vcpus_used',
+                   'free_disk_gb']
+
+    for item in check_items:
+        assert item in stats
+
     assert ((stats['memory_mb']) * get_nova_allocation_ratios['ram_ratio']
             - (stats['memory_mb_used'])) / 1024 > 0
     assert (stats['vcpus'] * get_nova_allocation_ratios['cpu_ratio']
