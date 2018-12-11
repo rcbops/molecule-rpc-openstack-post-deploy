@@ -12,8 +12,9 @@ testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
     os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('shared-infra_hosts')[:1]
 
 # attach the utility container:
-attach_utility_container = ("lxc-attach -n `lxc-ls -1 | grep utility | "
-                            "head -n 1` -- bash -c ")
+attach_utility_container = ("lxc-attach -n "
+                            "`lxc-ls -1 | grep utility | head -n 1` "
+                            "-- bash -c ")
 
 
 @pytest.mark.test_id('d7fc612b-432a-11e8-9a7a-6a00035510c0')

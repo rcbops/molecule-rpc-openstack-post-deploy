@@ -27,7 +27,7 @@ def get_nova_allocation_ratios(host):
         os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('nova_conductor')
     host_containers = testinfra.utils.ansible_runner.AnsibleRunner(
         os.environ['MOLECULE_INVENTORY_FILE']).get_hosts(
-        target_host + '-host_containers')
+            target_host + '-host_containers')
     nova_conductors = [i for i in nova_conductor_containers if i in set(
         host_containers)]
     assert len(nova_conductors) > 0

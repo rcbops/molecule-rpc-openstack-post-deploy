@@ -12,8 +12,8 @@ testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
     os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('shared-infra_hosts')[:1]
 
 # attach the rabbitMQ container:
-attach_rabbitmq_container = ("lxc-attach -n `lxc-ls -1 | "
-                             "grep rabbit | head -n 1` -- ")
+attach_rabbitmq_container = ("lxc-attach -n "
+                             "`lxc-ls -1 | grep rabbit | head -n 1` -- ")
 
 
 @pytest.mark.test_id('43e5eed1-4335-11e8-bff9-6a00035510c0')
