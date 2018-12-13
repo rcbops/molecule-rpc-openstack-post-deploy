@@ -3,33 +3,10 @@ import testinfra.utils.ansible_runner
 import pytest
 import re
 import pytest_rpc.helpers as helpers
+import utils as tmp_var
 
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
     os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('shared-infra_hosts')[:1]
-
-
-def gen_dict_extract(key, var):
-    """Produce a generator that can iterate over all found values for a given
-    key in a given dictionary
-
-    Args:
-        key(str): key to lookup
-        var(dict): dictionary to recursively search
-
-    Returns: generator
-    """
-
-    if hasattr(var, 'iteritems'):
-        for k, v in var.iteritems():
-            if k == key:
-                yield v
-            if isinstance(v, dict):
-                for result in gen_dict_extract(key, v):
-                    yield result
-            elif isinstance(v, list):
-                for d in v:
-                    for result in gen_dict_extract(key, d):
-                        yield result
 
 
 @pytest.mark.test_id('2c596d8f-7957-11e8-8017-6a00035510c0')
@@ -42,7 +19,8 @@ def test_openstack_release_version(host):
             testinfra_hosts
     """
 
-    r = next(gen_dict_extract('rpc_product_release', host.ansible("setup")))
+    r = next(tmp_var.gen_dict_extract('rpc_product_release',
+                                      host.ansible("setup")))
     expected_codename, expected_major = helpers.get_osa_version(r)
 
     # Expected example:
@@ -68,7 +46,8 @@ def test_openstack_codename(host):
             testinfra_hosts
     """
 
-    r = next(gen_dict_extract('rpc_product_release', host.ansible("setup")))
+    r = next(tmp_var.gen_dict_extract('rpc_product_release',
+                                      host.ansible("setup")))
     expected_codename, expected_major = helpers.get_osa_version(r)
 
     # Expected example:
