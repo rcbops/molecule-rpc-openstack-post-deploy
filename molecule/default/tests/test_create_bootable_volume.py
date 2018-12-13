@@ -10,17 +10,18 @@ testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
 
 @pytest.mark.test_id('3c469966-4fcb-11e8-a604-6a0003552100')
 @pytest.mark.jira('asc-258')
-def test_create_bootable_volume(openstack_properties, host):
+def test_create_bootable_volume(os_props, host):
     """Test to verify that a bootable volume can be created based on a
     Glance image
 
     Args:
-        openstack_properties (dict): fixture 'openstack_properties' from
-            conftest.py
+        os_props (dict): This fixture returns a dictionary of OpenStack facts
+            and variables from Ansible which can be used to manipulate
+            OpenStack objects.
         host(testinfra.host.Host): Testinfra host fixture.
     """
     image_id = helpers.get_id_by_name('image',
-                                      openstack_properties['test_image_name'],
+                                      os_props['test_resources']['image_name'],
                                       host)
     assert image_id is not None
 
@@ -30,7 +31,7 @@ def test_create_bootable_volume(openstack_properties, host):
     data = {'volume': {'size': '2',
                        'imageref': image_id,
                        'name': volume_name,
-                       'zone': openstack_properties['test_zone'],
+                       'zone': os_props['test_resources']['zone'],
                        }
             }
 

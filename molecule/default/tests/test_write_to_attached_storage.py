@@ -54,12 +54,18 @@ def attach_volume_to_server(volume, server, run_on_host):
 
 @pytest.mark.test_id('3d77bc35-7a21-11e8-90d1-6a00035510c0')
 @pytest.mark.jira('ASC-257', 'ASC-883', 'RI-417')
-def test_volume_attached(host):
-    vars = host.ansible('include_vars',
-                        'file=./vars/main.yml')['ansible_facts']
+def test_volume_attached(host, os_props):
+    """Verify that data can be written to a volume attached to an instance.
 
-    server_name = vars['test_server']
-    volume_name = vars['test_volume']
+    Args:
+        host(testinfra.host.Host): Testinfra host fixture.
+        os_props (dict): This fixture returns a dictionary of OpenStack facts
+            and variables from Ansible which can be used to manipulate
+            OpenStack objects.
+    """
+
+    server_name = os_props['test_resources']['server']
+    volume_name = os_props['test_resources']['volume']
 
     floating_ip = helpers.create_floating_ip('GATEWAY_NET', host)
 

@@ -20,15 +20,22 @@ snapshot_name = "test_snapshot_name_{}".format(random_str)
 @pytest.mark.jira('asc-259', 'asc-691')
 @pytest.mark.test_case_with_steps()
 class TestCreateSnapshotFromInstance(object):
-    def test_create_snapshot_of_an_instance(self, openstack_properties, host):
-        """Create an instance and then create snapshot on it"""
+    def test_create_snapshot_of_an_instance(self, os_props, host):
+        """Create an instance and then create snapshot on it
+
+        Args:
+            os_props (dict): This fixture returns a dictionary of OpenStack
+                facts and variables from Ansible which can be used to manipulate
+                OpenStack objects.
+            host(testinfra.host.Host): Testinfra host fixture.
+        """
 
         data_image = {
             "instance_name": instance_name,
             "from_source": 'image',
-            "source_name": openstack_properties['test_image_name'],
-            "flavor": openstack_properties['test_flavor'],
-            "network_name": openstack_properties['private_network'],
+            "source_name": os_props['test_resources']['image_name'],
+            "flavor": os_props['test_resources']['flavor'],
+            "network_name": os_props['private_network'],
         }
 
         helpers.create_instance(data_image, host)
@@ -67,14 +74,22 @@ class TestCreateSnapshotFromInstance(object):
                                           host,
                                           retries=20)
 
-    def test_create_instance_from_snapshot(self, openstack_properties, host):
+    def test_create_instance_from_snapshot(self, os_props, host):
+        """Create a new instance from an existing snapshot.
+
+        Args:
+            os_props (dict): This fixture returns a dictionary of OpenStack
+                facts and variables from Ansible which can be used to manipulate
+                OpenStack objects.
+            host(testinfra.host.Host): Testinfra host fixture.
+        """
 
         data_snapshot = {
             "instance_name": new_instance_name,
             "from_source": 'image',
             "source_name": snapshot_name,
-            "flavor": openstack_properties['test_flavor'],
-            "network_name": openstack_properties['private_network'],
+            "flavor": os_props['test_resources']['flavor'],
+            "network_name": os_props['private_network'],
         }
 
         # Boot new instance using the newly created snapshot:

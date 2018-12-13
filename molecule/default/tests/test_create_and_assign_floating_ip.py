@@ -13,12 +13,13 @@ utility_container = ("lxc-attach -n $(lxc-ls -1 | grep utility | head -n 1) "
 
 @pytest.mark.test_id('ab24ffbd-798b-11e8-a2b2-6c96cfdb2e43')
 @pytest.mark.jira('asc-254')
-def test_assign_floating_ip_to_instance(openstack_properties, host):
+def test_assign_floating_ip_to_instance(os_props, host):
     """ Assign floating IP to an instance/server
 
     Args:
-        openstack_properties (dict): fixture 'openstack_properties' from
-            conftest.py
+        os_props (dict): This fixture returns a dictionary of OpenStack facts
+            and variables from Ansible which can be used to manipulate
+            OpenStack objects.
         host(testinfra.host.Host): Testinfra host fixture.
     """
 
@@ -27,9 +28,9 @@ def test_assign_floating_ip_to_instance(openstack_properties, host):
     data = {
         'instance_name': "test_instance_{}".format(random_str),
         'from_source': 'image',
-        'source_name': openstack_properties['test_image_name'],
-        'flavor': openstack_properties['test_flavor'],
-        'network_name': openstack_properties['private_network'],
+        'source_name': os_props['test_resources']['image_name'],
+        'flavor': os_props['test_resources']['flavor'],
+        'network_name': os_props['private_network'],
     }
 
     instance_id = helpers.create_instance(data, host)
@@ -54,7 +55,7 @@ def test_assign_floating_ip_to_instance(openstack_properties, host):
 
     # Creating a floating IP:
     floating_ip = helpers.create_floating_ip(
-        openstack_properties['gateway_network'],
+        os_props['gateway_network'],
         host
     )
 

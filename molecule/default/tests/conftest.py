@@ -10,7 +10,7 @@ import openstack
 # Fixtures
 # ==============================================================================
 @pytest.fixture(scope='module')
-def openstack_properties(host):
+def os_props(host):
     """This fixture returns a dictionary of OpenStack facts and variables from
     Ansible which can be used to manipulate OpenStack objects. (i.e. create
     server instances)
