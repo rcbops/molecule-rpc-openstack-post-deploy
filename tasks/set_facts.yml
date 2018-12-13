@@ -65,7 +65,6 @@
 - name: Find the proper inventory file osp-mnaio
   shell: find /opt -name hosts -print
   register: find_inventory_file
-  ignore_errors: true
   when:
     - rpc_openstack is undefined
   delegate_to: localhost
