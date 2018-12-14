@@ -3,10 +3,10 @@
   os_server:
     cloud: default
     state: present
-    name: "{{ test_resources.server }}"
-    image: "{{ osa_ops_resources.image_name }}"
-    flavor: "{{ test_resources.flavor }}"
-    network: "{{ test_resources.network }}"
+    name: "{{ test_server }}"
+    image: "{{ image.name }}"
+    flavor: "{{ flavor.name }}"
+    network: "{{ test_network }}"
     key_name: rpc_support
     security_groups: rpc-support
     auto_ip: false

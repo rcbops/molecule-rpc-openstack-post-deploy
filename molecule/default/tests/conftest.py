@@ -9,8 +9,9 @@ import openstack
 # ==============================================================================
 # Fixtures
 # ==============================================================================
+# TODO: these fixtures should be enhanced and moved to 'pytest-rpc'. (ASC-1253)
 @pytest.fixture(scope='module')
-def os_props(host):
+def openstack_properties(host):
     """This fixture returns a dictionary of OpenStack facts and variables from
     Ansible which can be used to manipulate OpenStack objects. (i.e. create
     server instances)
@@ -23,10 +24,18 @@ def os_props(host):
         dict: a static dictionary of data about OpenStack.
     """
 
-    os_props = host.ansible('include_vars',
-                            'file=./vars/main.yml')['ansible_facts']
+    os_vars = host.ansible('include_vars',
+                           'file=./vars/main.yml')['ansible_facts']
 
-    return os_props
+    os_properties = {
+        'image_name': 'Cirros-0.3.5',
+        'network_name': os_vars['gateway_network'],
+        'private_net': os_vars['private_network'],
+        'flavor': 'm1.tiny',
+        'zone': 'nova'
+    }
+
+    return os_properties
 
 
 @pytest.fixture(scope='session')
