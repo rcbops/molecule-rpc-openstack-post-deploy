@@ -3,6 +3,7 @@ import os
 import pytest
 import testinfra.utils.ansible_runner
 import utils as tmp_var
+from time import sleep
 
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
     os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('shared-infra_hosts')[:1]
@@ -77,4 +78,12 @@ def test_assign_floating_ip_to_instance(os_props, host):
 
     # Ensure the IP can be pinged from infra1
     cmd = "ping -c1 {}".format(floating_ip)
-    assert (host.run_expect([0], cmd))
+    for attempt in range(10):
+        try:
+            assert host.run_expect([0], cmd)
+        except AssertionError:
+            sleep(30)
+        else:
+            break
+    else:
+        assert host.run_expect([0], cmd), "Could not ping instance!"

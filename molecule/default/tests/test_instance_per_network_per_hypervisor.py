@@ -59,7 +59,7 @@ def test_hypervisor_vms(host, os_props):
            -i ~/.ssh/rpc_support ubuntu@{}"
 
     flavor_name = os_props['test_resources']['flavor']
-    image_name = os_props['test_resources']['image_name']
+    image_name = os_props['osa_ops_resources']['image_name']
 
     server_list = []
     testable_networks = []

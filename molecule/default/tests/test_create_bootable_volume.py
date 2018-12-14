@@ -30,7 +30,7 @@ def test_create_bootable_volume(os_props, host):
     random_str = helpers.generate_random_string(7)
     volume_name = "test_volume_{}".format(random_str)
 
-    data = {'volume': {'size': '2',
+    data = {'volume': {'size': '12',
                        'imageref': image_id,
                        'name': volume_name,
                        'zone': os_props['zone'],

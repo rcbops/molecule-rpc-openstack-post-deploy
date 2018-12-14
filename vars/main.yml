@@ -29,10 +29,9 @@ test_resources:
   network: TEST-VXLAN
   subnet: TEST-VXLAN-SUBNET
   flavor: post-deploy
-  image_name: Ubuntu 16.04
 osa_ops_resources:
-  image_name: Cirros-0.3.5
-  flavor: m1.tiny
+  image_name: Ubuntu 16.04
+  flavor: m1.small
 zone: nova
 gateway_network: GATEWAY_NET
 private_network: PRIVATE_NET
