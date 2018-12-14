@@ -22,16 +22,14 @@ ops_apt_host_packages:
   - ntp
   - ntpdate
   - vlan
-image:
-  name: Ubuntu 16.04
-flavor:
-  name: post-deploy
 test_resources:
   server: post-deploy-server
   volume: post-deploy-volume
   router: TEST-ROUTER
   network: TEST-VXLAN
   subnet: TEST-VXLAN-SUBNET
+  flavor: post-deploy
+  image_name: Ubuntu 16.04
 osa_ops_resources:
   image_name: Cirros-0.3.5
   flavor: m1.tiny

@@ -58,8 +58,8 @@ def test_hypervisor_vms(host, os_props):
     ssh = "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
            -i ~/.ssh/rpc_support ubuntu@{}"
 
-    flavor_name = os_props['flavor']['name']
-    image_name = os_props['image']['name']
+    flavor_name = os_props['test_resources']['flavor']
+    image_name = os_props['test_resources']['image_name']
 
     server_list = []
     testable_networks = []

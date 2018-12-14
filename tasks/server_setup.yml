@@ -4,8 +4,8 @@
     cloud: default
     state: present
     name: "{{ test_resources.server }}"
-    image: "{{ image.name }}"
-    flavor: "{{ flavor.name }}"
+    image: "{{ test_resources.image_name }}"
+    flavor: "{{ test_resources.flavor }}"
     network: "{{ test_resources.network }}"
     key_name: rpc_support
     security_groups: rpc-support
