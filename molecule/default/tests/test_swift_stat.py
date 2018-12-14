@@ -2,6 +2,7 @@ import os
 import testinfra.utils.ansible_runner
 import pytest
 import pytest_rpc.helpers as helpers
+import utils as tmp_var
 
 """ASC-299: Verify swift endpoint status
 
@@ -17,16 +18,15 @@ testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
 def test_verify_swift_stat(host):
     """Verify the swift endpoint status."""
 
-    r = \
-        (host.ansible("setup")["ansible_facts"]["ansible_local"]
-            ["system_tests"]["rpc_product_release"])
+    r = next(tmp_var.gen_dict_extract('rpc_product_release',
+                                      host.ansible("setup")))
     codename, major = helpers.get_osa_version(r)
 
-    if not major.isdigit() or major > 17:
-        pytest.xfail("openrc credentials are not available "
-                     "on the swift proxy node past queens")
-
-    result = helpers.run_on_swift('swift stat -v', host)
+    cmd = 'swift stat -v'
+    if major < 17:
+        result = helpers.run_on_swift(cmd, host)
+    else:
+        result = helpers.run_on_container(cmd, 'utility', host)
 
     assert 'Account: AUTH_' in result.stdout
     assert 'X-Trans-Id: tx' in result.stdout
