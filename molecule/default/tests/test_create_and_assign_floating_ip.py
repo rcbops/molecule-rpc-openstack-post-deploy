@@ -3,6 +3,7 @@ import os
 import pytest
 import testinfra.utils.ansible_runner
 import utils as tmp_var
+from time import sleep
 
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
     os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('shared-infra_hosts')[:1]
@@ -13,12 +14,13 @@ utility_container = ("lxc-attach -n $(lxc-ls -1 | grep utility | head -n 1) "
 
 @pytest.mark.test_id('ab24ffbd-798b-11e8-a2b2-6c96cfdb2e43')
 @pytest.mark.jira('asc-254')
-def test_assign_floating_ip_to_instance(openstack_properties, host):
+def test_assign_floating_ip_to_instance(os_props, host):
     """ Assign floating IP to an instance/server
 
     Args:
-        openstack_properties (dict): fixture 'openstack_properties' from
-        conftest.py
+        os_props (dict): This fixture returns a dictionary of OpenStack facts
+            and variables from Ansible which can be used to manipulate
+            OpenStack objects.
         host(testinfra.host.Host): Testinfra host fixture.
     """
 
@@ -27,9 +29,9 @@ def test_assign_floating_ip_to_instance(openstack_properties, host):
     data = {
         'instance_name': "test_instance_{}".format(random_str),
         'from_source': 'image',
-        'source_name': openstack_properties['image_name'],
-        'flavor': openstack_properties['flavor'],
-        'network_name': openstack_properties['private_net'],
+        'source_name': os_props['osa_ops_resources']['image_name'],
+        'flavor': os_props['osa_ops_resources']['flavor'],
+        'network_name': os_props['private_network'],
     }
 
     instance_id = helpers.create_instance(data, host)
@@ -54,7 +56,7 @@ def test_assign_floating_ip_to_instance(openstack_properties, host):
 
     # Creating a floating IP:
     floating_ip = helpers.create_floating_ip(
-        openstack_properties['network_name'],
+        os_props['gateway_network'],
         host
     )
 
@@ -76,4 +78,12 @@ def test_assign_floating_ip_to_instance(openstack_properties, host):
 
     # Ensure the IP can be pinged from infra1
     cmd = "ping -c1 {}".format(floating_ip)
-    assert (host.run_expect([0], cmd))
+    for attempt in range(10):
+        try:
+            assert host.run_expect([0], cmd)
+        except AssertionError:
+            sleep(30)
+        else:
+            break
+    else:
+        assert host.run_expect([0], cmd), "Could not ping instance!"

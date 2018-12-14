@@ -12,28 +12,31 @@ utility_container = ("lxc-attach -n $(lxc-ls -1 | grep utility | head -n 1) "
 
 
 @pytest.fixture
-def create_bootable_volume(openstack_properties, host):
+def create_bootable_volume(os_props, host):
     """Test to verify that a bootable volume can be created based on a
     Glance image
 
     Args:
-        openstack_properties (dict): fixture 'openstack_properties' from
-        conftest.py
+        os_props (dict): This fixture returns a dictionary of OpenStack facts
+            and variables from Ansible which can be used to manipulate
+            OpenStack objects.
         host(testinfra.host.Host): Testinfra host fixture.
     """
 
-    image_id = helpers.get_id_by_name('image',
-                                      openstack_properties['image_name'],
-                                      host)
+    image_id = helpers.get_id_by_name(
+        'image',
+        os_props['osa_ops_resources']['image_name'],
+        host
+    )
     assert image_id is not None
 
     random_str = helpers.generate_random_string(6)
     volume_name = "test_volume_{}".format(random_str)
 
-    data = {'volume': {'size': '1',
+    data = {'volume': {'size': '12',
                        'imageref': image_id,
                        'name': volume_name,
-                       'zone': openstack_properties['zone'],
+                       'zone': os_props['zone'],
                        }
             }
 
@@ -56,36 +59,41 @@ def create_bootable_volume(openstack_properties, host):
 
 @pytest.mark.test_id('8b701dbc-7584-11e8-ba5b-fe14fb7452aa')
 @pytest.mark.jira('asc-462')
-def test_create_instance_from_bootable_volume(openstack_properties,
+def test_create_instance_from_bootable_volume(os_props,
                                               create_bootable_volume,
                                               host):
     """Test to verify that a bootable volume can be created based on a
     Glance image
 
     Args:
-        openstack_properties (dict): fixture 'openstack_properties' from
-        conftest.py
+        os_props (dict): This fixture returns a dictionary of OpenStack facts
+            and variables from Ansible which can be used to manipulate
+            OpenStack objects.
         create_bootable_volume: fixture 'create_bootable_volume'
-        host(testinfra.host.Host): Testinfra host fixture
+            host(testinfra.host.Host): Testinfra host fixture
+        host(testinfra.host.Host): Testinfra host fixture.
     """
 
     network_id = helpers.get_id_by_name('network',
-                                        openstack_properties['network_name'],
+                                        os_props['gateway_network'],
                                         host)
     assert network_id is not None
 
     random_str = helpers.generate_random_string(6)
     instance_name = "test_instance_{}".format(random_str)
 
-    cmd = ("{} openstack server create "
-           " --volume {}"
-           " --flavor {}"
-           " --nic net-id={} {}'".format(utility_container,
-                                         create_bootable_volume,
-                                         openstack_properties['flavor'],
-                                         network_id,
-                                         instance_name)
-           )
+    cmd = (
+        "{} openstack server create "
+        " --volume {}"
+        " --flavor {}"
+        " --nic net-id={} {}'".format(
+            utility_container,
+            create_bootable_volume,
+            os_props['osa_ops_resources']['flavor'],
+            network_id,
+            instance_name
+        )
+    )
 
     host.run_expect([0], cmd)
 

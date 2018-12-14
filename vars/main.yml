@@ -22,15 +22,17 @@ ops_apt_host_packages:
   - ntp
   - ntpdate
   - vlan
-image:
-  name: Ubuntu 16.04
-flavor:
-  name: post-deploy
-test_server: post-deploy-server
-test_volume: post-deploy-volume
-test_router: TEST-ROUTER
-test_network: TEST-VXLAN
-test_subnet: TEST-VXLAN-SUBNET
+test_resources:
+  server: post-deploy-server
+  volume: post-deploy-volume
+  router: TEST-ROUTER
+  network: TEST-VXLAN
+  subnet: TEST-VXLAN-SUBNET
+  flavor: post-deploy
+osa_ops_resources:
+  image_name: Ubuntu 16.04
+  flavor: m1.small
+zone: nova
 gateway_network: GATEWAY_NET
 private_network: PRIVATE_NET
 custom_fact_path: /etc/ansible/facts.d
