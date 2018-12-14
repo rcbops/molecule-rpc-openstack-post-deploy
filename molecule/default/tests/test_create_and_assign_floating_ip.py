@@ -28,8 +28,8 @@ def test_assign_floating_ip_to_instance(os_props, host):
     data = {
         'instance_name': "test_instance_{}".format(random_str),
         'from_source': 'image',
-        'source_name': os_props['test_resources']['image_name'],
-        'flavor': os_props['test_resources']['flavor'],
+        'source_name': os_props['osa_ops_resources']['image_name'],
+        'flavor': os_props['osa_ops_resources']['flavor'],
         'network_name': os_props['private_network'],
     }
 

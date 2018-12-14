@@ -23,9 +23,11 @@ def create_bootable_volume(os_props, host):
         host(testinfra.host.Host): Testinfra host fixture.
     """
 
-    image_id = helpers.get_id_by_name('image',
-                                      os_props['test_resources']['image_name'],
-                                      host)
+    image_id = helpers.get_id_by_name(
+        'image',
+        os_props['osa_ops_resources']['image_name'],
+        host
+    )
     assert image_id is not None
 
     random_str = helpers.generate_random_string(6)
@@ -34,7 +36,7 @@ def create_bootable_volume(os_props, host):
     data = {'volume': {'size': '1',
                        'imageref': image_id,
                        'name': volume_name,
-                       'zone': os_props['test_resources']['zone'],
+                       'zone': os_props['zone'],
                        }
             }
 
@@ -80,15 +82,18 @@ def test_create_instance_from_bootable_volume(os_props,
     random_str = helpers.generate_random_string(6)
     instance_name = "test_instance_{}".format(random_str)
 
-    cmd = ("{} openstack server create "
-           " --volume {}"
-           " --flavor {}"
-           " --nic net-id={} {}'".format(utility_container,
-                                         create_bootable_volume,
-                                         os_props['test_resources']['flavor'],
-                                         network_id,
-                                         instance_name)
-           )
+    cmd = (
+        "{} openstack server create "
+        " --volume {}"
+        " --flavor {}"
+        " --nic net-id={} {}'".format(
+            utility_container,
+            create_bootable_volume,
+            os_props['osa_ops_resources']['flavor'],
+            network_id,
+            instance_name
+        )
+    )
 
     host.run_expect([0], cmd)
 

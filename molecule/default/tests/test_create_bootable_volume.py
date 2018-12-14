@@ -20,9 +20,11 @@ def test_create_bootable_volume(os_props, host):
             OpenStack objects.
         host(testinfra.host.Host): Testinfra host fixture.
     """
-    image_id = helpers.get_id_by_name('image',
-                                      os_props['test_resources']['image_name'],
-                                      host)
+    image_id = helpers.get_id_by_name(
+        'image',
+        os_props['osa_ops_resources']['image_name'],
+        host
+    )
     assert image_id is not None
 
     random_str = helpers.generate_random_string(7)
@@ -31,7 +33,7 @@ def test_create_bootable_volume(os_props, host):
     data = {'volume': {'size': '2',
                        'imageref': image_id,
                        'name': volume_name,
-                       'zone': os_props['test_resources']['zone'],
+                       'zone': os_props['zone'],
                        }
             }
 

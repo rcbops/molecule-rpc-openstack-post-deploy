@@ -32,9 +32,10 @@ test_resources:
   router: TEST-ROUTER
   network: TEST-VXLAN
   subnet: TEST-VXLAN-SUBNET
+osa_ops_resources:
   image_name: Cirros-0.3.5
   flavor: m1.tiny
-  zone: nova
+zone: nova
 gateway_network: GATEWAY_NET
 private_network: PRIVATE_NET
 custom_fact_path: /etc/ansible/facts.d

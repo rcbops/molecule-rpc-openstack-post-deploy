@@ -33,8 +33,8 @@ class TestCreateSnapshotFromInstance(object):
         data_image = {
             "instance_name": instance_name,
             "from_source": 'image',
-            "source_name": os_props['test_resources']['image_name'],
-            "flavor": os_props['test_resources']['flavor'],
+            "source_name": os_props['osa_ops_resources']['image_name'],
+            "flavor": os_props['osa_ops_resources']['flavor'],
             "network_name": os_props['private_network'],
         }
 
@@ -88,7 +88,7 @@ class TestCreateSnapshotFromInstance(object):
             "instance_name": new_instance_name,
             "from_source": 'image',
             "source_name": snapshot_name,
-            "flavor": os_props['test_resources']['flavor'],
+            "flavor": os_props['osa_ops_resources']['flavor'],
             "network_name": os_props['private_network'],
         }
 
