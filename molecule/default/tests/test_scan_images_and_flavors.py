@@ -1,29 +1,27 @@
-import os
-import pytest
-import testinfra.utils.ansible_runner
-
-
+# -*- coding: utf-8 -*-
 """ASC-240: Verify the requested glance images were uploaded
 
 RPC 10+ manual test 10
 """
-
-testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
-    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('shared-infra_hosts')[:1]
-
-# attach the utility container:
-attach_utility_container = ("lxc-attach -n "
-                            "`lxc-ls -1 | grep utility | head -n 1` "
-                            "-- bash -c ")
+# ==============================================================================
+# Imports
+# ==============================================================================
+import pytest
 
 
+# ==============================================================================
+# Test Cases
+# ==============================================================================
 @pytest.mark.test_id('d7fc612b-432a-11e8-9a7a-6a00035510c0')
 @pytest.mark.jira('asc-240')
-def test_verify_glance_image(host):
+def test_verify_glance_image(os_api_conn):
     """Verify the glance images created by the "os_service_setup.yml" playbook.
+
+    Args:
+        os_api_conn (openstack.connection.Connection): Authorized API connection
+            to the 'default' cloud on the OpenStack infrastructure.
     """
-    cmd = attach_utility_container + "'. /root/openrc ; openstack image list'"
-    output = host.run(cmd)
+
     images = ['Ubuntu 14.04 LTS',
               'Ubuntu 16.04',
               'Fedora 27',
@@ -34,16 +32,19 @@ def test_verify_glance_image(host):
               'Cirros-0.3.5']
 
     for image in images:
-        assert image in output.stdout
+        assert os_api_conn.get_image_name(image) == image
 
 
 @pytest.mark.test_id('d7fc62c7-432a-11e8-8102-6a00035510c0')
 @pytest.mark.jira('asc-240')
-def test_verify_vm_flavors(host):
+def test_verify_vm_flavors(os_api_conn):
     """Verify the VM flavor created by the "os_service_setup.yml" playbook.
+
+    Args:
+        os_api_conn (openstack.connection.Connection): Authorized API connection
+            to the 'default' cloud on the OpenStack infrastructure.
     """
-    cmd = attach_utility_container + "'. /root/openrc ; openstack flavor list'"
-    output = host.run(cmd)
+
     flavors = ['m1.micro',
                'm1.tiny',
                'm1.mini',
@@ -54,4 +55,4 @@ def test_verify_vm_flavors(host):
                'm1.heavy']
 
     for flavor in flavors:
-        assert flavor in output.stdout
+        assert os_api_conn.get_flavor_name(flavor) == flavor
