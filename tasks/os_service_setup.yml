@@ -57,7 +57,7 @@
   args:
     executable: /bin/bash
     chdir: /opt/openstack-ansible-ops/multi-node-aio-xenial-ansible/playbooks/
-  async: 1500
+  async: 2700
   poll: 60
 
 - name: create directory for ansible custome facts
