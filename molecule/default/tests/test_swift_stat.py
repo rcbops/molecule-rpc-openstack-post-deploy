@@ -26,6 +26,9 @@ def test_verify_swift_stat(host):
     if major < 17:
         result = helpers.run_on_swift(cmd, host)
     else:
+        # Work around for ASC-1398:
+        cmd = ". openrc ; " + cmd
+
         result = helpers.run_on_container(cmd, 'utility', host)
 
     assert 'Account: AUTH_' in result.stdout
