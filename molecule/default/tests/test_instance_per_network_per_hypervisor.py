@@ -43,23 +43,18 @@ def create_server_on(target_host,
 
 @pytest.mark.test_id('c3002bde-59f1-11e8-be3b-6c96cfdb252f')
 @pytest.mark.jira('ASC-241', 'ASC-883', 'ASC-789', 'RI-417')
-def test_hypervisor_vms(host, os_props):
+def test_hypervisor_vms(host):
     """ASC-241: Per network, spin up an instance on each hypervisor, perform
-    external ping, and tear-down
-
-    Args:
-        host(testinfra.host.Host): Testinfra host fixture.
-        os_props (dict): This fixture returns a dictionary of OpenStack
-            facts and variables from Ansible which can be used to manipulate
-            OpenStack objects.
-
-    """
+    external ping, and tear-down """
 
     ssh = "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
            -i ~/.ssh/rpc_support ubuntu@{}"
 
-    flavor_name = os_props['test_resources']['flavor']
-    image_name = os_props['osa_ops_resources']['image_name']
+    vars = host.ansible('include_vars',
+                        'file=./vars/main.yml')['ansible_facts']
+
+    flavor_name = vars['flavor']['name']
+    image_name = vars['image']['name']
 
     server_list = []
     testable_networks = []

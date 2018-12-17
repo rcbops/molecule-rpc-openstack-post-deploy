@@ -3,7 +3,7 @@
   os_nova_flavor:
     cloud: default
     state: present
-    name: "{{ test_resources.flavor }}"
+    name: "{{ flavor.name }}"
     ram: 512
     vcpus: 1
     disk: 10

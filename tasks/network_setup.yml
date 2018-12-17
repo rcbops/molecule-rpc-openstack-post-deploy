@@ -3,7 +3,7 @@
   os_network:
     cloud: default
     state: present
-    name: "{{ test_resources.network }}"
+    name: "{{ test_network }}"
     external: false
   delegate_to: localhost
 
@@ -11,8 +11,8 @@
   os_subnet:
     cloud: default
     state: present
-    network_name: "{{ test_resources.network }}"
-    name: "{{ test_resources.subnet }}"
+    network_name: "{{ test_network }}"
+    name: "{{ test_subnet }}"
     cidr: 192.168.1.0/24
     allocation_pool_start: 192.168.1.2
     allocation_pool_end: 192.168.1.254
@@ -23,8 +23,8 @@
   os_router:
     cloud: default
     state: present
-    name: "{{ test_resources.router }}"
+    name: "{{ test_router }}"
     network: "{{ gateway_network }}"
     interfaces:
-      - "{{ test_resources.subnet }}"
+      - "{{ test_subnet }}"
   delegate_to: localhost
