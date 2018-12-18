@@ -21,8 +21,10 @@ def test_verify_network_list(host):
     """Verify the neutron network was created"""
     cmd = "{} openstack network list'".format(utility_container)
     output = host.run(cmd)
-    assert ("GATEWAY_NET" in output.stdout)
-    assert ("PRIVATE_NET" in output.stdout)
+    networks = ['GATEWAY_NET', 'PRIVATE_NET']
+
+    for network in networks:
+        assert network in output.stdout
 
 
 @pytest.mark.test_id('d7fc65fa-432a-11e8-a2ae-6a00035510c0')
@@ -31,5 +33,7 @@ def test_verify_subnet_list(host):
     """Verify the neutron subnet was created """
     cmd = "{} openstack subnet list'".format(utility_container)
     output = host.run(cmd)
-    assert ("GATEWAY_NET_SUBNET" in output.stdout)
-    assert ("PRIVATE_NET_SUBNET" in output.stdout)
+    subnets = ['GATEWAY_NET_SUBNET', 'RIVATE_NET_SUBNET']
+
+    for subnet in subnets:
+        assert subnet in output.stdout

@@ -3,6 +3,7 @@ import testinfra.utils.ansible_runner
 import pytest
 import json
 import pytest_rpc.helpers as helpers
+import utils as tmp_var
 
 """ASC-157: Perform Post Deploy System validations"""
 
@@ -17,7 +18,8 @@ def test_openvswitch(host):
     Ensure DHCP agents for all networks are up
     """
 
-    r = host.ansible("setup")["ansible_facts"]["ansible_local"]["system_tests"]["rpc_product_release"]
+    r = next(tmp_var.gen_dict_extract('rpc_product_release',
+                                      host.ansible("setup")))
     expected_codename, expected_major = helpers.get_osa_version(r)
     print "expected_major: {}".format(expected_major)
     try:
@@ -34,7 +36,9 @@ def test_openvswitch(host):
     networks = json.loads(net_res.stdout)
     for network in networks:
         if osa_major > 14:
-            net_agent_cmd = "{} network agent list --network {} -f json'".format(os_pre, network['ID'])
+            net_agent_cmd = ("{} network agent list "
+                             "--network {} -f json'".format(os_pre,
+                                                            network['ID']))
         else:
             net_agent_cmd = ("lxc-attach "
                              "-n $(lxc-ls -1 | grep utility | head -n 1) "

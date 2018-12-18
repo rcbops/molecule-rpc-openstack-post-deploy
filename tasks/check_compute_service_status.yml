@@ -1,0 +1,14 @@
+---
+- name: Verify compute service status on compute nodes
+  shell: |
+    lxc-attach -n "{{ utility_container.stdout }}"  \
+    -- bash -c ". /root/openrc ; \
+    openstack compute service list --host "{{ item }}" -f value -c State"
+  register: compute_service_on_compute
+  until: compute_service_on_compute.stdout.strip().lower() == 'up'
+  retries: 5
+  delay: 3
+  with_items:
+    - compute1
+    - compute2
+  ignore_errors: yes

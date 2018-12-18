@@ -5,6 +5,7 @@ import json
 import re
 import pytest_rpc.helpers as helpers
 from time import sleep
+import utils as tmp_var
 
 """ASC-257: Attach a volume to an instance, create a partition and filesystem
 on it, and verify you can write to it. """
@@ -43,7 +44,10 @@ def attach_volume_to_server(volume, server, run_on_host):
            {} \
            {} {}".format(os_pre, server, volume, os_post)
     run_on_host.run(cmd)
-    return helpers.get_expected_value('volume', volume, 'status', 'in-use',
+    return tmp_var.get_expected_value('volume',
+                                      volume,
+                                      'status',
+                                      'in-use',
                                       run_on_host)
 # End fresh helpers
 
@@ -59,12 +63,22 @@ def test_volume_attached(host):
 
     floating_ip = helpers.create_floating_ip('GATEWAY_NET', host)
 
-    if helpers.get_expected_value('server', server_name, 'status', 'ACTIVE', host, 30):
+    if tmp_var.get_expected_value('server',
+                                  server_name,
+                                  'status',
+                                  'ACTIVE',
+                                  host,
+                                  retries=50):
         attach_floating_ip(server_name, floating_ip, host)
     else:
         pytest.skip("Server is not available")
 
-    if helpers.get_expected_value('volume', volume_name, 'status', 'available', host, 30):
+    if tmp_var.get_expected_value('volume',
+                                  volume_name,
+                                  'status',
+                                  'available',
+                                  host,
+                                  retries=45):
         attach_volume_to_server(volume_name, server_name, host)
     else:
         pytest.skip("Volume is not available")
@@ -80,6 +94,7 @@ def test_volume_attached(host):
 
     # ensure we can SSH to server
     backoff = 1
+    ssh_attempt = 1
     for i in range(10):
         try:
             cmd = "{} 'sudo ls'".format(ssh.format(floating_ip))
