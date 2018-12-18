@@ -15,8 +15,10 @@ os_pre = ("lxc-attach -n $(lxc-ls -1 | grep utility | head -n 1) "
 @pytest.mark.test_id('d7fc26a8-432a-11e8-8340-6a00035510c0')
 @pytest.mark.jira('asc-157')
 def test_projects(host):
-    """
-    Ensure presence of basic projects
+    """Ensure presence of basic projects
+
+    Args:
+        host(testinfra.host.Host): Testinfra host fixture.
     """
 
     cmd = "{} project list -f json'".format(os_pre)
@@ -30,30 +32,37 @@ def test_projects(host):
 @pytest.mark.test_id('d7fc2770-432a-11e8-8af1-6a00035510c0')
 @pytest.mark.jira('asc-157')
 def test_users(host):
-    """
-    Ensure presence of basic users
+    """Ensure presence of basic users
+
+    Args:
+        host(testinfra.host.Host): Testinfra host fixture.
     """
 
     cmd = "{} user list --domain=default -f json'".format(os_pre)
     res = host.run(cmd)
     users = json.loads(res.stdout)
     user_names = [d['Name'] for d in users]
-    assert "admin" in user_names
-    assert "cinder" in user_names
-    assert "dispersion" in user_names
-    assert "glance" in user_names
-    assert "heat" in user_names
-    assert "keystone" in user_names
-    assert "neutron" in user_names
-    assert "nova" in user_names
-    assert "swift" in user_names
+    os_users = ['admin',
+                'cinder',
+                'dispersion',
+                'glance',
+                'heat',
+                'keystone',
+                'neutron',
+                'nova',
+                'swift']
+
+    for user in os_users:
+        assert user in user_names
 
 
 @pytest.mark.test_id('d7fc2835-432a-11e8-a8a1-6a00035510c0')
 @pytest.mark.jira('asc-157')
 def test_networks(host):
-    """
-    Ensure presence of basic networks
+    """Ensure presence of basic networks
+
+    Args:
+        host(testinfra.host.Host): Testinfra host fixture.
     """
 
     cmd = "{} network list -f json'".format(os_pre)
@@ -67,8 +76,10 @@ def test_networks(host):
 @pytest.mark.test_id('d7fc28f5-432a-11e8-9af3-6a00035510c0')
 @pytest.mark.jira('asc-157')
 def test_servers(host):
-    """
-    Ensure presence of basic nova servers
+    """Ensure presence of basic nova servers
+
+    Args:
+        host(testinfra.host.Host): Testinfra host fixture.
     """
 
     cmd = "{} server list -f json'".format(os_pre)
@@ -79,8 +90,10 @@ def test_servers(host):
 @pytest.mark.test_id('d7fc2b45-432a-11e8-92c0-6a00035510c0')
 @pytest.mark.jira('asc-157')
 def test_flavors(host):
-    """
-    Ensure presence of basic nova flavors
+    """Ensure presence of basic nova flavors
+
+    Args:
+        host(testinfra.host.Host): Testinfra host fixture.
     """
 
     cmd = "{} flavor list -f json'".format(os_pre)
@@ -94,8 +107,10 @@ def test_flavors(host):
 @pytest.mark.test_id('d7fc2f02-432a-11e8-8e59-6a00035510c0')
 @pytest.mark.jira('asc-157')
 def test_image(host):
-    """
-    Ensure presence of basic glance images
+    """Ensure presence of basic glance images
+
+    Args:
+        host(testinfra.host.Host): Testinfra host fixture.
     """
 
     cmd = "{} image list -f json'".format(os_pre)

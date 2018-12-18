@@ -18,7 +18,8 @@ testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
 def test_verify_dispersion_populate(host):
     """Verify swift-dispersion-populate runs without error."""
 
-    result = helpers.run_on_swift('swift-dispersion-populate --no-overlap', host)
+    result = helpers.run_on_swift('swift-dispersion-populate --no-overlap',
+                                  host)
     assert result.rc == 0
 
 

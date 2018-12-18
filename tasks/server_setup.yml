@@ -1,30 +1,14 @@
 ---
 - name: Create test server
-  shell: |
-    lxc-attach -n "{{ utility_container.stdout }}" \
-    -- bash -c '. /root/openrc ; \
-    openstack server create \
-    -f json \
-    --image "{{ image.name }}" \
-    --flavor "{{ flavor.name }}" \
-    --nic net-id="{{ test_network }}" \
-    --key-name "rpc_support" \
-    "{{ test_server }}"'
-
-- name: List test server
-  shell: |
-    lxc-attach -n "{{ utility_container.stdout }}"  \
-    -- bash -c '. /root/openrc ; \
-    openstack server list | grep "{{ test_server }}"'
-  register: test_server_instance
-
-- name: Check test server status
-  shell: |
-    lxc-attach -n "{{ utility_container.stdout }}"  \
-    -- bash -c ". /root/openrc ; \
-    openstack server show -f value -c status \"{{ test_server }}\""
-  register: test_instance_status
-  until: test_instance_status.stdout.strip().lower() == 'active'
-  retries: 10
-  delay: 30
-  when: test_server_instance.rc == 0
+  os_server:
+    cloud: default
+    state: present
+    name: "{{ test_server }}"
+    image: "{{ image.name }}"
+    flavor: "{{ flavor.name }}"
+    network: "{{ test_network }}"
+    key_name: rpc_support
+    security_groups: rpc-support
+    auto_ip: false
+    timeout: 600
+  delegate_to: localhost

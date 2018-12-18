@@ -20,7 +20,8 @@ tenant = 'service'
 @pytest.mark.test_id('d7fc6780-432a-11e8-9c23-6a00035510c0')
 @pytest.mark.jira('asc-238')
 def test_update_quotas_1st_time_using_id(host):
-    """Configurate tenant quotas and verify it works properly at the first time"""
+    """Configurate tenant quotas and verify it works properly at the first time.
+    """
 
     id = get_tenant_id(tenant, host)
     update_quotas(host, name=id, instances=9, cores=8, ram=32)
@@ -30,7 +31,8 @@ def test_update_quotas_1st_time_using_id(host):
 @pytest.mark.test_id('43e5e78c-4335-11e8-9508-6a00035510c0')
 @pytest.mark.jira('asc-238')
 def test_update_quotas_2nd_time_using_id(host):
-    """Configurate tenant quotas and verify it works properly the second time"""
+    """Configurate tenant quotas and verify it works properly the second time.
+    """
 
     id = get_tenant_id(tenant, host)
     update_quotas(host, name=id, instances=18, cores=16, ram=64)
@@ -41,7 +43,8 @@ def test_update_quotas_2nd_time_using_id(host):
 @pytest.mark.test_id('43e5eade-4335-11e8-942b-6a00035510c0')
 @pytest.mark.jira('asc-238')
 def test_update_quotas_1st_time_using_name(host):
-    """Configurate tenant quotas and verify it works properly at the first time"""
+    """Configurate tenant quotas and verify it works properly at the first time.
+    """
 
     update_quotas(host, name=tenant, instances=12, cores=10, ram=128)
 
@@ -51,7 +54,9 @@ def test_update_quotas_1st_time_using_name(host):
 @pytest.mark.test_id('43e5ec59-4335-11e8-af11-6a00035510c0')
 @pytest.mark.jira('asc-238')
 def test_update_quotas_2nd_time_using_name(host):
-    """Configurate service tenant quotas and verify it works properly the second time"""
+    """Configurate service tenant quotas and verify it works properly the
+    second time.
+    """
 
     update_quotas(host, name=tenant, instances=30, cores=20, ram=256)
 
@@ -60,12 +65,16 @@ def test_update_quotas_2nd_time_using_name(host):
 
 def update_quotas(run_on_host, name, instances, cores, ram):
     """Update quote using openstack cli 'openstack quota set'"""
-    cmd = "{} openstack quota set --instances {} --cores {} --ram {} {}'".format(utility_container, instances, cores, ram, name)
+    cmd = ("{} openstack quota set --instances {} --cores {} --ram "
+           "{} {}'".format(utility_container, instances, cores, ram, name))
     run_on_host.run_expect([0], cmd)
 
 
 def verify_updated_quotas(run_on_host, name, instances, cores, ram):
-    """Verify updated quotas using openstack cli 'openstack quota show <PROJECT_NAME|PROJECT_ID>'"""
+    """Verify updated quotas using openstack cli
+    'openstack quota show <PROJECT_NAME|PROJECT_ID>'
+    """
+
     cmd = "{} openstack quota show {}'".format(utility_container, name)
     output = run_on_host.run(cmd)
     assert get_quota('instances', output.stdout) == instances
@@ -75,7 +84,8 @@ def verify_updated_quotas(run_on_host, name, instances, cores, ram):
 
 def get_tenant_id(tenant_name, run_on_host):
     """Get tenant id associated with tenant name"""
-    cmd = "{} openstack project list | grep {}'".format(utility_container, tenant_name)
+    cmd = "{} openstack project list | grep {}'".format(utility_container,
+                                                        tenant_name)
     output = run_on_host.run(cmd)
     result = re.search(r'(?<=\s)[a-zA-Z0-9]+(?=\s)', output.stdout)
     return result.group(0)

@@ -3,6 +3,7 @@ import testinfra.utils.ansible_runner
 import pytest
 import re
 import pytest_rpc.helpers as helpers
+import utils as tmp_var
 
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
     os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('shared-infra_hosts')[:1]
@@ -15,10 +16,11 @@ def test_openstack_release_version(host):
 
     Args:
         host(testinfra.host.Host): host fixture that will iterate over
-        testinfra_hosts
+            testinfra_hosts
     """
 
-    r = host.ansible("setup")["ansible_facts"]["ansible_local"]["system_tests"]["rpc_product_release"]
+    r = next(tmp_var.gen_dict_extract('rpc_product_release',
+                                      host.ansible("setup")))
     expected_codename, expected_major = helpers.get_osa_version(r)
 
     # Expected example:
@@ -41,10 +43,11 @@ def test_openstack_codename(host):
 
     Args:
         host(testinfra.host.Host): host fixture that will iterate over
-        testinfra_hosts
+            testinfra_hosts
     """
 
-    r = host.ansible("setup")["ansible_facts"]["ansible_local"]["system_tests"]["rpc_product_release"]
+    r = next(tmp_var.gen_dict_extract('rpc_product_release',
+                                      host.ansible("setup")))
     expected_codename, expected_major = helpers.get_osa_version(r)
 
     # Expected example:

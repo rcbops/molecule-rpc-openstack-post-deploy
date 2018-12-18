@@ -25,7 +25,8 @@ def test_cinder_volume_created(host):
     # Create a test volume
     random_str = helpers.generate_random_string(4)
     volume_name = "test_volume_{}".format(random_str)
-    cmd = "{} openstack volume create --size 1 --availability-zone nova {}'".format(utility_container, volume_name)
+    cmd = ("{} openstack volume create --size 1 --availability-zone "
+           "nova {}'".format(utility_container, volume_name))
     host.run_expect([0], cmd)
 
     # Verify the volume is created

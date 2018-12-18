@@ -2,6 +2,7 @@ import pytest_rpc.helpers as helpers
 import os
 import pytest
 import testinfra.utils.ansible_runner
+import utils as tmp_var
 
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
     os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('shared-infra_hosts')[:1]
@@ -33,19 +34,19 @@ def test_assign_floating_ip_to_instance(openstack_properties, host):
 
     instance_id = helpers.create_instance(data, host)
 
-    assert helpers.get_expected_value('server',
+    assert tmp_var.get_expected_value('server',
                                       instance_id,
                                       'status',
                                       'ACTIVE',
                                       host,
                                       retries=40)
-    assert helpers.get_expected_value('server',
+    assert tmp_var.get_expected_value('server',
                                       instance_id,
                                       'OS-EXT-STS:power_state',
                                       'Running',
                                       host,
                                       retries=20)
-    assert helpers.get_expected_value('server',
+    assert tmp_var.get_expected_value('server',
                                       instance_id,
                                       'OS-EXT-STS:vm_state',
                                       'active', host,
@@ -66,7 +67,7 @@ def test_assign_floating_ip_to_instance(openstack_properties, host):
     host.run_expect([0], cmd)
 
     # After being assigned, the floating IP status should be 'ACTIVE'
-    assert (helpers.get_expected_value('floating ip',
+    assert (tmp_var.get_expected_value('floating ip',
                                        floating_ip,
                                        'status',
                                        'ACTIVE',
