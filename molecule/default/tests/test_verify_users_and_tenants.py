@@ -27,12 +27,15 @@ def test_keystone_users(host):
     """Verify the requested users were created"""
     cmd = "{} openstack user list --domain=default'".format(utility_container)
     output = host.run(cmd)
-    assert ("cinder" in output.stdout)
-    assert ("glance" in output.stdout)
-    assert ("heat" in output.stdout)
-    assert ("keystone" in output.stdout)
-    assert ("neutron" in output.stdout)
-    assert ("nova" in output.stdout)
+    os_users = ['cinder',
+                'glance',
+                'heat',
+                'keystone',
+                'neutron',
+                'nova']
+
+    for user in os_users:
+        assert user in output.stdout
 
 
 @pytest.mark.test_id('43e5f054-4335-11e8-817d-6a00035510c0')
