@@ -1,89 +1,68 @@
-import pytest_rpc.helpers as helpers
-import os
+# -*- coding: utf-8 -*-
+"""ASC-240: Verify the requested glance images were uploaded
+
+RPC 10+ manual test 10
+"""
+# ==============================================================================
+# Imports
+# ==============================================================================
 import pytest
-import testinfra.utils.ansible_runner
-import utils as tmp_var
-
-testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
-    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('shared-infra_hosts')[:1]
-
-utility_container = ("lxc-attach -n $(lxc-ls -1 | grep utility | head -n 1) "
-                     "-- bash -c '. /root/openrc ; ")
-
-random_str = helpers.generate_random_string(5)
-instance_name = "test_instance_01_{}".format(random_str)
-new_instance_name = "test_instance_02_{}".format(random_str)
-snapshot_name = "test_snapshot_name_{}".format(random_str)
+import pytest_rpc.helpers as helpers
+from conftest import expect_os_property
 
 
-@pytest.mark.test_id('26aa7902-53da-11e8-96e0-6a0003552100')
-@pytest.mark.jira('asc-259', 'asc-691')
-@pytest.mark.test_case_with_steps()
-class TestCreateSnapshotFromInstance(object):
-    def test_create_snapshot_of_an_instance(self, openstack_properties, host):
-        """Create an instance and then create snapshot on it"""
+# ==============================================================================
+# Test Cases
+# ==============================================================================
+@pytest.mark.test_id('912080b8-0467-11e9-933a-0025227c8120')
+@pytest.mark.jira('ASC-1314')
+def test_snapshot_instance(os_api_conn,
+                           create_server,
+                           tiny_cirros_server,
+                           openstack_properties):
+    """Verify that a server can be created from a snapshot image.
 
-        data_image = {
-            "instance_name": instance_name,
-            "from_source": 'image',
-            "source_name": openstack_properties['image_name'],
-            "flavor": openstack_properties['flavor'],
-            "network_name": openstack_properties['private_net'],
-        }
+    Args:
+        os_api_conn (openstack.connection.Connection): An authorized API
+            connection to the 'default' cloud on the OpenStack infrastructure.
+        create_server (def): A factory function for generating servers.
+        tiny_cirros_server (openstack.compute.v2.server.Server): Create a
+            'm1.tiny' server instance with a Cirros image.
+        openstack_properties(dict): OpenStack facts and variables from Ansible
+            which can be used to manipulate OpenStack objects.
+    """
 
-        helpers.create_instance(data_image, host)
+    # Create snapshot image from server .
+    snapshot_image = os_api_conn.create_image_snapshot(
+        wait=True,
+        name="snapshot_image_of_{}".format(tiny_cirros_server.name),
+        server=tiny_cirros_server
+    )
 
-        assert tmp_var.get_expected_value('server',
-                                          instance_name,
-                                          'status',
-                                          'ACTIVE',
-                                          host,
-                                          retries=40)
+    # Validate that image was created successfully.
+    assert expect_os_property(retries=10,
+                              os_object=snapshot_image,
+                              os_service='image',
+                              os_api_conn=os_api_conn,
+                              os_prop_name='status',
+                              expected_value='active')
 
-        assert tmp_var.get_expected_value('server',
-                                          instance_name,
-                                          'OS-EXT-STS:power_state',
-                                          'Running',
-                                          host,
-                                          retries=20)
+    # # Create server from snapshot. (Automatically validated by fixture)
+    snapshot_server = create_server(
+        name="snapshot_server_{}".format(helpers.generate_random_string()),
+        image=snapshot_image,
+        flavor=openstack_properties['tiny_flavor'],
+        network=openstack_properties['test_network'],
+        key_name=openstack_properties['key_name'],
+        security_groups=[openstack_properties['security_group']]
+    )
 
-        assert tmp_var.get_expected_value('server',
-                                          instance_name,
-                                          'OS-EXT-STS:vm_state',
-                                          'active',
-                                          host,
-                                          retries=20)
-
-        # Create snapshot from newly created/shutdown instance
-        snapshot_id = helpers.create_snapshot_from_instance(snapshot_name,
-                                                            instance_name,
-                                                            host)
-
-        # Verify the snapshot is successfully created:
-        assert tmp_var.get_expected_value('image',
-                                          snapshot_id,
-                                          'status',
-                                          'active',
-                                          host,
-                                          retries=20)
-
-    def test_create_instance_from_snapshot(self, openstack_properties, host):
-
-        data_snapshot = {
-            "instance_name": new_instance_name,
-            "from_source": 'image',
-            "source_name": snapshot_name,
-            "flavor": openstack_properties['flavor'],
-            "network_name": openstack_properties['private_net'],
-        }
-
-        # Boot new instance using the newly created snapshot:
-        instance_id = helpers.create_instance(data_snapshot, host)
-
-        # Verify the new instance is successfully booted using the snapshot
-        assert tmp_var.get_expected_value('server',
-                                          instance_id,
-                                          'status',
-                                          'ACTIVE',
-                                          host,
-                                          retries=20)
+    # Validate server was created from the snapshot image.
+    assert expect_os_property(
+        retries=10,
+        os_object=snapshot_server,
+        os_service='server',
+        os_api_conn=os_api_conn,
+        os_prop_name='image',
+        expected_value="{{u'id': u'{}'}}".format(snapshot_image.id),
+    )
