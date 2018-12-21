@@ -1,79 +1,53 @@
-import pytest_rpc.helpers as helpers
-import os
+# -*- coding: utf-8 -*-
+"""ASC-240: Verify the requested glance images were uploaded
+
+RPC 10+ manual test 10
+"""
+# ==============================================================================
+# Imports
+# ==============================================================================
 import pytest
-import testinfra.utils.ansible_runner
-import utils as tmp_var
-
-testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
-    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('shared-infra_hosts')[:1]
-
-utility_container = ("lxc-attach -n $(lxc-ls -1 | grep utility | head -n 1) "
-                     "-- bash -c '. /root/openrc ; ")
+import pytest_rpc.helpers as helpers
+from conftest import ping
 
 
+# ==============================================================================
+# Test Cases
+# ==============================================================================
 @pytest.mark.test_id('ab24ffbd-798b-11e8-a2b2-6c96cfdb2e43')
-@pytest.mark.jira('asc-254')
-def test_assign_floating_ip_to_instance(openstack_properties, host):
-    """ Assign floating IP to an instance/server
+@pytest.mark.jira('ASC-254', 'ASC-1311')
+def test_assign_floating_ip_to_instance(os_api_conn,
+                                        create_server,
+                                        openstack_properties):
+    """Verify that a floating IP can be attached to a server instance.
 
     Args:
-        openstack_properties (dict): fixture 'openstack_properties' from
-        conftest.py
-        host(testinfra.host.Host): Testinfra host fixture.
+        os_api_conn (openstack.connection.Connection): An authorized API
+            connection to the 'default' cloud on the OpenStack infrastructure.
+        create_server (def): A factory function for generating servers.
+        openstack_properties (dict): OpenStack facts and variables from Ansible
+            which can be used to manipulate OpenStack objects.
     """
 
-    # Creating an instance from image
-    random_str = helpers.generate_random_string(6)
-    data = {
-        'instance_name': "test_instance_{}".format(random_str),
-        'from_source': 'image',
-        'source_name': openstack_properties['image_name'],
-        'flavor': openstack_properties['flavor'],
-        'network_name': openstack_properties['private_net'],
-    }
+    # Delete all unattached floating IPs.
+    os_api_conn.delete_unattached_floating_ips(retry=3)
 
-    instance_id = helpers.create_instance(data, host)
-
-    assert tmp_var.get_expected_value('server',
-                                      instance_id,
-                                      'status',
-                                      'ACTIVE',
-                                      host,
-                                      retries=40)
-    assert tmp_var.get_expected_value('server',
-                                      instance_id,
-                                      'OS-EXT-STS:power_state',
-                                      'Running',
-                                      host,
-                                      retries=20)
-    assert tmp_var.get_expected_value('server',
-                                      instance_id,
-                                      'OS-EXT-STS:vm_state',
-                                      'active', host,
-                                      retries=20)
-
-    # Creating a floating IP:
-    floating_ip = helpers.create_floating_ip(
-        openstack_properties['network_name'],
-        host
+    # Create server without floating IP. (Automatically validated by fixture)
+    test_server = create_server(
+        name="test_server_{}".format(helpers.generate_random_string()),
+        image=openstack_properties['cirros_image'],
+        flavor=openstack_properties['tiny_flavor'],
+        auto_ip=False,
+        network=openstack_properties['test_network'],
+        key_name=openstack_properties['key_name'],
+        security_groups=[openstack_properties['security_group']]
     )
 
-    # Assigning floating ip to a server
-    cmd = ("{} openstack server add "
-           "floating ip {} {}'".format(utility_container,
-                                       instance_id,
-                                       floating_ip)
-           )
-    host.run_expect([0], cmd)
+    # Create floating IP address and attach to test server.
+    floating_ip = os_api_conn.create_floating_ip(
+        wait=True,
+        server=test_server,
+        network=openstack_properties['network_name']
+    )
 
-    # After being assigned, the floating IP status should be 'ACTIVE'
-    assert (tmp_var.get_expected_value('floating ip',
-                                       floating_ip,
-                                       'status',
-                                       'ACTIVE',
-                                       host)
-            )
-
-    # Ensure the IP can be pinged from infra1
-    cmd = "ping -c1 {}".format(floating_ip)
-    assert (host.run_expect([0], cmd))
+    assert ping(floating_ip.floating_ip_address, retries=5)

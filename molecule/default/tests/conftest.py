@@ -6,7 +6,10 @@ import pytest
 import openstack
 import pytest_rpc.helpers as helpers
 from time import sleep
+from pprint import pformat
 from warnings import warn
+from platform import system
+from subprocess import call
 
 
 # ==============================================================================
@@ -68,8 +71,12 @@ def expect_os_property(os_api_conn,
         elif 'properties' in result and os_prop_name in result['properties']:
             actual_value = str(result['properties'][os_prop_name])
         else:
-            raise RuntimeError("The '{}' property was not found on the "
-                               "given object!".format(os_prop_name))
+            raise RuntimeError(
+                "The '{}' property was not "
+                "found on the given object!\n\n"
+                "Object properties:\n\n"
+                "{}".format(os_prop_name, pformat(dict(result), indent=4))
+            )
 
         if actual_value == expected_value:
             return True
@@ -91,6 +98,37 @@ def expect_os_property(os_api_conn,
                     )
                 )
                 warn(UserWarning(warning_message))
+
+        sleep(attempt)
+
+    return False
+
+
+def ping(host, retries=10):
+    """Verify that a host can be pinged.
+
+    Note: this function uses an exponential back-off for retries which means the
+    more retries specified the longer the wait between each retry. The total
+    wait time is on the fibonacci sequence. (https://bit.ly/1ee23o9)
+
+    Args:
+        host (str): A valid hostname or IP address to ping.
+        retries (int): The maximum number of retry attempts.
+
+    Returns:
+        bool: True if host was successfully pinged otherwise False.
+    """
+
+    # Ping command count option as function of OS
+    param = '-n' if system().lower() == 'windows' else '-c'
+
+    # Building the command. Ex: "ping -c 1 google.com"
+    command = ['ping', param, '1', host]
+
+    # Pinging
+    for attempt in range(1, retries + 1):
+        if call(command) == 0:
+            return True
 
         sleep(attempt)
 
@@ -169,6 +207,7 @@ def create_server(os_api_conn, openstack_properties):
                  key_name,
                  security_groups,
                  retries=10,
+                 auto_ip=True,
                  timeout=600,
                  show_warnings=True,
                  skip_teardown=False):
@@ -188,6 +227,8 @@ def create_server(os_api_conn, openstack_properties):
             key_name (str): The name of an associated keypair.
             security_groups(list): A list of security group names.
             retries (int): The maximum number of validation retry attempts.
+            auto_ip (bool): Flag for specifying whether a floating IP should be
+                attached to the instance automatically.
             timeout (int): Seconds to wait, defaults to 600.
             show_warnings (bool): Flag for displaying warnings while attempting
                 validate server.(VERY NOISY!)
@@ -226,11 +267,15 @@ def create_server(os_api_conn, openstack_properties):
             name=name,
             image=image,
             flavor=flavor,
+            auto_ip=auto_ip,
             network=network,
             timeout=timeout,
             key_name=key_name,
             security_groups=security_groups
         )
+
+        # Sometimes the OpenStack object is not fully built even after waiting.
+        sleep(2)
 
         shared_args = {'retries': retries,
                        'os_object': temp_server,
@@ -243,14 +288,12 @@ def create_server(os_api_conn, openstack_properties):
                                   expected_value='ACTIVE',
                                   **shared_args)
 
-        assert expect_os_property(os_prop_name='power_state',
+        assert expect_os_property(os_prop_name='OS-EXT-STS:power_state',
                                   expected_value='1',
-                                  only_extended_props=True,
                                   **shared_args)
 
-        assert expect_os_property(os_prop_name='vm_state',
+        assert expect_os_property(os_prop_name='OS-EXT-STS:vm_state',
                                   expected_value='active',
-                                  only_extended_props=True,
                                   **shared_args)
 
         if not skip_teardown:
