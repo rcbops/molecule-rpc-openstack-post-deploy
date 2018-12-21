@@ -47,7 +47,7 @@ def test_snapshot_instance(os_api_conn,
                               os_prop_name='status',
                               expected_value='active')
 
-    # # Create server from snapshot. (Automatically validated by fixture)
+    # Create server from snapshot. (Automatically validated by fixture)
     snapshot_server = create_server(
         name="snapshot_server_{}".format(helpers.generate_random_string()),
         image=snapshot_image,
@@ -58,11 +58,4 @@ def test_snapshot_instance(os_api_conn,
     )
 
     # Validate server was created from the snapshot image.
-    assert expect_os_property(
-        retries=10,
-        os_object=snapshot_server,
-        os_service='server',
-        os_api_conn=os_api_conn,
-        os_prop_name='image',
-        expected_value="{{u'id': u'{}'}}".format(snapshot_image.id),
-    )
+    assert snapshot_server.image.id == snapshot_image.id
