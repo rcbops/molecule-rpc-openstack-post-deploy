@@ -8,7 +8,7 @@ RPC 10+ manual test 10
 # ==============================================================================
 import pytest
 import pytest_rpc.helpers as helpers
-from conftest import ping
+from conftest import ping_from_mnaio
 
 
 # ==============================================================================
@@ -50,4 +50,4 @@ def test_assign_floating_ip_to_instance(os_api_conn,
         network=openstack_properties['network_name']
     )
 
-    assert ping(floating_ip.floating_ip_address, retries=5)
+    assert ping_from_mnaio(floating_ip.floating_ip_address, retries=5)

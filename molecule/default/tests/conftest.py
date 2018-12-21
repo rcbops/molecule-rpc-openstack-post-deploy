@@ -104,15 +104,15 @@ def expect_os_property(os_api_conn,
     return False
 
 
-def ping(host, retries=10):
-    """Verify that a host can be pinged.
+def ping_from_mnaio(host_or_ip, retries=10):
+    """Verify that a host can be pinged from the MNAIO deployment host.
 
     Note: this function uses an exponential back-off for retries which means the
     more retries specified the longer the wait between each retry. The total
     wait time is on the fibonacci sequence. (https://bit.ly/1ee23o9)
 
     Args:
-        host (str): A valid hostname or IP address to ping.
+        host_or_ip (str): A valid hostname or IP address to ping.
         retries (int): The maximum number of retry attempts.
 
     Returns:
@@ -122,8 +122,8 @@ def ping(host, retries=10):
     # Ping command count option as function of OS
     param = '-n' if system().lower() == 'windows' else '-c'
 
-    # Building the command. Ex: "ping -c 1 google.com"
-    command = ['ping', param, '1', host]
+    # Building the command. Ex: "ping_from_mnaio -c 1 google.com"
+    command = ['ping_from_mnaio', param, '1', host_or_ip]
 
     # Pinging
     for attempt in range(1, retries + 1):
