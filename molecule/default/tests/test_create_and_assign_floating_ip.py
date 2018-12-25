@@ -7,7 +7,6 @@ RPC 10+ manual test 10
 # Imports
 # ==============================================================================
 import pytest
-import pytest_rpc.helpers as helpers
 from conftest import ping_from_mnaio
 
 
@@ -34,7 +33,6 @@ def test_assign_floating_ip_to_instance(os_api_conn,
 
     # Create server without floating IP. (Automatically validated by fixture)
     test_server = create_server(
-        name="test_server_{}".format(helpers.generate_random_string()),
         image=openstack_properties['cirros_image'],
         flavor=openstack_properties['tiny_flavor'],
         auto_ip=False,
