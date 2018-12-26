@@ -14,8 +14,7 @@ from conftest import ping_from_mnaio
 def test_create_instance_from_bootable_volume(create_volume,
                                               create_server,
                                               openstack_properties):
-    """Test to verify that a bootable volume can be created based on a
-    Glance image.
+    """Verify that a server can be created from a bootable volume.
 
     Args:
         create_server (def): A factory function for generating servers.

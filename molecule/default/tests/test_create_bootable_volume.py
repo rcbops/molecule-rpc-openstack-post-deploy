@@ -1,50 +1,41 @@
-import pytest_rpc.helpers as helpers
-import os
+# -*- coding: utf-8 -*-
+# ==============================================================================
+# Imports
+# ==============================================================================
 import pytest
-import testinfra.utils.ansible_runner
-import utils as tmp_var
-
-testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
-    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('shared-infra_hosts')[:1]
+from conftest import expect_os_property
 
 
+# ==============================================================================
+# Test Cases
+# ==============================================================================
 @pytest.mark.test_id('3c469966-4fcb-11e8-a604-6a0003552100')
-@pytest.mark.jira('asc-258')
-def test_create_bootable_volume(openstack_properties, host):
+@pytest.mark.jira('ASC-258', 'ASC-1341')
+def test_create_bootable_volume(os_api_conn,
+                                create_volume,
+                                openstack_properties):
     """Test to verify that a bootable volume can be created based on a
-    Glance image
+    Glance image.
 
     Args:
-        openstack_properties (dict): fixture 'openstack_properties' from
-        conftest.py
-        host(testinfra.host.Host): Testinfra host fixture.
+        os_api_conn (openstack.connection.Connection): An authorized API
+            connection to the 'default' cloud on the OpenStack infrastructure.
+        create_volume (def): A factory function for generating volumes.
+        openstack_properties (dict): OpenStack facts and variables from Ansible
+            which can be used to manipulate OpenStack objects.
     """
-    image_id = helpers.get_id_by_name('image',
-                                      openstack_properties['image_name'],
-                                      host)
-    assert image_id is not None
 
-    random_str = helpers.generate_random_string(7)
-    volume_name = "test_volume_{}".format(random_str)
+    # Create bootable volume.
+    test_volume = create_volume(
+        size=1,
+        image=openstack_properties['cirros_image'],
+        bootable=True
+    )
 
-    data = {'volume': {'size': '2',
-                       'imageref': image_id,
-                       'name': volume_name,
-                       'zone': openstack_properties['zone'],
-                       }
-            }
-
-    volume_id = helpers.create_bootable_volume(data, host)
-    assert volume_id is not None
-
-    volumes = helpers.get_resource_list_by_name('volume', host)
-    assert volumes
-    volume_names = [x['Name'] for x in volumes]
-
-    assert volume_name in volume_names
-    assert tmp_var.get_expected_value('volume',
-                                      volume_name,
-                                      'status',
-                                      'available',
-                                      host,
-                                      retries=50)
+    # Validate that image was created successfully.
+    assert expect_os_property(retries=3,
+                              os_object=test_volume,
+                              os_service='volume',
+                              os_api_conn=os_api_conn,
+                              os_prop_name='is_bootable',
+                              expected_value='true')

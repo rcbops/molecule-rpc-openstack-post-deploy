@@ -398,7 +398,7 @@ def create_volume(os_api_conn, openstack_properties):
         temp_volume = os_api_conn.create_volume(
             size=size,
             wait=True,
-            name="test_volume_".format(helpers.generate_random_string()),
+            name="test_volume_{}".format(helpers.generate_random_string()),
             image=image,
             timeout=timeout,
             bootable=bootable
