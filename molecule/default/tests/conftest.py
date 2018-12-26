@@ -104,6 +104,7 @@ def expect_os_property(os_api_conn,
     return False
 
 
+# TODO: Need to move this to 'pytest-rpc' eventually. (ASC-1412)
 def ping_from_mnaio(host_or_ip, retries=10):
     """Verify that a host can be pinged from the MNAIO deployment host.
 
@@ -123,7 +124,7 @@ def ping_from_mnaio(host_or_ip, retries=10):
     param = '-n' if system().lower() == 'windows' else '-c'
 
     # Building the command. Ex: "ping_from_mnaio -c 1 google.com"
-    command = ['ping_from_mnaio', param, '1', host_or_ip]
+    command = ['ping', param, '1', host_or_ip]
 
     # Pinging
     for attempt in range(1, retries + 1):
@@ -200,23 +201,20 @@ def create_server(os_api_conn, openstack_properties):
 
     servers = []  # Track inventory of server instances for teardown.
 
-    def _factory(name,
-                 image,
-                 flavor,
+    def _factory(flavor,
                  network,
                  key_name,
                  security_groups,
+                 image=None,
                  retries=10,
                  auto_ip=True,
                  timeout=600,
+                 boot_volume=None,
                  show_warnings=True,
                  skip_teardown=False):
         """Create an OpenStack instance.
 
         Args:
-            image (openstack.image.v2.image.Image): The image property as
-                returned from server. (https://bit.ly/2UXESvW)
-                Name or OpenStack ID is also acceptable.
             flavor (openstack.compute.v2.flavor.Flavor): The flavor property as
                 returned from server. (https://bit.ly/2Lxwqzv)
                 Name or OpenStack ID is also acceptable.
@@ -226,10 +224,17 @@ def create_server(os_api_conn, openstack_properties):
                 network dicts. (https://bit.ly/2A104IL)
             key_name (str): The name of an associated keypair.
             security_groups(list): A list of security group names.
+            image (openstack.image.v2.image.Image): The image property as
+                returned from server. image is required unless boot_volume is
+                given. Name or OpenStack ID is also acceptable.
+                (https://bit.ly/2UXESvW)
             retries (int): The maximum number of validation retry attempts.
             auto_ip (bool): Flag for specifying whether a floating IP should be
                 attached to the instance automatically.
             timeout (int): Seconds to wait, defaults to 600.
+            boot_volume (openstack.image.v2.volume.Volume): Volume to boot from.
+                Name or OpenStack ID is also acceptable.
+                (https://bit.ly/2ReINW7)
             show_warnings (bool): Flag for displaying warnings while attempting
                 validate server.(VERY NOISY!)
             skip_teardown (bool): Skip automatic teardown for this server
@@ -243,6 +248,8 @@ def create_server(os_api_conn, openstack_properties):
         Raises:
             openstack.connection.exceptions.OpenStackCloudException: The server
                 could not be created for some reason.
+            RuntimeError: Mutually exclusive required arguments 'boot_volume' or
+                'image' are not set properly!
 
         Example:
             >>> conn = openstack.connect(cloud='default')
@@ -262,16 +269,25 @@ def create_server(os_api_conn, openstack_properties):
             See https://bit.ly/2EDWA2S for more details.
         """
 
+        # Configure mutually exclusive arguments.
+        if image is not None and boot_volume is None:
+            image_or_boot_volume_args = {'image': image}
+        elif boot_volume is not None and image is None:
+            image_or_boot_volume_args = {'boot_volume': boot_volume}
+        else:
+            raise RuntimeError("Mutually exclusive required arguments "
+                               "'boot_volume' or 'image' are not set properly!")
+
         temp_server = os_api_conn.create_server(
             wait=True,
-            name=name,
-            image=image,
+            name="test_server_{}".format(helpers.generate_random_string()),
             flavor=flavor,
             auto_ip=auto_ip,
             network=network,
             timeout=timeout,
             key_name=key_name,
-            security_groups=security_groups
+            security_groups=security_groups,
+            **image_or_boot_volume_args
         )
 
         # Sometimes the OpenStack object is not fully built even after waiting.
@@ -305,9 +321,93 @@ def create_server(os_api_conn, openstack_properties):
 
     # Teardown
     for server in servers:
-        if not os_api_conn.delete_server(name_or_id=server, wait=True):
+        if not os_api_conn.delete_server(name_or_id=server.id, wait=True):
             warn(UserWarning("Attempted to delete non-existent server!"
                              " ID: {}".format(server.id)))
+
+
+@pytest.fixture
+def create_volume(os_api_conn, openstack_properties):
+    """Create OpenStack volumes with automatic teardown after each test.
+
+    Args:
+        os_api_conn (openstack.connection.Connection): An authorized API
+            connection to the 'default' cloud on the OpenStack infrastructure.
+        openstack_properties (dict): OpenStack facts and variables from Ansible
+            which can be used to manipulate OpenStack objects.
+
+    Returns:
+        def: A factory function object.
+
+    Raises:
+        openstack.connection.exceptions.OpenStackCloudException: A volume could
+            not be deleted in teardown.
+    """
+
+    volumes = []  # Track inventory of server instances for teardown.
+
+    def _factory(size,
+                 image,
+                 retries=10,
+                 timeout=600,
+                 bootable=False,
+                 show_warnings=True,
+                 skip_teardown=False):
+        """Create an OpenStack volume.
+
+        Args:
+            size (int): Size, in GB of the volume to create.
+            image (openstack.image.v2.image.Image): Image name, ID or object
+                from which to create the volume. Name or OpenStack ID is also
+                acceptable.
+            retries (int): The maximum number of validation retry attempts.
+            timeout (int): Seconds to wait, defaults to 600.
+            bootable (bool): Make this volume bootable.
+            show_warnings (bool): Flag for displaying warnings while attempting
+                validate server.(VERY NOISY!)
+            skip_teardown (bool): Skip automatic teardown for this server
+                instance.
+
+        Returns:
+            openstack.compute.v2.server.Server: FYI, this class is not visible
+                to the outside user until it gets instantiated.
+                (https://bit.ly/2rMu7iQ)
+
+        Raises:
+            openstack.connection.exceptions.OpenStackCloudException: The volume
+                could not be created for some reason.
+            openstack.connection.exceptions.OpenStackCloudTimeout: Wait time
+                exceeded.
+        """
+
+        temp_volume = os_api_conn.create_volume(
+            size=size,
+            wait=True,
+            name="test_volume_".format(helpers.generate_random_string()),
+            image=image,
+            timeout=timeout,
+            bootable=bootable
+        )
+
+        # Verify that the volume is available.
+        assert expect_os_property(retries=retries,
+                                  os_object=temp_volume,
+                                  os_service='volume',
+                                  os_api_conn=os_api_conn,
+                                  os_prop_name='status',
+                                  show_warnings=show_warnings,
+                                  expected_value='available')
+
+        if not skip_teardown:
+            volumes.append(temp_volume)  # Add volume to inventory for teardown.
+
+        return temp_volume
+
+    yield _factory
+
+    # Teardown
+    for volume in volumes:
+        os_api_conn.delete_volume(name_or_id=volume.id, wait=True)
 
 
 @pytest.fixture
@@ -326,7 +426,6 @@ def tiny_cirros_server(create_server, openstack_properties):
     """
 
     return create_server(
-        name="cirros_{}".format(helpers.generate_random_string()),
         image=openstack_properties['cirros_image'],
         flavor=openstack_properties['tiny_flavor'],
         network=openstack_properties['test_network'],

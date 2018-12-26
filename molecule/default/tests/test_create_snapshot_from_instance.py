@@ -7,7 +7,6 @@ RPC 10+ manual test 10
 # Imports
 # ==============================================================================
 import pytest
-import pytest_rpc.helpers as helpers
 from conftest import expect_os_property
 
 
@@ -49,7 +48,6 @@ def test_snapshot_instance(os_api_conn,
 
     # Create server from snapshot. (Automatically validated by fixture)
     snapshot_server = create_server(
-        name="snapshot_server_{}".format(helpers.generate_random_string()),
         image=snapshot_image,
         flavor=openstack_properties['tiny_flavor'],
         network=openstack_properties['test_network'],
