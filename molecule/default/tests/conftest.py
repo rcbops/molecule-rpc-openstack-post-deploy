@@ -282,7 +282,7 @@ def create_server(os_api_conn, openstack_properties):
             wait=True,
             name="test_server_{}".format(helpers.generate_random_string()),
             flavor=flavor,
-            auto_ip=auto_ip,
+            auto_ip=False,
             network=network,
             timeout=timeout,
             key_name=key_name,
@@ -292,6 +292,21 @@ def create_server(os_api_conn, openstack_properties):
 
         # Sometimes the OpenStack object is not fully built even after waiting.
         sleep(2)
+
+        # Create floating IP address and attach to test server.
+        if auto_ip:
+            # TODO: The 'auto_ip' feature of 'create_server' is broken.
+            #   (ASC-1416)
+            # Delete all unattached floating IPs.
+            os_api_conn.delete_unattached_floating_ips(retry=3)
+
+            floating_ip = os_api_conn.create_floating_ip(
+                wait=True,
+                server=temp_server,
+                network=openstack_properties['network_name']
+            )
+
+            temp_server['accessIPv4'] = floating_ip.floating_ip_address
 
         shared_args = {'retries': retries,
                        'os_object': temp_server,
