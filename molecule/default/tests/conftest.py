@@ -293,21 +293,6 @@ def create_server(os_api_conn, openstack_properties):
         # Sometimes the OpenStack object is not fully built even after waiting.
         sleep(2)
 
-        # Create floating IP address and attach to test server.
-        if auto_ip:
-            # TODO: The 'auto_ip' feature of 'create_server' is broken.
-            #   (ASC-1416)
-            # Delete all unattached floating IPs.
-            os_api_conn.delete_unattached_floating_ips(retry=3)
-
-            floating_ip = os_api_conn.create_floating_ip(
-                wait=True,
-                server=temp_server,
-                network=openstack_properties['network_name']
-            )
-
-            temp_server['accessIPv4'] = floating_ip.floating_ip_address
-
         shared_args = {'retries': retries,
                        'os_object': temp_server,
                        'os_service': 'server',
@@ -326,6 +311,22 @@ def create_server(os_api_conn, openstack_properties):
         assert expect_os_property(os_prop_name='OS-EXT-STS:vm_state',
                                   expected_value='active',
                                   **shared_args)
+
+        # Create floating IP address and attach to test server.
+        if auto_ip:
+            # TODO: The 'auto_ip' feature of 'create_server' is broken.
+            #   (ASC-1416)
+            # Delete all unattached floating IPs.
+            os_api_conn.delete_unattached_floating_ips(retry=3)
+
+            floating_ip = os_api_conn.create_floating_ip(
+                wait=True,
+                server=temp_server,
+                network=openstack_properties['network_name'],
+                timeout=600
+            )
+
+            temp_server['accessIPv4'] = floating_ip.floating_ip_address
 
         if not skip_teardown:
             servers.append(temp_server)  # Add server to inventory for teardown.
