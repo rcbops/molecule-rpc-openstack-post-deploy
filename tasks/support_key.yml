@@ -85,6 +85,28 @@
   when:
     - support_pub_key.content |default('') |length > 64
 
+- name: Distribute support SSH private key to deployment host
+  copy:
+    dest: "/root/.ssh/rpc_support"
+    content: "{{ support_key.content | b64decode }}"
+    owner: "root"
+    group: "root"
+    mode: "0600"
+  when:
+    - support_key.content |default('') |length > 64
+  delegate_to: localhost
+
+- name: Distribute support SSH public key to deployment host
+  copy:
+    dest: "/root/.ssh/rpc_support.pub"
+    content: "{{ support_pub_key.content | b64decode }}"
+    owner: "root"
+    group: "root"
+    mode: "0600"
+  when:
+    - support_pub_key.content |default('') |length > 64
+  delegate_to: localhost
+
 - name: Add support key to nova
   os_keypair:
     cloud: default

@@ -1,159 +1,107 @@
-import os
-import testinfra.utils.ansible_runner
+# -*- coding: utf-8 -*-
+# ==============================================================================
+# Imports
+# ==============================================================================
 import pytest
-import json
-import re
-import pytest_rpc.helpers as helpers
-from time import sleep
-import utils as tmp_var
-
-"""ASC-257: Attach a volume to an instance, create a partition and filesystem
-on it, and verify you can write to it. """
-
-testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
-    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('shared-infra_hosts')[:1]
-
-os_pre = ("lxc-attach -n $(lxc-ls -1 | grep utility | head -n 1) "
-          "-- bash -c '. /root/openrc ; openstack ")
-os_post = "'"
-
-ssh = "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
-       -i ~/.ssh/rpc_support ubuntu@{}"
-
-key_name = 'rpc_support'
 
 
-# fresh helpers
-# TODO: move these to pytest-rpc
-
-def attach_floating_ip(server, floating_ip, run_on_host):
-    cmd = "{} server add floating ip  \
-           {} \
-           {} {}".format(os_pre, server, floating_ip, os_post)
-
-    try:
-        run_on_host.run_expect([0], cmd)
-    except AssertionError:
-        return False
-
-    return True
-
-
-def attach_volume_to_server(volume, server, run_on_host):
-    cmd = "{} server add volume  \
-           {} \
-           {} {}".format(os_pre, server, volume, os_post)
-    run_on_host.run(cmd)
-    return tmp_var.get_expected_value('volume',
-                                      volume,
-                                      'status',
-                                      'in-use',
-                                      run_on_host)
-# End fresh helpers
-
-
+# ==============================================================================
+# Test Cases
+# ==============================================================================
 @pytest.mark.test_id('3d77bc35-7a21-11e8-90d1-6a00035510c0')
-@pytest.mark.jira('ASC-257', 'ASC-883', 'RI-417')
-def test_volume_attached(host):
-    vars = host.ansible('include_vars',
-                        'file=./vars/main.yml')['ansible_facts']
+@pytest.mark.jira('ASC-257', 'ASC-883', 'RI-417', 'ASC-1335')
+def test_volume_attached(os_api_conn,
+                         create_volume,
+                         small_ubuntu_server,
+                         ssh_connect):
+    """Verify that an attached volume can be written to via the operating
+    system.
 
-    server_name = vars['test_server']
-    volume_name = vars['test_volume']
+    Args:
+        os_api_conn (openstack.connection.Connection): An authorized API
+            connection to the 'default' cloud on the OpenStack infrastructure.
+        create_volume (def): A factory function for generating volumes.
+        small_ubuntu_server (openstack.compute.v2.server.Server): Create a
+            'm1.small' server instance with an Ubuntu image.
+        ssh_connect (def): Create a connection to a server via SSH.
+    """
 
-    floating_ip = helpers.create_floating_ip('GATEWAY_NET', host)
+    # Create blank volume.
+    test_volume = create_volume(size=1)
 
-    if tmp_var.get_expected_value('server',
-                                  server_name,
-                                  'status',
-                                  'ACTIVE',
-                                  host,
-                                  retries=50):
-        attach_floating_ip(server_name, floating_ip, host)
-    else:
-        pytest.skip("Server is not available")
+    # Attach volume to server.
+    attach_info = os_api_conn.attach_volume(wait=True,
+                                            volume=test_volume,
+                                            server=small_ubuntu_server,
+                                            timeout=90)
 
-    if tmp_var.get_expected_value('volume',
-                                  volume_name,
-                                  'status',
-                                  'available',
-                                  host,
-                                  retries=45):
-        attach_volume_to_server(volume_name, server_name, host)
-    else:
-        pytest.skip("Volume is not available")
+    # Setup
+    mount_point = '/mnt/test'
+    mount_cmd = ("sudo mount {0}1 {1} &&"
+                 "sudo chmod 777 {1}".format(attach_info.device, mount_point))
+    umount_cmd = "sudo umount {}".format(mount_point)
+    mkfs_cmd = "sudo mkfs.ext4 {}1".format(attach_info.device)
+    test_data = 'Call me Ishmael.'
+    test_file = '{}/test_file.txt'.format(mount_point)
+    parted_mkpart_cmd = ("sudo parted -a opt {} "
+                         "mkpart primary 0% 100%".format(attach_info.device))
+    parted_mklabel_cmd = ("sudo parted {} "
+                          "mklabel msdos".format(attach_info.device))
+    create_mount_point_cmd = ("sudo mkdir -p {}".format(mount_point))
 
-    # ensure attachment and retrieve associated device
-    cmd = "{} volume show  \
-           -f json \
-           {} {}".format(os_pre, volume_name, os_post)
-    res = host.run(cmd)
-    volume = json.loads(res.stdout)
-    assert len(volume['attachments']) == 1
-    device = volume['attachments'][0]['device']
+    # Connect to server through SSH
+    ssh = ssh_connect(hostname=small_ubuntu_server.accessIPv4,
+                      username='ubuntu',
+                      retries=15)
 
-    # ensure we can SSH to server
-    backoff = 1
-    ssh_attempt = 1
-    for i in range(10):
-        try:
-            cmd = "{} 'sudo ls'".format(ssh.format(floating_ip))
-            ssh_attempt = host.run_expect([0], cmd)
-        except AssertionError:
-            sleep(backoff)
-            backoff = backoff * 2
-        else:
-            break
+    # Partition, format and mount drive
+    assert ssh.exec_command(
+        timeout=60,
+        get_pty=True,
+        command=parted_mklabel_cmd
+    )[1].channel.recv_exit_status() == 0
 
-    assert ssh_attempt.rc == 0
+    assert ssh.exec_command(
+        timeout=60,
+        get_pty=True,
+        command=parted_mkpart_cmd
+    )[1].channel.recv_exit_status() == 0
 
-    # create partition
-    cmd = "{} 'echo -e \"o\\nn\\np\\n1\\n\\n\\nw\" \
-           | sudo fdisk {}'".format(ssh.format(floating_ip), device)
-    res = host.run(cmd)
-    assert "Created a new partition 1 of type 'Linux'" in res.stdout
+    assert ssh.exec_command(
+        timeout=60,
+        get_pty=True,
+        command=mkfs_cmd
+    )[1].channel.recv_exit_status() == 0
 
-    # create filesystem
-    cmd = "{} 'sudo mkfs.ext4 {}1'".format(ssh.format(floating_ip), device)
-    res = host.run(cmd)
-    assert re.search(r'blocks and filesystem accounting information:.*done',
-                     res.stdout)
+    assert ssh.exec_command(
+        timeout=60,
+        get_pty=True,
+        command=create_mount_point_cmd
+    )[1].channel.recv_exit_status() == 0
 
-    # mount partition
-    cmd = "{} 'sudo mount {}1 /mnt'".format(ssh.format(floating_ip), device)
-    host.run(cmd)
+    assert ssh.exec_command(
+        timeout=60,
+        get_pty=True,
+        command=mount_cmd
+    )[1].channel.recv_exit_status() == 0
 
-    # verify mounted partition
-    cmd = "{} 'sudo df'".format(ssh.format(floating_ip))
-    res = host.run(cmd)
-    assert device in res.stdout
+    # Write test data to mounted drive
+    with ssh.open_sftp().open(test_file, 'w') as f:
+        f.write(test_data)
 
-    # write data to partition
-    cmd = "{} 'echo \"Call me Ishmael.\" > \
-           moby-dick.txt'".format(ssh.format(floating_ip))
-    host.run_expect([0], cmd)
-    cmd = "{} 'sudo mv moby-dick.txt /mnt/'".format(ssh.format(floating_ip))
-    host.run_expect([0], cmd)
+    # Unmount and remount drive
+    assert ssh.exec_command(
+        timeout=60,
+        get_pty=True,
+        command=umount_cmd
+    )[1].channel.recv_exit_status() == 0
 
-    # verify data
-    cmd = "{} 'sudo cat /mnt/moby-dick.txt'".format(ssh.format(floating_ip))
-    res = host.run(cmd)
-    assert 'Call me Ishmael' in res.stdout
+    assert ssh.exec_command(
+        timeout=60,
+        get_pty=True,
+        command=mount_cmd
+    )[1].channel.recv_exit_status() == 0
 
-    # unmount partition
-    cmd = "{} 'sudo umount /mnt'".format(ssh.format(floating_ip))
-    host.run_expect([0], cmd)
-
-    # verify absence of data
-    cmd = "{} 'sudo cat /mnt/moby-dick.txt'".format(ssh.format(floating_ip))
-    res = host.run(cmd)
-    assert 'No such file' in res.stderr
-
-    # mount partition
-    cmd = "{} 'sudo mount {}1 /mnt'".format(ssh.format(floating_ip), device)
-    host.run_expect([0], cmd)
-
-    # verify data
-    cmd = "{} 'sudo cat /mnt/moby-dick.txt'".format(ssh.format(floating_ip))
-    res = host.run(cmd)
-    assert 'Call me Ishmael' in res.stdout
+    # Verify test file data
+    with ssh.open_sftp().open(test_file, 'r') as f:
+        assert f.read() == test_data
