@@ -17,8 +17,8 @@ def test_create_instance_from_bootable_volume(create_volume,
     """Verify that a server can be created from a bootable volume.
 
     Args:
-        create_server (def): A factory function for generating servers.
         create_volume (def): A factory function for generating volumes.
+        create_server (def): A factory function for generating servers.
         openstack_properties (dict): OpenStack facts and variables from Ansible
             which can be used to manipulate OpenStack objects.
     """

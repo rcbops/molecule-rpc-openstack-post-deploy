@@ -10,6 +10,8 @@ from pprint import pformat
 from warnings import warn
 from platform import system
 from subprocess import call
+from paramiko import SSHClient, AutoAddPolicy, HostKeys
+from paramiko.ssh_exception import NoValidConnectionsError
 
 
 # ==============================================================================
@@ -154,13 +156,17 @@ def openstack_properties():
     os_properties = {
         'image_name': 'Cirros-0.3.5',
         'cirros_image': 'Cirros-0.3.5',
+        'ubuntu_image': 'Ubuntu 16.04',
         'network_name': 'GATEWAY_NET',
         'private_net': 'PRIVATE_NET',
         'test_network': 'TEST-VXLAN',
         'flavor': 'm1.tiny',
         'tiny_flavor': 'm1.tiny',
+        'small_flavor': 'm1.small',
         'zone': 'nova',
         'key_name': 'rpc_support',
+        'public_key_path': '/root/.ssh/rpc_support.pub',
+        'private_key_path': '/root/.ssh/rpc_support',
         'security_group': 'rpc-support'
     }
 
@@ -213,6 +219,10 @@ def create_server(os_api_conn, openstack_properties):
                  show_warnings=True,
                  skip_teardown=False):
         """Create an OpenStack instance.
+
+        Note: this function uses an exponential back-off for retries which means
+        the more retries specified the longer the wait between each retry. The
+        total wait time is on the fibonacci sequence. (https://bit.ly/1ee23o9)
 
         Args:
             flavor (openstack.compute.v2.flavor.Flavor): The flavor property as
@@ -327,6 +337,7 @@ def create_server(os_api_conn, openstack_properties):
             )
 
             temp_server['accessIPv4'] = floating_ip.floating_ip_address
+            temp_server['access_ipv4'] = floating_ip.floating_ip_address
 
         if not skip_teardown:
             servers.append(temp_server)  # Add server to inventory for teardown.
@@ -363,7 +374,7 @@ def create_volume(os_api_conn, openstack_properties):
     volumes = []  # Track inventory of server instances for teardown.
 
     def _factory(size,
-                 image,
+                 image=None,
                  retries=10,
                  timeout=600,
                  bootable=False,
@@ -427,6 +438,90 @@ def create_volume(os_api_conn, openstack_properties):
 
 
 @pytest.fixture
+def ssh_connect(openstack_properties):
+    """Create a connection to a server via SSH.
+
+    Args:
+        openstack_properties (dict): OpenStack facts and variables from Ansible
+            which can be used to manipulate OpenStack objects.
+
+    Returns:
+        def: A factory function object.
+    """
+
+    connections = []  # Track inventory of SSH connections for teardown.
+
+    def _factory(hostname,
+                 username,
+                 retries=10,
+                 key_filename=None,
+                 auth_timeout=180):
+        """Connect to a server via SSH.
+
+        Note: this function uses an exponential back-off for retries which means
+        the more retries specified the longer the wait between each retry. The
+        total wait time is on the fibonacci sequence. (https://bit.ly/1ee23o9)
+
+        Args:
+            hostname (str): The server to connect to.
+            username (str): The username to authenticate as.
+                (defaults to the current local username)
+            retries (int): The maximum number of validation retry attempts.
+            key_filename (str): The filename, or list of filenames, of optional
+                private key(s) and/or certs to try for authentication. (Default
+                is to use the 'rpc_support' key.
+            auth_timeout (float): An optional timeout (in seconds) to wait for
+                an authentication response.
+
+        Returns:
+            paramiko.client.SSHClient: A client already connected to the target
+                server.
+
+        Raises:
+            paramiko.BadHostKeyException: If the server’s host key could not be
+                verified.
+            paramiko.AuthenticationException: If authentication failed.
+            paramiko.SSHException: If there was any other error connecting or
+                establishing an SSH session.
+            paramiko.ssh_exception.NoValidConnectionsError: Connection refused
+                by host. (SSH service is probably not running or host is not
+                fully booted)
+            socket.error: If a socket error occurred while connecting.
+        """
+
+        temp_connection = SSHClient()
+        temp_connection.set_missing_host_key_policy(AutoAddPolicy())
+
+        for attempt in range(1, retries + 1):
+            try:
+                temp_connection.connect(
+                    hostname=hostname,
+                    username=username,
+                    key_filename=(
+                        key_filename or openstack_properties['private_key_path']
+                    ),
+                    auth_timeout=auth_timeout
+                )
+            except NoValidConnectionsError:
+                if attempt != retries + 1:
+                    sleep(attempt)
+                else:
+                    raise   # Re-raise
+
+        connections.append(temp_connection)
+
+        return temp_connection
+
+    yield _factory
+
+    # Teardown
+    for connection in connections:
+        connection.close()
+
+    HostKeys().clear()  # Clear the 'known_hosts' file.
+
+
+@pytest.fixture
 def tiny_cirros_server(create_server, openstack_properties):
     """Create an 'm1.tiny' server instance with a Cirros image.
 
@@ -449,3 +544,32 @@ def tiny_cirros_server(create_server, openstack_properties):
         show_warnings=False,
         security_groups=[openstack_properties['security_group']]
     )
+
+
+@pytest.fixture
+def small_ubuntu_server(create_server, openstack_properties):
+    """Create a 'm1.small' server instance with an Ubuntu image.
+
+    Args:
+        create_server (def): A factory function for generating servers.
+        openstack_properties(dict): OpenStack facts and variables from Ansible
+            which can be used to manipulate OpenStack objects.
+
+    Returns:
+        openstack.compute.v2.server.Server: FYI, this class is not visible
+            to the outside user until it gets instantiated.
+            (https://bit.ly/2rMu7iQ)
+    """
+
+    temp_server = create_server(
+        image=openstack_properties['ubuntu_image'],
+        flavor=openstack_properties['small_flavor'],
+        network=openstack_properties['test_network'],
+        key_name=openstack_properties['key_name'],
+        show_warnings=False,
+        security_groups=[openstack_properties['security_group']]
+    )
+
+    sleep(120)  # OS boot takes a very long time.
+
+    return temp_server
