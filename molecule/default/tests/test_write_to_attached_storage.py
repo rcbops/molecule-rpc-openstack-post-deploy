@@ -42,7 +42,8 @@ def test_volume_attached(os_api_conn,
     umount_cmd = "sudo umount {}".format(mount_point)
     mkfs_cmd = "sudo mkfs.ext4 {}1".format(attach_info.device)
     test_data = 'Call me Ishmael.'
-    test_file = '{}/test_file.txt'.format(mount_point)
+    test_file_path = '{}/test_file.txt'.format(mount_point)
+    test_file_exists_cmd = "test -f {}".format(test_file_path)
     parted_mkpart_cmd = ("sudo parted -a opt {} "
                          "mkpart primary 0% 100%".format(attach_info.device))
     parted_mklabel_cmd = ("sudo parted {} "
@@ -86,16 +87,24 @@ def test_volume_attached(os_api_conn,
     )[1].channel.recv_exit_status() == 0
 
     # Write test data to mounted drive
-    with ssh.open_sftp().open(test_file, 'w') as f:
+    with ssh.open_sftp().open(test_file_path, 'w') as f:
         f.write(test_data)
 
-    # Unmount and remount drive
+    # Unmount
     assert ssh.exec_command(
         timeout=60,
         get_pty=True,
         command=umount_cmd
     )[1].channel.recv_exit_status() == 0
 
+    # Verify that file does not exist
+    assert ssh.exec_command(
+        timeout=60,
+        get_pty=True,
+        command=test_file_exists_cmd
+    )[1].channel.recv_exit_status() == 1
+
+    # Remount
     assert ssh.exec_command(
         timeout=60,
         get_pty=True,
@@ -103,5 +112,5 @@ def test_volume_attached(os_api_conn,
     )[1].channel.recv_exit_status() == 0
 
     # Verify test file data
-    with ssh.open_sftp().open(test_file, 'r') as f:
+    with ssh.open_sftp().open(test_file_path, 'r') as f:
         assert f.read() == test_data
