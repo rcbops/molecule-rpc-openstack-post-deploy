@@ -53,6 +53,7 @@ private_net_cidr: 192.168.0.0/24
 private_subnet_name: "{{ private_net_name }}_SUBNET"
 # set this conditionally depending on OSP (datacentre) or RPC (flat)
 physical_network: datacentre
+network_type: geneve
 
 networks:
   - name: "{{ provider_net_name }}"
@@ -63,7 +64,7 @@ networks:
   - name: "{{ private_net_name }}"
     shared: true
     external: true
-    network_type: vxlan
+    network_type: "{{ network_type }}"
     segmentation_id: 101
 subnets:
   - name: "{{ provider_subnet_name }}"
