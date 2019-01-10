@@ -21,13 +21,40 @@ def get_nova_allocation_ratios(host):
         dict: Ratios
     """
 
-    # There is no 'nova_conductor' role in the OSP inventory.
-    # Hard code the ratios to 2
+    # NOTE: As of pike, the values in the nova.conf file are ignored and
+    # hardcoded as noted in the following document:
+    # https://docs.openstack.org/ocata/config-reference/compute/config-options.html
+    cpu_default = 1.0
+    ram_default = 1.0
+    disk_default = 1.0
+
+    # For RPC the config is given the 'nova_conductor' role.  For OSP this
+    # config is defined on the director which is the same as the defined
+    # cli_host.
+
+    cmd = ' '.join(["awk -F= '/^cpu_allocation_ratio/ {print $2}'",
+                    "/etc/nova/nova.conf"])
+    cpu_res = host.run(cmd)
+    cmd = ' '.join(["awk -F= '/^ram_allocation_ratio/ {print $2}'",
+                    "/etc/nova/nova.conf"])
+    ram_res = host.run(cmd)
+    cmd = ' '.join(["awk -F= '/^disk_allocation_ratio/ {print $2}'",
+                    "/etc/nova/nova.conf"])
+    disk_res = host.run(cmd)
+    cpu_ratio = (cpu_default if not cpu_res.stdout.strip().replace(".", "", 1).isdigit()
+                 else (float)(cpu_res.stdout)
+                 )
+    ram_ratio = (ram_default if not ram_res.stdout.strip().replace(".", "", 1).isdigit()
+                 else (float)(ram_res.stdout)
+                 )
+    disk_ratio = (disk_default if not disk_res.stdout.strip().replace(".", "", 1).isdigit()
+                  else (float)(disk_res.stdout)
+                  )
 
     ratios = {
-        'cpu_ratio': 2,
-        'ram_ratio': 2,
-        'disk_ratio': 2
+        'cpu_ratio': cpu_ratio,
+        'ram_ratio': ram_ratio,
+        'disk_ratio': disk_ratio
     }
 
     return ratios
