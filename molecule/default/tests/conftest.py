@@ -217,7 +217,8 @@ def create_server(os_api_conn, openstack_properties):
                  timeout=600,
                  boot_volume=None,
                  show_warnings=True,
-                 skip_teardown=False):
+                 skip_teardown=False,
+                 availability_zone=None):
         """Create an OpenStack instance.
 
         Note: this function uses an exponential back-off for retries which means
@@ -249,6 +250,8 @@ def create_server(os_api_conn, openstack_properties):
                 validate server.(VERY NOISY!)
             skip_teardown (bool): Skip automatic teardown for this server
                 instance.
+            availability_zone (str): Name of the availability zone for instance
+                placement.
 
         Returns:
             openstack.compute.v2.server.Server: FYI, this class is not visible
@@ -281,12 +284,15 @@ def create_server(os_api_conn, openstack_properties):
 
         # Configure mutually exclusive arguments.
         if image is not None and boot_volume is None:
-            image_or_boot_volume_args = {'image': image}
+            extra_args = {'image': image}
         elif boot_volume is not None and image is None:
-            image_or_boot_volume_args = {'boot_volume': boot_volume}
+            extra_args = {'boot_volume': boot_volume}
         else:
             raise RuntimeError("Mutually exclusive required arguments "
                                "'boot_volume' or 'image' are not set properly!")
+
+        if availability_zone:
+            extra_args['availability_zone'] = availability_zone
 
         temp_server = os_api_conn.create_server(
             wait=True,
@@ -297,7 +303,7 @@ def create_server(os_api_conn, openstack_properties):
             timeout=timeout,
             key_name=key_name,
             security_groups=security_groups,
-            **image_or_boot_volume_args
+            **extra_args
         )
 
         # Sometimes the OpenStack object is not fully built even after waiting.
