@@ -20,6 +20,7 @@ def test_verify_rabbitmq_channel_per_connection(host):
     """
 
     # attach the rabbitMQ container:
+    attach_rabbitmq_container = ''
     try:
         rpc_release = host.ansible("setup")["ansible_facts"]["ansible_local"]["system_tests"]["rpc_product_release"]
         if rpc_release != '':
