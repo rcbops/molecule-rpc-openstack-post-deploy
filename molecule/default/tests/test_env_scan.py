@@ -39,15 +39,15 @@ def test_users(os_api_conn):
         project.name for project in os_api_conn.list_users(
             filters={'domain': 'default'})
     ]
-    expect_users = ['heat',
-                    'nova',
-                    'admin',
-                    'swift',
+    expect_users = ['admin',
                     'cinder',
+                    'dispersion',
                     'glance',
-                    'neutron',
+                    'heat',
                     'keystone',
-                    'dispersion']
+                    'neutron',
+                    'nova',
+                    'swift']
 
     for expect_user in expect_users:
         assert expect_user in actual_user_names
