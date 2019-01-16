@@ -11,22 +11,9 @@ from pprint import pformat
 # ==============================================================================
 # Globals
 # ==============================================================================
+backup_folder_path = {'host': '/openstack/backup', 'container': '/var/backup'}
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
     os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('shared-infra_hosts')[:1]
-
-
-# ==============================================================================
-# Fixtures
-# ==============================================================================
-@pytest.fixture
-def backup_folder_path():
-    """Path of MBU backup folder for a given host type.
-
-    Returns:
-        dict: {'host', 'container'}
-    """
-
-    return {'host': '/openstack/backup', 'container': '/var/backup'}
 
 
 # ==============================================================================
@@ -40,24 +27,20 @@ class TestVerifyMBUInstall(object):
     installing the MBU service.
     """
 
-    def test_verify_backup_folder_on_host(self, host, backup_folder_path):
+    def test_verify_backup_folder_on_host(self, host):
         """Verify backup path on virtual/physical host.
 
         Args:
             host (testinfra.host.Host): Testinfra host fixture.
-            backup_folder_path (dict): Path of MBU backup folder for a given
-                host type.
         """
 
         assert host.file(backup_folder_path['host']).is_directory
 
-    def test_verify_backup_folder_on_container(self, host, backup_folder_path):
+    def test_verify_backup_folder_on_container(self, host):
         """Verify backup path on all container hosts.
 
         Args:
             host (testinfra.host.Host): Testinfra host fixture.
-            backup_folder_path (dict): Path of MBU backup folder for a given
-                host type.
         """
 
         cmd1 = "ls {}".format(backup_folder_path['host'])
