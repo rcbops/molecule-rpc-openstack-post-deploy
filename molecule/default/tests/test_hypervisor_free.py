@@ -74,7 +74,7 @@ def test_hypervisor_free(os_api_conn, nova_alloc_ratios):
                    for hv in os_api_conn.compute.hypervisors(details=True)]
 
     # Expect
-    expected_stats = ['memory_free',
+    expected_stats = ['memory_size',
                       'memory_used',
                       'vcpus',
                       'vcpus_used',
@@ -85,7 +85,7 @@ def test_hypervisor_free(os_api_conn, nova_alloc_ratios):
         for expected_stat in expected_stats:
             assert expected_stat in hypervisor
 
-        assert ((hypervisor['memory_free']) * nova_alloc_ratios['ram_ratio']
+        assert ((hypervisor['memory_size']) * nova_alloc_ratios['ram_ratio']
                 - (hypervisor['memory_used'])) / 1024 > 0
         assert (hypervisor['vcpus'] * nova_alloc_ratios['cpu_ratio']
                 - hypervisor['vcpus_used']) > 0
