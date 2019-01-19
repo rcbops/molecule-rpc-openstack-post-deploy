@@ -7,6 +7,7 @@ testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
     os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('shared-infra_hosts')[:1]
 
 
+@pytest.mark.skip('ASC-1512', reason='test fails on OSP')
 @pytest.mark.test_id('8b701dbc-7584-11e8-ba5b-fe14fb7452aa')
 @pytest.mark.jira('asc-462')
 def test_create_instance_from_bootable_volume(openstack_properties,
