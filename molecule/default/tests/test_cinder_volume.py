@@ -1,41 +1,45 @@
-import pytest_rpc.helpers as helpers
-import os
-import pytest
-import testinfra.utils.ansible_runner
-
+# -*- coding: utf-8 -*-
 """ASC-256: Verify Cinder volume creation.
 
 RPC 10+ manual test 14.
 """
+# ==============================================================================
+# Imports
+# ==============================================================================
+import pytest
+from conftest import expect_os_property
 
 
-testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
-    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('shared-infra_hosts')[:1]
-
-
-utility_container = ("lxc-attach -n $(lxc-ls -1 | grep utility | head -n 1) "
-                     "-- bash -c '. /root/openrc ; ")
-
-
+# ==============================================================================
+# Test Cases
+# ==============================================================================
 @pytest.mark.test_id('02a17d7d-4a42-11e8-bdcf-6a00035510c0')
 @pytest.mark.jira('asc-256')
-def test_cinder_volume_created(host):
-    """Verify cinder volume can be created"""
+def test_cinder_volume_created(os_api_conn,
+                               create_volume,
+                               openstack_properties):
+    """Test to verify that a cinder volume can be created based on a
+    Glance image.
 
-    # Create a test volume
-    random_str = helpers.generate_random_string(4)
-    volume_name = "test_volume_{}".format(random_str)
-    cmd = ("{} openstack volume create --size 1 --availability-zone "
-           "nova {}'".format(utility_container, volume_name))
-    host.run_expect([0], cmd)
+    Args:
+        os_api_conn (openstack.connection.Connection): An authorized API
+            connection to the 'default' cloud on the OpenStack infrastructure.
+        create_volume (def): A factory function for generating volumes.
+        openstack_properties (dict): OpenStack facts and variables from Ansible
+            which can be used to manipulate OpenStack objects.
+    """
 
-    # Verify the volume is created
-    volumes = helpers.get_resource_list_by_name('volume', host)
-    assert volumes
+    # Create cinder volume (non-bootable)
+    test_cinder_volume = create_volume(
+        size=2,
+        image=openstack_properties['cirros_image'],
+        bootable=False
+    )
 
-    try:
-        volume_names = [x['Name'] for x in volumes]
-    except KeyError:
-        volume_names = [x['Display Name'] for x in volumes]  # for newton
-
-    assert volume_name in volume_names
+    # Validate that image was created successfully.
+    assert expect_os_property(retries=3,
+                              os_object=test_cinder_volume,
+                              os_service='volume',
+                              os_api_conn=os_api_conn,
+                              os_prop_name='is_bootable',
+                              expected_value='false')

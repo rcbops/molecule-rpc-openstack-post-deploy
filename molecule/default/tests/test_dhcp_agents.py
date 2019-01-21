@@ -1,57 +1,23 @@
-import os
-import testinfra.utils.ansible_runner
-import pytest
-import json
-import pytest_rpc.helpers as helpers
-import utils as tmp_var
-
+# -*- coding: utf-8 -*-
 """ASC-157: Perform Post Deploy System validations"""
+# ==============================================================================
+# Imports
+# ==============================================================================
+import pytest
 
-testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
-    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('shared-infra_hosts')[:1]
 
-
+# ==============================================================================
+# Test Cases
+# ==============================================================================
 @pytest.mark.test_id('d7fc25ae-432a-11e8-a20a-6a00035510c0')
-@pytest.mark.jira('asc-157')
-def test_openvswitch(host):
+@pytest.mark.jira('ASC-157', 'ASC-1316')
+def test_openvswitch(os_api_conn):
+    """Ensure DHCP agents for all networks are up.
+
+    Args:
+        os_api_conn (openstack.connection.Connection): An authorized API
+            connection to the 'default' cloud on the OpenStack infrastructure.
     """
-    Ensure DHCP agents for all networks are up
-    """
 
-    r = next(tmp_var.gen_dict_extract('rpc_product_release',
-                                      host.ansible("setup")))
-    expected_codename, expected_major = helpers.get_osa_version(r)
-    print "expected_major: {}".format(expected_major)
-    try:
-        osa_major = int(expected_major)
-    except ValueError:
-        osa_major = 99
-    print "osa_major: {}".format(osa_major)
-
-    os_pre = ("lxc-attach -n $(lxc-ls -1 | grep utility | head -n 1) "
-              "-- bash -c '. /root/openrc ; openstack ")
-    net_cmd = "{} network list -f json'".format(os_pre)
-    net_res = host.run(net_cmd)
-    networks = net_res.stdout.split('\n')
-    networks = json.loads(net_res.stdout)
-    for network in networks:
-        if osa_major > 14:
-            net_agent_cmd = ("{} network agent list "
-                             "--network {} -f json'".format(os_pre,
-                                                            network['ID']))
-        else:
-            net_agent_cmd = ("lxc-attach "
-                             "-n $(lxc-ls -1 | grep utility | head -n 1) "
-                             "-- bash -c '. /root/openrc ; "
-                             "neutron dhcp-agent-list-hosting-net {} "
-                             "-f json'".format(network['ID']))
-
-        print net_agent_cmd
-        res = host.run(net_agent_cmd)
-        results = json.loads(res.stdout)
-
-        for agent in results:
-            if osa_major > 14:
-                assert agent['State'] == 'UP'
-            else:
-                assert agent['admin_state_up'] is True
+    for network in os_api_conn.list_networks():
+        assert network.admin_state_up   # DHCP agent present and running
