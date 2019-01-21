@@ -1,103 +1,120 @@
-import os
-import pytest
-import re
-import testinfra.utils.ansible_runner
-
-
+# -*- coding: utf-8 -*-
 """ASC-238: Verify the quotas have been configured properly
 
 RPC 10+ manual test 8
 """
+# ==============================================================================
+# Imports
+# ==============================================================================
+import pytest
 
-testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
-    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('shared-infra_hosts')[:1]
 
-utility_container = ("lxc-attach -n $(lxc-ls -1 | grep utility | head -n 1) "
-                     "-- bash -c '. /root/openrc ; ")
+# ==============================================================================
+# Globals
+# ==============================================================================
 tenant = 'service'
 
 
-@pytest.mark.test_id('d7fc6780-432a-11e8-9c23-6a00035510c0')
-@pytest.mark.jira('asc-238')
-def test_update_quotas_1st_time_using_id(host):
-    """Configurate tenant quotas and verify it works properly at the first time.
-    """
+# ==============================================================================
+# Test Cases
+# ==============================================================================
+@pytest.mark.test_id('20877692-1ab3-11e9-a6df-00059a3c7a00')
+@pytest.mark.jira('ASC-238', 'ASC-1328')
+@pytest.mark.test_case_with_steps()
+class TestUpdateTenantQuotasUsingId(object):
+    """Verify that tenant quotas can be updated using ID."""
 
-    id = get_tenant_id(tenant, host)
-    update_quotas(host, name=id, instances=9, cores=8, ram=32)
-    verify_updated_quotas(host, name=id, instances=9, cores=8, ram=32)
+    def test_configure_quotas(self, os_api_conn):
+        """Configure tenant quotas and verify it works properly.
 
+        Args:
+            os_api_conn (openstack.connection.Connection): An authorized API
+                connection to the 'default' cloud on the OpenStack
+                infrastructure.
+        """
 
-@pytest.mark.test_id('43e5e78c-4335-11e8-9508-6a00035510c0')
-@pytest.mark.jira('asc-238')
-def test_update_quotas_2nd_time_using_id(host):
-    """Configurate tenant quotas and verify it works properly the second time.
-    """
+        # Expect
+        expect_quotas = {'instances': 9, 'cores': 8, 'ram': 32}
 
-    id = get_tenant_id(tenant, host)
-    update_quotas(host, name=id, instances=18, cores=16, ram=64)
+        # Setup
+        tenant_id = os_api_conn.get_project(tenant).id
+        os_api_conn.set_compute_quotas(tenant_id, **expect_quotas)
 
-    verify_updated_quotas(host, name=id, instances=18, cores=16, ram=64)
+        # Test
+        actual_quotas = os_api_conn.get_compute_quotas(tenant_id)
 
+        for expect_quota in expect_quotas:
+            assert actual_quotas[expect_quota] == expect_quotas[expect_quota]
 
-@pytest.mark.test_id('43e5eade-4335-11e8-942b-6a00035510c0')
-@pytest.mark.jira('asc-238')
-def test_update_quotas_1st_time_using_name(host):
-    """Configurate tenant quotas and verify it works properly at the first time.
-    """
+    def test_update_quotas_again(self, os_api_conn):
+        """Update tenant quotas again with new values and verify it works
+        properly.
 
-    update_quotas(host, name=tenant, instances=12, cores=10, ram=128)
+        Args:
+            os_api_conn (openstack.connection.Connection): An authorized API
+                connection to the 'default' cloud on the OpenStack
+                infrastructure.
+        """
 
-    verify_updated_quotas(host, name=tenant, instances=12, cores=10, ram=128)
+        # Expect
+        expect_quotas = {'instances': 18, 'cores': 16, 'ram': 64}
 
+        # Setup
+        tenant_id = os_api_conn.get_project(tenant).id
+        os_api_conn.set_compute_quotas(tenant_id, **expect_quotas)
 
-@pytest.mark.test_id('43e5ec59-4335-11e8-af11-6a00035510c0')
-@pytest.mark.jira('asc-238')
-def test_update_quotas_2nd_time_using_name(host):
-    """Configurate service tenant quotas and verify it works properly the
-    second time.
-    """
+        # Test
+        actual_quotas = os_api_conn.get_compute_quotas(tenant_id)
 
-    update_quotas(host, name=tenant, instances=30, cores=20, ram=256)
-
-    verify_updated_quotas(host, name=tenant, instances=30, cores=20, ram=256)
-
-
-def update_quotas(run_on_host, name, instances, cores, ram):
-    """Update quote using openstack cli 'openstack quota set'"""
-    cmd = ("{} openstack quota set --instances {} --cores {} --ram "
-           "{} {}'".format(utility_container, instances, cores, ram, name))
-    run_on_host.run_expect([0], cmd)
-
-
-def verify_updated_quotas(run_on_host, name, instances, cores, ram):
-    """Verify updated quotas using openstack cli
-    'openstack quota show <PROJECT_NAME|PROJECT_ID>'
-    """
-
-    cmd = "{} openstack quota show {}'".format(utility_container, name)
-    output = run_on_host.run(cmd)
-    assert get_quota('instances', output.stdout) == instances
-    assert get_quota('cores', output.stdout) == cores
-    assert get_quota('ram', output.stdout) == ram
+        for expect_quota in expect_quotas:
+            assert actual_quotas[expect_quota] == expect_quotas[expect_quota]
 
 
-def get_tenant_id(tenant_name, run_on_host):
-    """Get tenant id associated with tenant name"""
-    cmd = "{} openstack project list | grep {}'".format(utility_container,
-                                                        tenant_name)
-    output = run_on_host.run(cmd)
-    result = re.search(r'(?<=\s)[a-zA-Z0-9]+(?=\s)', output.stdout)
-    return result.group(0)
+@pytest.mark.test_id('20876cd8-1ab3-11e9-a6df-00059a3c7a00')
+@pytest.mark.jira('ASC-238', 'ASC-1328')
+@pytest.mark.test_case_with_steps()
+class TestUpdateTenantQuotasUsingName(object):
+    """Verify that tenant quotas can be updated using name."""
 
+    def test_configure_quotas(self, os_api_conn):
+        """Configure tenant quotas and verify it works properly.
 
-def get_quota(quota_name, quota_show_output):
-    """get quota for each quota name"""
-    quota_name_regex = re.escape(quota_name) + r'(\s+\|\s+[0-9]+\s)'
-    if quota_name in quota_show_output:
-        # Getting the line of quota, such as 'instances                   | 9'
-        line = re.search(quota_name_regex, quota_show_output)
-        quota_line = line.group(0)
-        # Getting the quota number
-        result = re.search(r'(?<=\s)[0-9]+(?=\s)', quota_line)
-        return int(result.group(0))
+        Args:
+            os_api_conn (openstack.connection.Connection): An authorized API
+                connection to the 'default' cloud on the OpenStack
+                infrastructure.
+        """
+
+        # Expect
+        expect_quotas = {'instances': 12, 'cores': 10, 'ram': 128}
+
+        # Setup
+        os_api_conn.set_compute_quotas(tenant, **expect_quotas)
+
+        # Test
+        actual_quotas = os_api_conn.get_compute_quotas(tenant)
+
+        for expect_quota in expect_quotas:
+            assert actual_quotas[expect_quota] == expect_quotas[expect_quota]
+
+    def test_update_quotas_again(self, os_api_conn):
+        """Update tenant quotas again with new values and verify it works
+        properly.
+
+        Args:
+            os_api_conn (openstack.connection.Connection): An authorized API
+                connection to the 'default' cloud on the OpenStack
+                infrastructure.
+        """
+
+        # Expect
+        expect_quotas = {'instances': 30, 'cores': 20, 'ram': 256}
+
+        # Setup
+        os_api_conn.set_compute_quotas(tenant, **expect_quotas)
+
+        # Test
+        actual_quotas = os_api_conn.get_compute_quotas(tenant)
+
+        for expect_quota in expect_quotas:
+            assert actual_quotas[expect_quota] == expect_quotas[expect_quota]

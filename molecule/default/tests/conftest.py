@@ -160,6 +160,8 @@ def openstack_properties():
         'network_name': 'GATEWAY_NET',
         'private_net': 'PRIVATE_NET',
         'test_network': 'TEST-VXLAN',
+        'gateway_network_subnet': 'GATEWAY_NET_SUBNET',
+        'private_network_subnet': 'PRIVATE_NET_SUBNET',
         'flavor': 'm1.tiny',
         'tiny_flavor': 'm1.tiny',
         'small_flavor': 'm1.small',
