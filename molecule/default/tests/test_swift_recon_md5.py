@@ -1,22 +1,34 @@
-import os
-import testinfra.utils.ansible_runner
-import pytest
-import pytest_rpc.helpers as helpers
-
+# -*- coding: utf-8 -*-
 """ASC-298: Verify md5 sums of ring files using swift-recon tool
 
 See RPC 10+ Post-Deployment QC process document
 """
+# ==============================================================================
+# Imports
+# ==============================================================================
+import os
+import pytest
+import pytest_rpc.helpers as helpers
+import testinfra.utils.ansible_runner
 
+
+# ==============================================================================
+# Globals
+# ==============================================================================
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
     os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('shared-infra_hosts')[:1]
 
 
+# ==============================================================================
+# Test Cases
+# ==============================================================================
 @pytest.mark.test_id('d7fc49a8-432a-11e8-a2ea-6a00035510c0')
-@pytest.mark.jira('ASC-298')
+@pytest.mark.jira('ASC-298', 'ASC-1324')
 def test_verify_swift_ring_md5sums(host):
     """Verify the swift ring md5sums with local copy using swift-recon.
 
+    Args:
+        host (testinfra.host.Host): Testinfra host fixture.
     """
 
     result = helpers.run_on_swift('swift-recon --md5', host)
