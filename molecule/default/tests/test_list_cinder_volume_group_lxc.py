@@ -1,3 +1,8 @@
+# -*- coding: utf-8 -*-
+
+# ==============================================================================
+# Imports
+# ==============================================================================
 import os
 import re
 import pytest
@@ -7,6 +12,9 @@ testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
     os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('cinder_volume')
 
 
+# ==============================================================================
+# Test Cases
+# ==============================================================================
 @pytest.mark.test_id('d7fc57cc-432a-11e8-9664-6a00035510c0')
 @pytest.mark.jira('asc-222')
 def test_cinder_lvm_volume(host):
