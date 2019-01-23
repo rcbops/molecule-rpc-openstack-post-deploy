@@ -1,5 +1,6 @@
 -c constraints.txt
 ansible
+configparser
 flake8-filename
 flake8-pytest-mark
 magic-marker

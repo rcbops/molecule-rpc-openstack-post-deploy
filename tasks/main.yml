@@ -19,3 +19,4 @@
 - import_tasks: check_compute_service_status.yml
 - import_tasks: server_setup.yml
 - import_tasks: volume_setup.yml
+- import_tasks: os_version_file.yml
