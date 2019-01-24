@@ -27,7 +27,7 @@ def test_projects(os_api_conn):
 
 @pytest.mark.test_id('d7fc2770-432a-11e8-8af1-6a00035510c0')
 @pytest.mark.jira('ASC-157', 'ASC-1317')
-def test_users(os_api_conn):
+def test_users(os_api_conn, openstack_properties):
     """Ensure presence of basic users.
 
     Args:
@@ -48,6 +48,10 @@ def test_users(os_api_conn):
                     'neutron',
                     'nova',
                     'swift']
+
+    # user 'keystone' is removed from Stein and later releases
+    if openstack_properties['os_version_major'] > 18:
+        expect_users.remove('keystone')
 
     for expect_user in expect_users:
         assert expect_user in actual_user_names
