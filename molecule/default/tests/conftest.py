@@ -2,6 +2,7 @@
 # ==============================================================================
 # Imports
 # ==============================================================================
+import re
 import pytest
 import openstack
 import pytest_rpc.helpers as helpers
@@ -12,6 +13,19 @@ from platform import system
 from subprocess import call
 from paramiko import SSHClient, AutoAddPolicy, HostKeys
 from paramiko.ssh_exception import NoValidConnectionsError
+from configparser import ConfigParser, NoOptionError, NoSectionError
+
+
+# ==============================================================================
+# Globals
+# ==============================================================================
+# See https://bit.ly/2RGmytn for origin
+semantic_pattern = (r'^([0-9]|[1-9][0-9]*)\.'
+                    r'([0-9]|[1-9][0-9]*)\.'
+                    r'([0-9]|[1-9][0-9]*)'
+                    r'(?:-([0-9A-Za-z-]+'
+                    r'(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?$')
+semantic_regex = re.compile(semantic_pattern)
 
 
 # ==============================================================================
@@ -169,8 +183,34 @@ def openstack_properties():
         'key_name': 'rpc_support',
         'public_key_path': '/root/.ssh/rpc_support.pub',
         'private_key_path': '/root/.ssh/rpc_support',
-        'security_group': 'rpc-support'
+        'security_group': 'rpc-support',
+        'os_version_file_path': '/etc/openstack-release',
+        'os_version': None,
+        'os_version_major': None,
+        'os_version_minor': None,
+        'os_version_patch': None,
+        'os_version_codename': None
     }
+
+    # Retrieve OpenStack version information
+    try:
+        os_version_file = ConfigParser()
+        os_version_file.read(unicode(os_properties['os_version_file_path']))
+
+        # Extract OpenStack version semantics
+        os_properties['os_version_codename'] = \
+            os_version_file.get('default', 'DISTRIB_CODENAME').replace('"', '')
+        os_properties['os_version'] = \
+            os_version_file.get('default',
+                                'DISTRIB_RELEASE').replace('"', '').lstrip('r')
+        os_properties['os_version_major'] = \
+            int(semantic_regex.match(os_properties['os_version']).group(1))
+        os_properties['os_version_minor'] = \
+            int(semantic_regex.match(os_properties['os_version']).group(2))
+        os_properties['os_version_patch'] = \
+            int(semantic_regex.match(os_properties['os_version']).group(3))
+    except (IOError, OSError, NoOptionError, NoSectionError):
+        warn(UserWarning("Failed to parse OpenStack version file!"))
 
     return os_properties
 
@@ -195,7 +235,7 @@ def create_server(os_api_conn, openstack_properties):
     Args:
         os_api_conn (openstack.connection.Connection): An authorized API
             connection to the 'default' cloud on the OpenStack infrastructure.
-        openstack_properties(dict): OpenStack facts and variables from Ansible
+        openstack_properties (dict): OpenStack facts and variables from Ansible
             which can be used to manipulate OpenStack objects.
 
     Returns:
