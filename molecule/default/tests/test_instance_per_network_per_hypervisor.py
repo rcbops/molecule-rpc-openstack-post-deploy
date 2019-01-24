@@ -149,7 +149,7 @@ def test_hypervisor_vms(neutron_cmd,
         if os_api_conn.get_subnet(gateway_id).gateway_ip:
             ssh = ("ssh -o StrictHostKeyChecking=no -o "
                    "UserKnownHostsFile=/dev/null "
-                   "-i ~/.ssh/rpc_support ubuntu@{}").format(server_ip)
+                   "-i ~/.ssh/rpc_support cirros@{}").format(server_ip)
 
             # ping out
             cmd = ("ip netns exec qdhcp-{} {} "
