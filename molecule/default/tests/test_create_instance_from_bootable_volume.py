@@ -3,7 +3,7 @@
 # Imports
 # ==============================================================================
 import pytest
-from conftest import ping_from_mnaio
+from pytest_rpc.helpers import ping_from_mnaio
 
 
 # ==============================================================================

@@ -2,4 +2,4 @@ ansible==2.4.3
 flake8-pytest-mark>=1.0.0,<2.0.0
 magic-marker>=1.0.0,<2.0.0
 molecule~=2.14
-pytest-rpc>=0.12.0
+pytest-rpc==1.0.0.dev0
