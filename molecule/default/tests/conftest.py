@@ -13,7 +13,14 @@ from platform import system
 from subprocess import call
 from paramiko import SSHClient, AutoAddPolicy, HostKeys
 from paramiko.ssh_exception import NoValidConnectionsError
-from configparser import ConfigParser, NoOptionError, NoSectionError
+
+# Shakes tiny fist at Python 2.7!
+try:
+    # noinspection PyCompatibility
+    from ConfigParser import ConfigParser, NoOptionError, NoSectionError
+except ImportError:
+    # noinspection PyCompatibility
+    from configparser import ConfigParser, NoOptionError, NoSectionError
 
 
 # ==============================================================================
