@@ -1,0 +1,23 @@
+---
+- name: Register servers
+  os_server_facts:
+    cloud: default
+    server: '*'
+  register: openstack_servers
+  delegate_to: localhost
+
+- name: Show the value of openstack_servers
+  debug:
+    var: openstack_servers
+
+- name: Delete all servers
+  os_server:
+    cloud: default
+    state: absent
+    name: "{{ item.id }}"
+  with_items: "{{ openstack_servers.ansible_facts.openstack_servers }}"
+  when:
+    - openstack_servers is defined
+    - openstack_servers.ansible_facts is defined
+    - openstack_servers.ansible_facts.openstack_servers is defined
+  delegate_to: localhost
