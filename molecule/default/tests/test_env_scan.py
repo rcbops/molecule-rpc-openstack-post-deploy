@@ -33,6 +33,8 @@ def test_users(os_api_conn, openstack_properties):
     Args:
         os_api_conn (openstack.connection.Connection): An authorized API
             connection to the 'default' cloud on the OpenStack infrastructure.
+        openstack_properties (dict): OpenStack facts and variables from Ansible
+            which can be used to manipulate OpenStack objects.
     """
 
     actual_user_names = [
