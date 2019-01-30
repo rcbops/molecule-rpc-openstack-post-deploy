@@ -70,19 +70,6 @@ def test_networks(os_api_conn):
     assert len(os_api_conn.list_networks()) > 0
 
 
-@pytest.mark.test_id('d7fc28f5-432a-11e8-9af3-6a00035510c0')
-@pytest.mark.jira('ASC-157', 'ASC-1317')
-def test_servers(os_api_conn):
-    """Ensure presence of basic nova servers.
-
-    Args:
-        os_api_conn (openstack.connection.Connection): An authorized API
-            connection to the 'default' cloud on the OpenStack infrastructure.
-    """
-
-    assert os_api_conn.list_servers()
-
-
 @pytest.mark.test_id('d7fc2b45-432a-11e8-92c0-6a00035510c0')
 @pytest.mark.jira('ASC-157', 'ASC-1317')
 def test_flavors(os_api_conn):
