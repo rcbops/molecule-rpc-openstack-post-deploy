@@ -3,7 +3,7 @@
 # Imports
 # ==============================================================================
 import pytest
-from conftest import expect_os_property
+from pytest_rpc.helpers import expect_os_property
 
 
 # ==============================================================================

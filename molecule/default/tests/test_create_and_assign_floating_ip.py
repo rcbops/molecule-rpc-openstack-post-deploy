@@ -7,7 +7,7 @@ RPC 10+ manual test 10
 # Imports
 # ==============================================================================
 import pytest
-from conftest import ping_from_mnaio
+from pytest_rpc.helpers import ping_from_mnaio
 
 
 # ==============================================================================
