@@ -1,9 +1,0 @@
----
-- name: Create test volume
-  os_volume:
-    cloud: default
-    state: present
-    display_name: "{{ test_volume }}"
-    size: 1
-    timeout: 600
-  delegate_to: localhost

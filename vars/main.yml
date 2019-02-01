@@ -35,6 +35,7 @@ gateway_network: GATEWAY_NET
 private_network: PRIVATE_NET
 custom_fact_path: /etc/ansible/facts.d
 os_version_file_path: /etc/openstack-release
+os_version_ini_path: /etc/openstack-release.ini
 
 # vars for copying 'clouds.yaml' to the deployment host
 os_config_path: /root/.config/openstack
