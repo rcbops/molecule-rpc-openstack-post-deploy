@@ -63,7 +63,7 @@ def get_osa_version(branch):
     elif branch in ['rocky', 'rocky-rc']:
         return 'Rocky', 18
     else:
-        return None, None
+        return 'master', 99
 
 
 # ==============================================================================
