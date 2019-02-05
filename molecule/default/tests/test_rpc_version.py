@@ -63,7 +63,7 @@ def get_osa_version(branch):
     elif branch in ['rocky', 'rocky-rc']:
         return 'Rocky', 18
     else:
-        return 'master', 99
+        return None, None
 
 
 # ==============================================================================
@@ -84,7 +84,7 @@ def test_openstack_release_version(host, openstack_properties):
                               host.ansible("setup")))
     expected_major = get_osa_version(r)[1]
 
-    if expected_major == 99:
+    if expected_major is None:
         pytest.skip('Test incompatible with RPC-O "master" branch.')
 
     assert openstack_properties['os_version_major'] == expected_major
@@ -105,7 +105,7 @@ def test_openstack_codename(host, openstack_properties):
                               host.ansible("setup")))
     expected_codename = get_osa_version(r)[0]
 
-    if expected_codename == 'master':
+    if expected_codename is None:
         pytest.skip('Test incompatible with RPC-O "master" branch.')
 
     assert openstack_properties['os_version_codename'] == expected_codename
