@@ -18,6 +18,8 @@ def test_cinder_service(os_api_conn, openstack_properties):
     Args:
         os_api_conn (openstack.connection.Connection): An authorized API
             connection to the 'default' cloud on the OpenStack infrastructure.
+        openstack_properties (dict): OpenStack facts and variables from Ansible
+            which can be used to manipulate OpenStack objects.
     """
     # Getting the right cinder service to check:
     #    Cinder API V1 was removed in Queens release (os_version_major == 17)
