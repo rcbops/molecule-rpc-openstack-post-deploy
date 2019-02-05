@@ -85,7 +85,7 @@ def test_openstack_release_version(host, openstack_properties):
     expected_major = get_osa_version(r)[1]
 
     if expected_major is None:
-        pytest.skip('Test incompatible with RPC-O "master" branch.')
+        pytest.skip('Expected release version is undefined for this branch.')
 
     assert openstack_properties['os_version_major'] == expected_major
 
@@ -106,6 +106,6 @@ def test_openstack_codename(host, openstack_properties):
     expected_codename = get_osa_version(r)[0]
 
     if expected_codename is None:
-        pytest.skip('Test incompatible with RPC-O "master" branch.')
+        pytest.skip('Expected release codename is undefined for this branch.')
 
     assert openstack_properties['os_version_codename'] == expected_codename
