@@ -42,7 +42,6 @@ def test_users(host):
     assert "heat" in user_names
     assert "neutron" in user_names
     assert "nova" in user_names
-    assert "swift" in user_names
 
 
 @pytest.mark.test_id('d7fc2835-432a-11e8-a8a1-6a00035510c0')

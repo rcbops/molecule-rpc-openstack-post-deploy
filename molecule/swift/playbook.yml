@@ -1,0 +1,5 @@
+---
+- name: Converge
+  hosts: network_hosts[0]
+  roles:
+    - role: molecule-rpc-openstack-post-deploy
