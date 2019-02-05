@@ -70,7 +70,7 @@ def get_osa_version(branch):
 # Test Cases
 # ==============================================================================
 @pytest.mark.test_id('2c596d8f-7957-11e8-8017-6a00035510c0')
-@pytest.mark.jira('ASC-234', 'ASC-1321')
+@pytest.mark.jira('ASC-234', 'ASC-1321', 'ASC-1601')
 def test_openstack_release_version(host, openstack_properties):
     """Verify the swift endpoint status.
 
@@ -82,13 +82,16 @@ def test_openstack_release_version(host, openstack_properties):
 
     r = next(gen_dict_extract('rpc_product_release',
                               host.ansible("setup")))
-    expected_codename, expected_major = get_osa_version(r)
+    expected_major = get_osa_version(r)[1]
+
+    if expected_major == 99:
+        pytest.skip('Test incompatible with RPC-O "master" branch.')
 
     assert openstack_properties['os_version_major'] == expected_major
 
 
 @pytest.mark.test_id('0d8e4105-789e-11e8-8335-6a00035510c0')
-@pytest.mark.jira('ASC-234', 'ASC-1321')
+@pytest.mark.jira('ASC-234', 'ASC-1321', 'ASC-1602')
 def test_openstack_codename(host, openstack_properties):
     """Verify the swift endpoint status.
 
@@ -100,6 +103,9 @@ def test_openstack_codename(host, openstack_properties):
 
     r = next(gen_dict_extract('rpc_product_release',
                               host.ansible("setup")))
-    expected_codename, expected_major = get_osa_version(r)
+    expected_codename = get_osa_version(r)[0]
+
+    if expected_codename == 'master':
+        pytest.skip('Test incompatible with RPC-O "master" branch.')
 
     assert openstack_properties['os_version_codename'] == expected_codename
