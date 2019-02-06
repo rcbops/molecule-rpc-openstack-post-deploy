@@ -8,6 +8,10 @@ import re
 import pytest
 import testinfra.utils.ansible_runner
 
+
+# ==============================================================================
+# Globals
+# ==============================================================================
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
     os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('cinder_volume')
 
