@@ -7,13 +7,14 @@ import os
 import pytest
 import testinfra.utils.ansible_runner
 
+
 # ==============================================================================
 # Globals
 # ==============================================================================
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
     os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('shared-infra_hosts')
 
-galera_container = ("lxc-attach -n $(lxc-ls -1 | grep galera | head -n 1) -- ")
+galera_container = "lxc-attach -n $(lxc-ls -1 | grep galera | head -n 1) -- "
 
 
 # ==============================================================================
