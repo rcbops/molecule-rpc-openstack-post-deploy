@@ -38,13 +38,6 @@
     executable: /bin/bash
     chdir: /opt/openstack-ansible-ops/multi-node-aio-xenial-ansible/playbooks/vars
 
-- name: Hack the repo to set network type
-  shell: |
-    sed -i 's/network_type: vxlan/network_type: "{{ network_type }}"/' openstack-service-config.yml
-  args:
-    executable: /bin/bash
-    chdir: /opt/openstack-ansible-ops/multi-node-aio-xenial-ansible/playbooks/vars
-
 - name: install virtualenv
   package:
     name: python-virtualenv
