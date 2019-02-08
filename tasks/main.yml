@@ -1,20 +1,8 @@
 ---
 # tasks file for molecule-rpc-openstack-post-deploy
-- import_tasks: set_facts.yml
-- import_tasks: enable_api_access.yml
-- name: Install "openvswitch-switch" package
-  apt:
-     name: openvswitch-switch
-- import_tasks: ssh_key_containers.yml
-- import_tasks: delete_existing_networks.yml
-  when: ansible_local.service_setup is not defined
-- import_tasks: os_service_setup.yml
-  when: ansible_local.service_setup is not defined
-- import_tasks: support_key.yml
-- import_tasks: security_group_setup.yml
-- import_tasks: flavor_setup.yml
 - import_tasks: server_delete.yml
-- import_tasks: network_setup.yml
+- import_role:
+    name: ansible-role-pytest-rpc
+- import_tasks: apt_packages.yml
 - import_tasks: check_galera_status.yml
 - import_tasks: check_compute_service_status.yml
-- import_tasks: os_version_file.yml
