@@ -48,7 +48,7 @@ undercloud_ssh_key: /home/stack/.ssh/id_rsa
 # Create shared networks and subnets:
 router_name: GATEWAY_NET_ROUTER
 provider_net_name: GATEWAY_NET
-provider_net_cidr: 10.0.248.0/22
+provider_net_cidr: 192.168.24.0/22
 provider_dns_server: "{{ DNS_NAMESERVER | default('8.8.8.8') }}"
 provider_subnet_name: "{{ provider_net_name }}_SUBNET"
 

@@ -38,6 +38,14 @@
     executable: /bin/bash
     chdir: /opt/openstack-ansible-ops/multi-node-aio-xenial-ansible/playbooks/vars
 
+- name: Hack the provider network ip
+  shell: |
+    awk  '$1 ~ /^provider_net_cidr:/ {$2 = "{{ provider_net_cidr }}"}1' openstack-service-config.yml  > tmp
+    mv tmp  openstack-service-config.yml
+  args:
+    executable: /bin/bash
+    chdir: /opt/openstack-ansible-ops/multi-node-aio-xenial-ansible/playbooks/vars
+
 - name: install virtualenv
   package:
     name: python-virtualenv
