@@ -97,3 +97,5 @@
   args:
     executable: /bin/bash
     chdir: /opt/openstack-ansible-ops/multi-node-aio-xenial-ansible/playbooks/
+  register: command_result
+  failed_when: "'failed=1' in command_result.stdout"
