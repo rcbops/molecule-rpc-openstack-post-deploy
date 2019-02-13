@@ -167,8 +167,9 @@ def test_hypervisor_vms(host):
         sub = json.loads(res.stdout)
         if sub['gateway_ip']:
             # ping out
-            cmd = "{} 'ip netns exec \
-                   qdhcp-{} {} ping -c1 -w2 8.8.8.8'".format(na_pre,
-                                                             network['id'],
-                                                             ssh.format(ip))
+            cmd = ("{0} "
+                   "'sudo ip netns exec qdhcp-{1} {2} ping -c1 -w2 8.8.8.8'"
+                   ).format(na_pre,
+                            network['id'],
+                            ssh.format(ip))
             host.run_expect([0], cmd)
