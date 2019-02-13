@@ -113,24 +113,20 @@ def test_hypervisor_vms(host):
 
     # iterate over internal networks
     for network in testable_networks:
-        # spin up instance per hypervisor
-        cmd = "{} compute service list -f json".format(helpers.os_pre)
-        res = host.run(cmd)
-        computes = json.loads(res.stdout)
-        for compute in computes:
-            if compute['Binary'] == 'nova-compute':
-                instance_name = "rpctest-{}-{}-{}".format(r, compute['Host'],
-                                                          network['name'])
-                server = create_server_on(host, image['ID'], flavor_name,
-                                          network['id'], compute['Zone'],
-                                          instance_name)
-                assert helpers.get_expected_value('server', server['id'],
-                                                  'OS-EXT-STS:power_state', 'Running', host, 15)
-                assert helpers.get_expected_value('server', server['id'],
-                                                  'status', 'ACTIVE', host, 15)
-                assert helpers.get_expected_value('server', server['id'],
-                                                  'OS-EXT-STS:vm_state', 'active', host, 15)
-                server_list.append(server['id'])
+        # spin up instance per zone
+        zone = 'nova'
+        instance_name = "rpctest-{0}-{1}-{2}".format(r, zone,
+                                                     network['name'])
+        server = create_server_on(host, image['ID'], flavor_name,
+                                  network['id'], zone,
+                                  instance_name)
+        assert helpers.get_expected_value('server', server['id'],
+                                          'OS-EXT-STS:power_state', 'Running', host, 15)
+        assert helpers.get_expected_value('server', server['id'],
+                                          'status', 'ACTIVE', host, 15)
+        assert helpers.get_expected_value('server', server['id'],
+                                          'OS-EXT-STS:vm_state', 'active', host, 15)
+        server_list.append(server['id'])
 
     for server in server_list:
         # test ssh
