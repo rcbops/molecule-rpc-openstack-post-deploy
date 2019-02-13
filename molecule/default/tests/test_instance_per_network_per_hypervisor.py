@@ -14,15 +14,20 @@ testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
 
 
 def create_server_on(target_host, image_id, flavor, network_id, compute_zone, server_name):
-    cmd = "{} server create \
-           -f json \
-           --image {} \
-           --flavor {} \
-           --nic net-id={} \
-           --availability-zone {} \
-           --key-name 'rpc_support' \
-           {}".format(helpers.os_pre, image_id, flavor,
-                      network_id, compute_zone, server_name)
+    cmd = ('{0} server create '
+           '-f json '
+           '--image {1} '
+           '--flavor "{2}" '
+           '--nic net-id={3} '
+           '--availability-zone "{4}" '
+           '--key-name rpc_support '
+           '--security-group rpc-support '
+           '"{5}"').format(helpers.os_pre,
+                           image_id,
+                           flavor,
+                           network_id,
+                           compute_zone,
+                           server_name)
     res = target_host.run(cmd)
     server = json.loads(res.stdout)
     return server
@@ -34,8 +39,9 @@ def test_hypervisor_vms(host):
     """ASC-241: Per network, spin up an instance on each hypervisor, perform
     external ping, and tear-down """
 
-    ssh = "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
-           -i ~/.ssh/rpc_support ubuntu@{}"
+    ssh = ('ssh -o StrictHostKeyChecking=no '
+           '-o UserKnownHostsFile=/dev/null '
+           '-i ~/.ssh/rpc_support ubuntu@{}')
 
     vars = host.ansible('include_vars',
                         'file=./vars/main.yml')['ansible_facts']
@@ -94,12 +100,11 @@ def test_hypervisor_vms(host):
             dhcp_networks.append(netns.split(' ')[0][6:])
 
     # get list of internal networks
-    net_cmd = "{} network list -f json".format(helpers.os_pre)
+    net_cmd = "{} network list -f value -c ID".format(helpers.os_pre)
     net_res = host.run(net_cmd)
-    networks = json.loads(net_res.stdout)
+    networks = net_res.stdout.split('\n')
     for network in networks:
-        cmd = "{} network show {} -f json".format(helpers.os_pre,
-                                                  network['ID'])
+        cmd = "{} network show {} -f json".format(helpers.os_pre, network)
         res = host.run(cmd)
         network_detail = json.loads(res.stdout)
         if network_detail['router:external'] == 'External':
@@ -138,7 +143,7 @@ def test_hypervisor_vms(host):
         network_name, ip = server_detail['addresses'].split('=')
         # get network detail (again)
         # This will include network id and subnets.
-        cmd = "{} network show {} -f json".format(helpers.os_pre, network_name)
+        cmd = "{} network show '{}' -f json".format(helpers.os_pre, network_name)
         res = host.run(cmd)
         network = json.loads(res.stdout)
 
