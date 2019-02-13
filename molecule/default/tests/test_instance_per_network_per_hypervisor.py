@@ -147,8 +147,9 @@ def test_hypervisor_vms(host):
         network = json.loads(res.stdout)
 
         # confirm SSH port access
-        cmd = "{} 'ip netns exec \
-               qdhcp-{} nc -w1 {} 22'".format(na_pre, network['id'], ip)
+        cmd = ("{0} "
+               "'echo break | sudo ip netns exec qdhcp-{1} nc -w1 {2} 22'"
+               ).format(na_pre, network['id'], ip)
         for attempt in range(30):
             res = host.run(cmd)
             try:
