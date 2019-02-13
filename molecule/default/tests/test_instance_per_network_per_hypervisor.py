@@ -28,7 +28,6 @@ def create_server_on(target_host, image_id, flavor, network_id, compute_zone, se
     return server
 
 
-@pytest.mark.xfail(reason='ASC-1263 - No neutron_agent role on OSP')
 @pytest.mark.test_id('c3002bde-59f1-11e8-be3b-6c96cfdb252f')
 @pytest.mark.jira('ASC-241', 'ASC-883', 'ASC-789', 'RI-417')
 def test_hypervisor_vms(host):
@@ -45,6 +44,7 @@ def test_hypervisor_vms(host):
     image_name = vars['image']['name']
 
     server_list = []
+    dhcp_networks = []
     testable_networks = []
 
     # get image id (sounds like a helper, or register it as an ansible value)
@@ -57,22 +57,41 @@ def test_hypervisor_vms(host):
     image = filtered_images[-1]
 
     # neutron_agent connection lookup
-    na_list = testinfra.utils.ansible_runner.AnsibleRunner(
-        os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('neutron_agent')
-    hostname = host.check_output('hostname')
-    na_list = [x for x in na_list if hostname in x]
-    neutron_agent = next(iter(na_list), None)
-    assert neutron_agent
-    if 'container' in neutron_agent:
-        # lxc
-        na_pre = "lxc-attach -n {} -- bash -c ".format(neutron_agent)
-    else:
-        # ssh
-        na_pre = "ssh -o StrictHostKeyChecking=no \
-                   -o UserKnownHostsFile=/dev/null \
-                   {} ".format(neutron_agent)
+    # OSP use controller for nova_agent!
+    cmd = ('. /home/stack/stackrc && '
+           'openstack server show '
+           '-f value -c addresses '
+           'overcloud-controller-0')
+    res = host.run(cmd)
+    controller_network_name, controller_ip = res.stdout.split('=')
+    assert controller_ip
+    na_pre = ('ssh '
+              '-i /home/stack/.ssh/id_rsa '
+              '-o StrictHostKeyChecking=no '
+              '-o UserKnownHostsFile=/dev/null '
+              'heat-admin@{0} ').format(controller_ip)
+
+    # Copy rpc_support key to heat-admin account on overcloud-controller-0
+    cmd = ('scp '
+           '-i /home/stack/.ssh/id_rsa '
+           '-o StrictHostKeyChecking=no '
+           '-o UserKnownHostsFile=/dev/null '
+           '.ssh/rpc_support '
+           'heat-admin@{0}:.ssh/').format(controller_ip)
+    res = host.run(cmd)
+    assert res.rc == 0
 
     r = random.randint(1111, 9999)
+
+    # get list of netns dhcp agents
+    # search results will be in the following form:
+    # 'qdhcp-b51687aa-b4c4-4f20-bab1-cc5d948521ac (id: 2)'
+    cmd = ("{0} 'sudo ip netns list'").format(na_pre)
+    res = host.run(cmd)
+    netns_list = res.stdout.split('\n')
+    for netns in netns_list:
+        if netns.find('qdhcp') == 0:
+            dhcp_networks.append(netns.split(' ')[0][6:])
 
     # get list of internal networks
     net_cmd = "{} network list -f json".format(helpers.os_pre)
@@ -85,7 +104,9 @@ def test_hypervisor_vms(host):
         network_detail = json.loads(res.stdout)
         if network_detail['router:external'] == 'External':
             continue
-        testable_networks.append(network_detail)
+        # also have dhcp infrastructure
+        if network in dhcp_networks:
+            testable_networks.append(network_detail)
 
     if not testable_networks:
         pytest.skip("No testable networks found")
