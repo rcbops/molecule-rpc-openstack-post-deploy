@@ -1,8 +1,8 @@
 ---
 # tasks file for molecule-rpc-openstack-post-deploy
-- import_tasks: server_delete.yml
 - import_role:
     name: ansible-role-pytest-rpc
+- import_tasks: server_delete.yml
 - import_tasks: apt_packages.yml
 - import_tasks: check_galera_status.yml
 - import_tasks: check_compute_service_status.yml

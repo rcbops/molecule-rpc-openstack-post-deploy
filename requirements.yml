@@ -1,0 +1,3 @@
+---
+# Include the Molecule requirements file.
+- include: molecule/default/requirements.yml
