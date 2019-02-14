@@ -2,12 +2,12 @@ import pytest_rpc_helpers as helpers
 import os
 import pytest
 import testinfra.utils.ansible_runner
+import json
 
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
     os.environ['MOLECULE_INVENTORY_FILE']).get_hosts(helpers.cli_host)
 
 
-@pytest.mark.xfail(reason='ASC-1262 - External IP cannot be pinged')
 @pytest.mark.test_id('ab24ffbd-798b-11e8-a2b2-6c96cfdb2e43')
 @pytest.mark.jira('asc-254')
 def test_assign_floating_ip_to_instance(openstack_properties, host):
@@ -21,15 +21,21 @@ def test_assign_floating_ip_to_instance(openstack_properties, host):
 
     # Creating an instance from image
     random_str = helpers.generate_random_string(6)
-    data = {
-        'instance_name': "test_instance_{}".format(random_str),
-        'from_source': 'image',
-        'source_name': openstack_properties['image_name'],
-        'flavor': openstack_properties['flavor'],
-        'network_name': openstack_properties['private_net'],
-    }
 
-    instance_id = helpers.create_instance(data, host)
+    cmd = ('{0} server create '
+           '-f json '
+           '--image {1} '
+           '--flavor "{2}" '
+           '--nic net-id={3} '
+           '--key-name rpc_support '
+           '--security-group rpc-support '
+           '"{4}"').format(helpers.os_pre,
+                           openstack_properties['image_name'],
+                           openstack_properties['flavor'],
+                           openstack_properties['private_net'],
+                           "test_instance_{}".format(random_str))
+    res = host.run(cmd)
+    instance_id = json.loads(res.stdout)['id']
 
     assert helpers.get_expected_value('server',
                                       instance_id,
