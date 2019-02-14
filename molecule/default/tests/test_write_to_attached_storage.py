@@ -22,9 +22,9 @@ key_name = 'rpc_support'
 # TODO: move these to pytest-rpc
 
 def attach_floating_ip(server, floating_ip, run_on_host):
-    cmd = "{} server add floating ip  \
-           {} \
-           {} {}".format(helpers.os_pre, server, floating_ip)
+    cmd = ('{0} server add floating ip  '
+           '{1} '
+           '{2}').format(helpers.os_pre, server, floating_ip)
 
     try:
         run_on_host.run_expect([0], cmd)
@@ -35,16 +35,15 @@ def attach_floating_ip(server, floating_ip, run_on_host):
 
 
 def attach_volume_to_server(volume, server, run_on_host):
-    cmd = "{} server add volume  \
-           {} \
-           {} {}".format(helpers.os_pre, server, volume)
+    cmd = ('{0} server add volume  '
+           '{1} '
+           '{2}').format(helpers.os_pre, server, volume)
     run_on_host.run(cmd)
     return helpers.get_expected_value('volume', volume, 'status', 'in-use',
                                       run_on_host)
 # End fresh helpers
 
 
-@pytest.mark.xfail(reason='ASC-1264 - No route to floating ip from cli_host')
 @pytest.mark.test_id('3d77bc35-7a21-11e8-90d1-6a00035510c0')
 @pytest.mark.jira('ASC-257', 'ASC-883', 'RI-417')
 def test_volume_attached(host):
@@ -67,9 +66,9 @@ def test_volume_attached(host):
         pytest.skip("Volume is not available")
 
     # ensure attachment and retrieve associated device
-    cmd = "{} volume show  \
-           -f json \
-           {} {}".format(helpers.os_pre, volume_name)
+    cmd = ('{0} volume show  '
+           '-f json '
+           '{1}').format(helpers.os_pre, volume_name)
     res = host.run(cmd)
     volume = json.loads(res.stdout)
     assert len(volume['attachments']) == 1
@@ -79,7 +78,7 @@ def test_volume_attached(host):
     backoff = 1
     cmd = "{} 'sudo ls'".format(ssh.format(floating_ip))
     ssh_attempt = host.run(cmd)
-    for i in range(1):
+    for i in range(10):
         try:
             ssh_attempt = host.run_expect([0], cmd)
         except AssertionError:
