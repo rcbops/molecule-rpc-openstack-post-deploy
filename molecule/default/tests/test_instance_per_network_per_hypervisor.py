@@ -84,8 +84,7 @@ def test_hypervisor_vms(host):
            '-o UserKnownHostsFile=/dev/null '
            '.ssh/rpc_support '
            'heat-admin@{0}:.ssh/').format(controller_ip)
-    res = host.run(cmd)
-    assert res.rc == 0
+    host.run_expect([0], cmd)
 
     r = random.randint(1111, 9999)
 
