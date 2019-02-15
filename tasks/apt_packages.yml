@@ -1,0 +1,13 @@
+---
+- name: Install Packages Required for PDQC Tests
+  apt:
+    pkg: "{{ item }}"
+    state: present
+    update_cache: true
+    cache_valid_time: 600
+    force: true
+  with_items: "{{ pdqc_apt_packages }}"
+  when:
+    - ansible_os_family == 'Debian'
+  retries: 2
+  delay: 10

@@ -1,5 +1,5 @@
-Role Name
-=========
+molecule-rpc-openstack-post-deploy
+==================================
 
 This role is to validate the post deployment process as described on the
 following page:
@@ -12,6 +12,9 @@ This role requires an existing rpc-openstack deployment and a JSON file
 containing the ansible dynamic inventory for that infrastructure. This role is
 assumed to be executed from the "Deployment Host" for said OpenStack
 deployment.
+
+This role imports "[ansible-role-pytest-rpc](https://github.com/rcbops/ansible-role-pytest-rpc)" to prepare the system for testing and to enable use of
+the "[pytest-rpc](https://github.com/rcbops/pytest-rpc)" plug-in for validation.
 
 Example Playbook
 ----------------
