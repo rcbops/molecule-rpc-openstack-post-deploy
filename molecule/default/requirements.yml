@@ -1,0 +1,3 @@
+---
+- src: https://github.com/rcbops/ansible-role-pytest-rpc
+  version: master
