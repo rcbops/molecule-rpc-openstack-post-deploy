@@ -26,6 +26,13 @@ passed in as parameters) is always nice for users too:
       roles:
          - { role: molecule-rpc-openstack-post-deploy, x: 42 }
 
+Documentation
+-------------
+Refer to the documentation below for more details about this Molecule test
+suite:
+
+- [Fixture Patterns](docs/fixture_patterns.md)
+
 License
 -------
 
